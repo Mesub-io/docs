@@ -11,6 +11,12 @@ prompt: |
   The three actions in a table, the build, sign and send, confirm steps, what
   a cancellation does to access, the refusals, and listing payments with a
   full example in a collapsed block.
+  Explain what an attempt says from @https://github.com/Mesub-io/backend
+  (prisma/schema.prisma, src/pull/pull.processor.ts, src/pull/pull.errors.ts,
+  src/pull/pull.constants.ts, src/pull/retry-policy.ts,
+  src/subscriptions/server-subscriptions.service.ts,
+  src/access/late-reason.ts): the four outcomes, every reason by whose doing
+  it is, and each remaining field with when it is null.
 ---
 
 The [React widget](./react.mdx) covers this with `ManageButton`. Without it,
@@ -133,20 +139,20 @@ not over the page.
     "data": [
         {
             "id": "cmg9x4k2c0007",
-            "attempted_at": "2026-02-02T00:01:04.512Z",
+            "attempted_at": "2026-02-01T00:04:07.512Z",
             "outcome": "paid",
             "reason": null,
             "amount": "9990000",
             "signature": "5wHu1qwD4kLDLoREEPBpKvGvhbxWFxFFfr5nQq...",
             "retry": true,
-            "retry_number": 2,
+            "retry_number": 1,
             "retries_allowed": 3,
             "period_start": "2026-01-31T00:00:00.000Z"
         },
         {
             "id": "cmg9x1b7a0003",
-            "attempted_at": "2026-01-31T00:00:02.000Z",
-            "outcome": "skipped",
+            "attempted_at": "2026-01-31T00:02:03.000Z",
+            "outcome": "rejected",
             "reason": "insufficient-balance",
             "amount": "9990000",
             "signature": null,
@@ -175,15 +181,114 @@ not over the page.
 
 </Expandable>
 
-| Field                             | What it says                                             |
-| --------------------------------- | -------------------------------------------------------- |
-| `outcome`                         | `paid`, `skipped`, `rejected` or `blocked`               |
-| `reason`                          | Why it did not pay. Null on a paid one                   |
-| `amount`                          | In the token's smallest unit, as a string                |
-| `signature`                       | The transaction. Null when nothing was sent              |
-| `retry_number`, `retries_allowed` | Which retry it was, out of how many. Null on a first try |
-| `period_start`                    | The start of the period it was for                       |
+## Read an attempt
 
-`skipped` means nothing was sent because the chain said it could not work, most
-often a wallet that is short. `rejected` was sent and refused. `blocked` was
-not tried, and is never the customer's doing.
+An attempt is one try at charging one period. Mesub keeps every one, whatever
+came of it: the charge that paid, the one that failed, and the one it never
+sent.
+
+`outcome` says how it ended:
+
+| `outcome`  | What happened                                                    | Sent to the chain             | Uses a retry |
+| ---------- | ---------------------------------------------------------------- | ----------------------------- | ------------ |
+| `paid`     | The transfer landed: the period is paid                          | Yes                           | No           |
+| `skipped`  | Mesub read the chain first and found nothing it could charge     | No                            | No           |
+| `rejected` | The charge failed on the customer's side                         | No, or refused by the program | Yes          |
+| `blocked`  | The charge could not be made, and the customer has no part in it | No, or not known yet          | No           |
+
+Only a `paid` attempt carries a `signature`, since only it moved money. A
+`rejected` one moved nothing: Mesub reads the wallet's balance before it sends,
+and a transfer the program refuses changes nothing. A `blocked` one mostly
+stopped before sending, and Mesub comes back to it ten minutes later. When a
+transfer did go out and Mesub could not see it land, it asks the chain before
+charging again, and records a `paid` attempt if it landed.
+
+**Only `rejected` counts against the customer.** The one at the due date turns
+the subscription `unpaid`. Each retry rejected after it is one retry spent, and
+when the last is spent the subscription turns `stopped`. A `blocked` or
+`skipped` attempt never uses a retry, however many there are. Neither does a
+retry you fire by hand from the dashboard on Dev or Business: it is recorded
+like any other, and the plan's retries stay as they were.
+
+### Reasons
+
+`reason` says why an attempt did not pay. It is null on a `paid` one, and a
+short stable string on every other.
+
+What the customer did, or their wallet:
+
+| `reason`                   | `outcome`  | What it says                                                            |
+| -------------------------- | ---------- | ----------------------------------------------------------------------- |
+| `insufficient-balance`     | `rejected` | The wallet holds less than the period owes, or has no token account     |
+| `token-account-reassigned` | `rejected` | The wallet's token account now belongs to someone else                  |
+| `program:<code>`           | `rejected` | The program refused the transfer. `<code>` is its error number          |
+| `subscription-cancelled`   | `skipped`  | Cancelled on chain, and the period already paid is over                 |
+| `delegation-gone`          | `skipped`  | The subscription no longer exists on chain. It ends, `authority_closed` |
+
+Three codes have a name: `program:4`, the wallet no longer lets Mesub charge
+it, and `program:103` or `program:136`, the wallet closed its authorisation.
+They are what `late_reason` reads, with `insufficient-balance`: see
+[late payments](./lifecycle.mdx#late-payments).
+
+What you did to the plan:
+
+| `reason`                                  | `outcome` | What it says                                                       |
+| ----------------------------------------- | --------- | ------------------------------------------------------------------ |
+| `plan-gone`                               | `skipped` | The plan was deleted. The subscription ends, `plan_removed`        |
+| `plan-replaced`                           | `skipped` | Another plan stands at its address. It ends, `plan_replaced`       |
+| `plan-ended`                              | `skipped` | The plan's end date has passed. It ends, `plan_ended`              |
+| `receiver-not-allowed`                    | `blocked` | The plan's receiver is not among the destinations it allows        |
+| `receiver-account-missing`                | `blocked` | Neither the receiver nor your wallet has an account for that token |
+| `puller-not-allowed`                      | `blocked` | Mesub's puller was taken off the plan                              |
+| `program:130`, `501`, `506`, `516`, `519` | `blocked` | One of the changes above, made while the charge was on its way     |
+
+What Mesub or the network did:
+
+| `reason`              | `outcome` | What it says                                                           |
+| --------------------- | --------- | ---------------------------------------------------------------------- |
+| `period-already-paid` | `skipped` | The chain holds the period as paid. Not a failure: `amount` is `0`     |
+| `period-missed`       | `skipped` | A whole period went by before Mesub charged it. It is never collected  |
+| `terms-missing`       | `blocked` | No terms were signed through Mesub. Never charged, and not tried again |
+| `puller-missing`      | `blocked` | Mesub's own record of the plan is incomplete                           |
+| `mint-gone`           | `blocked` | The token could not be read                                            |
+| `gone-unconfirmed`    | `blocked` | The plan or the subscription read as gone once. Mesub reads it again   |
+| `send-unconfirmed`    | `blocked` | A transfer is being sent, or its send was cut short                    |
+| `landing-unknown`     | `blocked` | An earlier transfer may have landed. Mesub waits for the chain to say  |
+| `program:400`         | `blocked` | The program says the period is charged already: its clock is behind    |
+| `solana:<code>`       | `blocked` | Any other error of the chain, with its number                          |
+| `transport`           | `blocked` | The network did not answer, or not in time                             |
+
+`program:<code>` is the one reason that comes under two outcomes: `blocked`
+for the six codes these tables name, `rejected` for every other. This list
+can grow, and `<code>` is any number the chain answers, so keep a default
+branch on both `reason` and `outcome`.
+
+### The other fields
+
+| Field                 | What it says                                                     | Null when                               |
+| --------------------- | ---------------------------------------------------------------- | --------------------------------------- |
+| `attempted_at`        | When Mesub recorded the attempt                                  | Never                                   |
+| `amount`              | What was asked for, in the token's smallest unit, as a string    | Never                                   |
+| `signature`           | The transaction that paid                                        | The outcome is not `paid`               |
+| `retry`               | True when a charge for this period had already failed            | Never                                   |
+| `retry_number`        | Which retry it was. 1 is the first after the missed charge       | It is not a retry                       |
+| `retries_allowed`     | How many retries the period had when the attempt ran             | It is not a retry                       |
+| `period_start`        | The start of the period it was for                               | Mesub stopped before reading the period |
+| `paid`, on the answer | `count` and `amount` of every `paid` attempt of the subscription | Never. `0` and `"0"` when none          |
+
+`retry_number` and `retries_allowed` are kept as the attempt ran: changing the
+plan's retry policy later does not rewrite them. Both are also null, with
+`retry` true, on a retry fired by hand on Dev or Business, which is none of the
+plan's, and on the few attempts written while the subscription was changing
+under them. On Free every retry is fired by hand: those are the plan's, and
+carry both.
+
+`period_start` is null on the reasons Mesub meets before it reads the period:
+`subscription-cancelled`, `delegation-gone`, the three `plan-` ones,
+`terms-missing`, `gone-unconfirmed` and `landing-unknown`, and on a
+`transport` or `solana:<code>` that failed on the very first read. On those,
+`amount` is the plan's price, where everywhere else it is what the period
+still owed. On a `paid` attempt it is what moved.
+
+The first attempt of a subscription is the payment the customer signed when
+subscribing, and its `signature` is that transaction.
