@@ -23,7 +23,12 @@
       {
         "group": "Guides",
         "icon": "lucide:book-open",
-        "pages": ["docs/access", "docs/lifecycle", "docs/webhooks", "docs/react", "docs/subscribe", "docs/manage"]
+        "pages": ["docs/access", "docs/lifecycle", "docs/webhooks", "docs/react", "docs/subscribe", "docs/manage", "docs/testing"]
+      },
+      {
+        "group": "Reference",
+        "icon": "lucide:library",
+        "pages": ["docs/pricing", "docs/api"]
       },
       {
         "group": "AI",
