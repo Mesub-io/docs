@@ -7,10 +7,10 @@ type Node = { id: string; col: number; row: number; status: string; note: string
 type Edge = { from: string; to: string; label?: string; tone: Tone }
 type Tree = { title: string; rows: number; nodes: Node[]; edges: Edge[] }
 
-const W = 132
+const W = 150
 const H = 46
-const COL = 176
-const ROW = 70
+const COL = 255
+const ROW = 60
 const TITLE = 26
 
 const COLOR: Record<Tone, string> = {
@@ -24,34 +24,30 @@ const TREES: Tree[] = [
     title: 'Each period',
     rows: 3,
     nodes: [
-      { id: 'start', col: 0, row: 1, status: 'pending', note: 'checkout signed' },
-      { id: 'active', col: 1, row: 1, status: 'active', note: 'a charge is due' },
-      { id: 'paid', col: 2, row: 0, status: 'active', note: 'next period', tone: 'good' },
-      { id: 'unpaid', col: 2, row: 2, status: 'unpaid', note: 'Mesub retries' },
-      { id: 'back', col: 3, row: 1, status: 'active', note: 'back on schedule', tone: 'good' },
-      { id: 'stopped', col: 3, row: 2, status: 'stopped', note: 'access off', tone: 'bad' },
+      { id: 'due', col: 0, row: 0.75, status: 'active', note: 'a charge is due' },
+      { id: 'paid', col: 1, row: 0, status: 'active', note: 'next period', tone: 'good' },
+      { id: 'unpaid', col: 1, row: 1.5, status: 'unpaid', note: 'Mesub retries' },
+      { id: 'back', col: 2, row: 1, status: 'active', note: 'back on schedule', tone: 'good' },
+      { id: 'stopped', col: 2, row: 2, status: 'stopped', note: 'access off', tone: 'bad' },
     ],
     edges: [
-      { from: 'start', to: 'active', tone: 'neutral' },
-      { from: 'active', to: 'paid', label: 'paid', tone: 'good' },
-      { from: 'active', to: 'unpaid', label: 'missed', tone: 'bad' },
-      { from: 'unpaid', to: 'back', label: 'retry paid', tone: 'good' },
-      { from: 'unpaid', to: 'stopped', label: 'retries spent', tone: 'bad' },
+      { from: 'due', to: 'paid', label: 'paid', tone: 'good' },
+      { from: 'due', to: 'unpaid', label: 'not paid', tone: 'bad' },
+      { from: 'unpaid', to: 'back', label: 'paid', tone: 'good' },
+      { from: 'unpaid', to: 'stopped', label: 'not paid', tone: 'bad' },
     ],
   },
   {
-    title: 'When the customer cancels',
+    title: 'After a cancellation',
     rows: 2,
     nodes: [
-      { id: 'active', col: 0, row: 0.5, status: 'active', note: 'customer cancels' },
-      { id: 'cancelled', col: 1, row: 0.5, status: 'cancelled', note: 'access to period end' },
-      { id: 'resumed', col: 2, row: 0, status: 'active', note: 'charged again', tone: 'good' },
-      { id: 'ended', col: 2, row: 1, status: 'ended', note: 'access off', tone: 'bad' },
+      { id: 'cancelled', col: 0, row: 0.5, status: 'cancelled', note: 'access to period end' },
+      { id: 'resumed', col: 1, row: 0, status: 'active', note: 'charged again', tone: 'good' },
+      { id: 'ended', col: 1, row: 1, status: 'ended', note: 'access off', tone: 'bad' },
     ],
     edges: [
-      { from: 'active', to: 'cancelled', tone: 'neutral' },
-      { from: 'cancelled', to: 'resumed', label: 'resumes', tone: 'good' },
-      { from: 'cancelled', to: 'ended', label: 'period ends', tone: 'bad' },
+      { from: 'cancelled', to: 'resumed', label: 'resumed', tone: 'good' },
+      { from: 'cancelled', to: 'ended', label: 'period over', tone: 'bad' },
     ],
   },
 ]
@@ -80,8 +76,8 @@ function TreeView({ tree, index }: { tree: Tree; index: number }) {
             viewBox='0 0 10 10'
             refX='9'
             refY='5'
-            markerWidth='6'
-            markerHeight='6'
+            markerWidth='5'
+            markerHeight='5'
             orient='auto-start-reverse'
           >
             <path d='M 0 0 L 10 5 L 0 10 z' fill={COLOR[tone]} />
@@ -115,7 +111,7 @@ function TreeView({ tree, index }: { tree: Tree; index: number }) {
               d={`M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`}
               fill='none'
               stroke={COLOR[edge.tone]}
-              strokeWidth='1.4'
+              strokeWidth='1.25'
               markerEnd={`url(#life-${index}-${edge.tone})`}
             />
           </g>
@@ -133,8 +129,8 @@ function TreeView({ tree, index }: { tree: Tree; index: number }) {
               width={W - 1}
               height={H - 1}
               rx={9}
-              fill={toned ? `color-mix(in srgb, ${COLOR[tone]} 9%, var(--background))` : 'var(--background)'}
-              stroke={toned ? `color-mix(in srgb, ${COLOR[tone]} 45%, transparent)` : 'var(--border)'}
+              fill='var(--background)'
+              stroke={toned ? `color-mix(in srgb, ${COLOR[tone]} 55%, transparent)` : 'var(--border)'}
             />
             <text
               x={x(node) + W / 2}
@@ -160,25 +156,29 @@ function TreeView({ tree, index }: { tree: Tree; index: number }) {
         )
       })}
 
-      {/* the answers, written on the nodes they lead to */}
+      {/* each answer, written on its wire */}
       {tree.edges
         .filter((edge) => edge.label)
         .map((edge) => {
+          const from = find(edge.from)
           const to = find(edge.to)
-          const width = edge.label!.length * 7 + 14
+          const cx = (x(from) + W + x(to)) / 2
+          const cy = (y(from) + y(to)) / 2 + H / 2
+          const width = edge.label!.length * 6.6 + 12
           return (
             <g key={`label-${edge.to}`}>
               <rect
-                x={x(to) + 10}
-                y={y(to) - 8}
+                x={cx - width / 2}
+                y={cy - 8}
                 width={width}
                 height={16}
                 rx={4}
                 fill='var(--background)'
               />
               <text
-                x={x(to) + 16}
-                y={y(to) + 3.5}
+                x={cx}
+                y={cy + 3.5}
+                textAnchor='middle'
                 fontSize='10'
                 fontWeight='600'
                 letterSpacing='0.08em'
