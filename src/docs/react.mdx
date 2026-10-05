@@ -74,6 +74,14 @@ Every subscription created through these routes is tied to the customer your
 it is where the customer's notices go. `plans: ['pro', 'team']` keeps the
 widget to those plans.
 
+The routes keep their calls to Mesub few. A plan is read from your project's
+plan list, kept in memory for 60 seconds: a change to a plan shows in the
+widget within a minute. The customer's list holds their 500 newest
+subscriptions. Each request gives Mesub 10 seconds to answer its reads, and a
+rate limit is answered at once, as a 429 with its `Retry-After`. When Mesub
+cannot be reached, or answers something the SDK cannot read, the browser gets
+a 502 and a fixed message, never your server's own details.
+
 Then wrap your app once:
 
 ```tsx

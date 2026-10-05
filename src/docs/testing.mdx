@@ -39,7 +39,9 @@ A customer is answered as named: a wallet you granted is not found by its
 you want.
 
 `new FakeMesub({ plans: ['pro'] })` makes every other slug answer
-`plan_not_found`, as a typo would.
+`plan_not_found`, as a typo would. Name your plans this way to test the
+[widget routes](./react.mdx): they read the plan list, which is empty
+otherwise.
 
 ## A guard, end to end
 
