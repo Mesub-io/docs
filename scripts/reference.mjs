@@ -136,7 +136,7 @@ function page({ kind, method, route, operation }) {
     ? webhookExamples(route, operation)
     : { request: requestExamples(method, route, operation), response: responseExamples(operation) }
 
-  // One card in the right column: each group, how many fences it takes, and
+  // The cards of the right column: each group, how many fences it takes, and
   // whether a long one folds. The line counts let the fold be drawn at once.
   const groups = webhook
     ? [

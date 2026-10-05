@@ -1,7 +1,7 @@
 'use client'
 
-// The one card of a reference page's right column: its code samples, a group
-// at a time (Request, Response) and one sample of the group at a time. The
+// The cards of a reference page's right column: one per group of code samples
+// (Request, then Response), stacked, each showing one sample at a time. The
 // samples are the page's own code fences, so the site highlights them and the
 // Markdown copy of the page keeps every one.
 
@@ -13,7 +13,6 @@ import {
   useId,
   useRef,
   useState,
-  type KeyboardEvent,
   type ReactElement,
   type ReactNode,
 } from 'react'
@@ -75,27 +74,21 @@ function CopyIcon({ done }: { done: boolean }) {
   )
 }
 
-export function Samples({ groups, lines = '', children }: { groups: string; lines?: string; children: ReactNode }) {
-  const all = read(groups, lines, children)
-  const base = useId()
-  const [group, setGroup] = useState(0)
-  const [picked, setPicked] = useState<Record<number, number>>({})
-  const [open, setOpen] = useState<Record<string, boolean>>({})
+function Card({ group }: { group: Group }) {
+  const id = useId()
+  const [index, setIndex] = useState(0)
+  const [open, setOpen] = useState<Record<number, boolean>>({})
   const [copied, setCopied] = useState(false)
   const body = useRef<HTMLDivElement>(null)
-  const switches = useRef<(HTMLButtonElement | null)[]>([])
+  const asTabs = group.samples.length > 1 && group.samples.length <= TABS_UP_TO
 
   // After the first paint, so the server's page and the browser's agree.
   useEffect(() => {
+    if (!asTabs) return
     try {
       const last = localStorage.getItem(LANGUAGE_STORE)
-      if (!last) return
-      const found: Record<number, number> = {}
-      all.forEach((entry, index) => {
-        const at = entry.samples.findIndex((sample) => sample.label === last)
-        if (at > 0 && entry.samples.length <= TABS_UP_TO) found[index] = at
-      })
-      if (Object.keys(found).length > 0) setPicked((current) => ({ ...found, ...current }))
+      const at = group.samples.findIndex((sample) => sample.label === last)
+      if (at > 0) setIndex(at)
     } catch {
       // No storage in this browser: every page opens on its first sample.
     }
@@ -103,19 +96,16 @@ export function Samples({ groups, lines = '', children }: { groups: string; line
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const shown = all[group]
-  if (!shown || shown.samples.length === 0) return null
-  const index = Math.min(picked[group] ?? 0, shown.samples.length - 1)
-  const sample = shown.samples[index]!
-  const key = `${group}-${index}`
-  const foldable = shown.cut && sample.lines >= CUT_FROM
-  const folded = foldable && !open[key]
+  const sample = group.samples[Math.min(index, group.samples.length - 1)]
+  if (!sample) return null
+  const foldable = group.cut && sample.lines >= CUT_FROM
+  const folded = foldable && !open[index]
 
-  function pick(at: number, remember: boolean) {
-    setPicked((current) => ({ ...current, [group]: at }))
-    if (!remember) return
+  function pick(at: number) {
+    setIndex(at)
+    if (!asTabs) return
     try {
-      localStorage.setItem(LANGUAGE_STORE, shown!.samples[at]!.label)
+      localStorage.setItem(LANGUAGE_STORE, group.samples[at]!.label)
     } catch {
       // As above.
     }
@@ -133,79 +123,46 @@ export function Samples({ groups, lines = '', children }: { groups: string; line
     )
   }
 
-  function onSwitchKey(event: KeyboardEvent) {
-    const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
-    if (step === 0) return
-    event.preventDefault()
-    const to = (group + step + all.length) % all.length
-    setGroup(to)
-    switches.current[to]?.focus()
-  }
-
-  const asTabs = shown.samples.length > 1 && shown.samples.length <= TABS_UP_TO
-
   return (
     <div className='mapi-samples'>
       <div className='mapi-samples-top'>
-        {all.length > 1 ? (
-          <div className='mapi-switch' role='tablist' aria-label='Samples'>
-            {all.map((entry, at) => (
-              <button
-                key={entry.name}
-                ref={(node) => {
-                  switches.current[at] = node
-                }}
-                type='button'
-                role='tab'
-                id={`${base}-switch-${at}`}
-                aria-controls={`${base}-body`}
-                aria-selected={at === group}
-                tabIndex={at === group ? 0 : -1}
-                onClick={() => setGroup(at)}
-                onKeyDown={onSwitchKey}
-              >
-                {entry.name}
+        <span className='mapi-samples-name'>{group.name}</span>
+        {asTabs && (
+          <div className='mapi-samples-tabs' role='group' aria-label={`${group.name} sample`}>
+            {group.samples.map((entry, at) => (
+              <button key={entry.label} type='button' aria-pressed={at === index} onClick={() => pick(at)}>
+                {entry.label}
               </button>
             ))}
           </div>
-        ) : (
-          <span className='mapi-samples-name'>{shown.name}</span>
         )}
-        <button type='button' className='mapi-samples-copy' aria-label={copied ? 'Copied' : 'Copy this sample'} onClick={copy}>
+        {group.samples.length > TABS_UP_TO && (
+          <select
+            className='mapi-samples-select'
+            aria-label={`${group.name} status`}
+            value={index}
+            onChange={(event) => pick(Number(event.target.value))}
+          >
+            {group.samples.map((entry, at) => (
+              <option key={entry.label} value={at}>
+                {entry.label}
+              </option>
+            ))}
+          </select>
+        )}
+        <button
+          type='button'
+          className='mapi-samples-copy'
+          aria-label={copied ? 'Copied' : `Copy the ${group.name.toLowerCase()} sample`}
+          onClick={copy}
+        >
           <CopyIcon done={copied} />
         </button>
       </div>
 
-      {shown.samples.length > 1 && (
-        <div className='mapi-samples-pick'>
-          {asTabs ? (
-            <div className='mapi-samples-tabs' role='group' aria-label={`${shown.name} sample`}>
-              {shown.samples.map((entry, at) => (
-                <button key={entry.label} type='button' aria-pressed={at === index} onClick={() => pick(at, true)}>
-                  {entry.label}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <label className='mapi-samples-select'>
-              <span>Status</span>
-              <select value={index} onChange={(event) => pick(Number(event.target.value), false)}>
-                {shown.samples.map((entry, at) => (
-                  <option key={entry.label} value={at}>
-                    {entry.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-        </div>
-      )}
-
       <div
         ref={body}
-        id={`${base}-body`}
-        role={all.length > 1 ? 'tabpanel' : undefined}
-        aria-labelledby={all.length > 1 ? `${base}-switch-${group}` : undefined}
+        id={id}
         className='mapi-samples-body code-card-body no-bleed'
         data-folded={folded || undefined}
         style={folded ? { maxHeight: `calc(${CUT_LINES} * 1.6 * var(--type-code-size) + 16px)` } : undefined}
@@ -218,12 +175,24 @@ export function Samples({ groups, lines = '', children }: { groups: string; line
           type='button'
           className='mapi-samples-more'
           aria-expanded={!folded}
-          aria-controls={`${base}-body`}
-          onClick={() => setOpen((current) => ({ ...current, [key]: folded }))}
+          aria-controls={id}
+          onClick={() => setOpen((current) => ({ ...current, [index]: folded }))}
         >
           {folded ? `Show all ${sample.lines} lines` : 'Show less'}
         </button>
       )}
     </div>
+  )
+}
+
+export function Samples({ groups, lines = '', children }: { groups: string; lines?: string; children: ReactNode }) {
+  return (
+    <>
+      {read(groups, lines, children)
+        .filter((group) => group.samples.length > 0)
+        .map((group) => (
+          <Card key={group.name} group={group} />
+        ))}
+    </>
   )
 }
