@@ -13,12 +13,10 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
-import { More } from '../../components/api/more'
-import { Samples } from '../../components/api/samples'
 
-<Aside full width={460}>
+<Aside full>
 
-<Samples groups="Request:3,Response:5:cut" lines="2,10,11,33,9,7,7,7">
+<RequestExample>
 
 ```bash title="cURL" lines=false
 curl "https://api.mesub.io/v1/subscriptions/cmg1x0abc0001/attempts" \
@@ -49,6 +47,11 @@ if (!response.ok) {
 }
 const data = await response.json();
 ```
+
+</RequestExample>
+
+<ResponseExample>
+
 ```json title="200" lines=false
 {
     "data": [
@@ -123,7 +126,7 @@ const data = await response.json();
 }
 ```
 
-</Samples>
+</ResponseExample>
 
 </Aside>
 
@@ -131,10 +134,6 @@ const data = await response.json();
 
 The charges of one subscription, newest first, and what it paid since it began: what a screen showing a customer one subscription with its payments needs.
 
-<More>
-
 `paid` is counted over every paid charge of the subscription, not over the page. Only this id's charges are listed: a customer who came back holds a new subscription, and the payments of the one it replaced stay under that one's id.
-
-</More>
 
 </Endpoint>

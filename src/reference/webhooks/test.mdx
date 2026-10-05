@@ -13,11 +13,10 @@ prompt: |
 
 import { Endpoint } from '../../components/api/endpoint'
 import { More } from '../../components/api/more'
-import { Samples } from '../../components/api/samples'
 
-<Aside full width={460}>
+<Aside full>
 
-<Samples groups="Payload:1:cut,Handler:1" lines="29,11">
+<RequestExample>
 
 ```json title="Payload" lines=false
 {
@@ -64,7 +63,7 @@ if (event.type === 'test') {
 }
 ```
 
-</Samples>
+</RequestExample>
 
 </Aside>
 

@@ -13,12 +13,10 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
-import { More } from '../../components/api/more'
-import { Samples } from '../../components/api/samples'
 
-<Aside full width={460}>
+<Aside full>
 
-<Samples groups="Request:3,Response:5:cut" lines="2,6,12,4,7,7,7,7">
+<RequestExample>
 
 ```bash title="cURL" lines=false
 curl -X POST "https://api.mesub.io/v1/subscriptions/cmg1x0abc0001/cancel" \
@@ -46,6 +44,11 @@ if (!response.ok) {
 }
 const data = await response.json();
 ```
+
+</RequestExample>
+
+<ResponseExample>
+
 ```json title="201" lines=false
 {
     "transaction": "gAIBBg0Xq3ZkT9yLmR4vP7wJ8sN2aHcVbE5uYtKfDgQxWz1oMiCj6rA0lSnUhBdXe2GqFpYv7mNcTz4RwK8sLjH5AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQIDBAUGBwgJCgsM",
@@ -89,7 +92,7 @@ const data = await response.json();
 }
 ```
 
-</Samples>
+</ResponseExample>
 
 </Aside>
 
@@ -97,10 +100,6 @@ const data = await response.json();
 
 Builds the transaction that cancels an `active`, `unpaid` or `stopped` subscription. The subscription's own wallet signs and sends it, then you [confirm](./confirm-cancel.mdx). Nothing changes until the confirmation.
 
-<More>
-
 A subscription that is paid up keeps its access until the end of the period. A late or stopped one has none, and its missed period is never collected.
-
-</More>
 
 </Endpoint>
