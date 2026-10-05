@@ -1,0 +1,111 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "How Mesub charges a wallet on a schedule"
+sidebarTitle: How it works
+description: "What happens when a customer subscribes, how each period is charged, and where your server fits. Built on the Solana Foundation's subscriptions program."
+icon: lucide:workflow
+prompt: |
+  Explain how Mesub works from @https://github.com/Mesub-io/node-sdk (README,
+  sections How it fits, Gate a route, Subscribe from your server),
+  @https://github.com/Mesub-io/react-sdk and
+  @https://github.com/solana-foundation/subscriptions.
+  Plain prose, the sequence diagram of @../components/sequence.tsx, one table
+  of what runs where. No cards, no marketing tone.
+---
+
+import { Sequence } from '../components/sequence'
+
+A customer approves a plan once. After that, Mesub pulls the plan's price from
+their wallet to yours at every period, and your server asks Mesub whether a
+given customer has access.
+
+## The flow
+
+<Sequence />
+
+Your pages never call Mesub and never hold a key. The wallet signs in the
+browser, and everything else goes through your server.
+
+## What runs where
+
+| Where       | What it does                                              | What it holds             |
+| ----------- | --------------------------------------------------------- | ------------------------- |
+| Your pages  | Ask the wallet for its two signatures                     | Nothing secret            |
+| Your server | Creates subscriptions, checks access, receives webhooks   | The API key               |
+| Mesub       | Sends each charge, retries a missed one, records attempts | No funds                  |
+| Solana      | Holds the plan's terms and moves the tokens               | The customer's delegation |
+
+Your customer has no Mesub account. Mesub finds them by the id you give them
+(`external_id`), by the wallet that pays, or by their email.
+
+## On chain
+
+Mesub does not hold or route the money. Plans and subscriptions are accounts of
+the [subscriptions program](https://github.com/solana-foundation/subscriptions)
+published by the Solana Foundation, open source
+([MIT](https://github.com/solana-foundation/subscriptions/blob/main/LICENSE))
+and [audited by Cantina](https://github.com/solana-foundation/subscriptions/blob/main/audits/AUDIT_STATUS.md).
+Its address is `De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44`.
+
+Three accounts are involved, all PDAs of that program:
+
+| Account                  | One per                          | What it holds                         |
+| ------------------------ | -------------------------------- | ------------------------------------- |
+| `Plan`                   | plan, created by you             | The price, the period, who receives   |
+| `SubscriptionAuthority`  | wallet and token, the customer's | The right to move that token          |
+| `SubscriptionDelegation` | wallet and plan, the customer's  | The terms signed and the period state |
+
+### The plan
+
+Creating a plan in the [dashboard](https://mesub.io/dashboard#plans) sends one transaction, signed by your wallet,
+that creates the `Plan` account with its `mint`, `amount`, `period_hours` and
+`end_ts`. `amount` and `period_hours` are immutable.
+`destinations` lists the wallets that may receive the money, and `pullers`
+lists who may trigger a charge besides you: Mesub's puller is one of them,
+which is what lets Mesub charge on schedule without your signature.
+
+### The subscription
+
+Subscribing creates the customer's `SubscriptionAuthority` for that token if
+they have none, and a `SubscriptionDelegation` to your plan, which tracks
+`amount_pulled_in_period`, `current_period_start_ts` and `expires_at_ts`. The authority is
+approved as delegate on their token account; it can only move tokens when a
+delegation says so, and a delegation only allows this:
+
+- up to the plan's `amount` per period, counted in `amount_pulled_in_period`,
+- to one of the plan's `destinations`,
+- triggered by the plan's owner or one of its `pullers`,
+- while `expires_at_ts` is zero or in the future.
+
+The delegation copies the plan's terms when it is created, so a customer keeps
+the price they signed for.
+
+Both accounts cost rent, about 0.0036 SOL together. The customer pays it and
+gets it back when the subscription is closed.
+
+### A charge
+
+Each period, Mesub's puller sends a transfer instruction. The program checks
+the four conditions above, moves the tokens from the customer's token account
+to your destination, and updates the delegation's period counters. If the
+wallet is short, nothing moves and Mesub retries according to the plan's retry
+policy.
+
+### Cancelling
+
+Cancelling sets `expires_at_ts` to the end of the period already paid: access
+runs until then, and no further charge can land. The customer signs it, through
+your site or directly against the program. Resuming before that date clears it.
+Closing the delegation afterwards returns its rent.
+
+### Why your server asks Mesub and not the chain
+
+A delegation that reads active on chain is not proof that the next charge will
+land: the wallet may be empty, or the customer may have revoked the token
+approval outside the program. Mesub tracks every attempt and its outcome, and
+`hasAccess` answers from that record, not from the account alone.
+
+Next: [your first subscriber](./quickstart.mdx), with a plan, an API key and
+the code. The SDKs are [`@mesub/node`](https://github.com/Mesub-io/node-sdk)
+on the server and, optionally, [`@mesub/react`](https://github.com/Mesub-io/react-sdk)
+in your pages.

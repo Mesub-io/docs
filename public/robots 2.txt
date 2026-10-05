@@ -1,0 +1,7 @@
+# Everything here is public documentation, for people and for AI agents alike.
+# /llms.txt indexes it, /llms-full.txt has it in one file, and every page is
+# also served as Markdown at its own address plus ".md".
+User-agent: *
+Allow: /
+
+Sitemap: https://docs.mesub.io/sitemap.xml

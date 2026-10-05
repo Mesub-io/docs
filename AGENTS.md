@@ -1,40 +1,53 @@
-# Holocron Docs Template
+# Working on the Mesub docs
 
-This is a Holocron documentation site. MDX pages live in `src/`, site config and navigation live in `docs.jsonc`.
+For the Mesub team and its agents. The README is for a visitor: keep how the
+site is edited here.
 
-Before editing docs content, styling, or navigation, load the Holocron skill:
-
-```
+A [Holocron](https://holocron.so) site. Load the Holocron skill before editing
+content, styling or navigation:
 https://raw.githubusercontent.com/remorses/holocron/refs/heads/main/skills/holocron/SKILL.md
+
+## Run it
+
+```bash
+pnpm install
+pnpm dev --port 5180   # http://localhost:5180
+pnpm build             # fails on a broken internal link
 ```
 
-The skill covers writing style, MDX components, navigation placement, Aside usage, diagram conventions, and more.
+## Where things are
 
-## Schemas
-
-- **docs.jsonc** config schema: `https://holocron.so/docs.json` (already set via `$schema` in docs.jsonc)
-- **Frontmatter** schema: `https://holocron.so/frontmatter.json` (already set via `$schema` in each MDX file)
-
-Both schemas provide autocomplete and validation in editors that support JSON Schema.
-
-## Adding pages
-
-1. Create a new `.mdx` file in `src/` with frontmatter:
-
-```mdx
----
-"$schema": https://holocron.so/frontmatter.json
-title: My Page
-description: Short description of this page.
----
-
-# My Page
-
-Content here.
+```text
+docs.jsonc             the site: name, colors, logo, and the menu
+src/index.mdx          the home page
+src/docs/*.mdx         one file per page, served at /docs/<name>
+src/components/        the diagrams: sequence.tsx, lifecycle.tsx
+public/                logo, icon, robots.txt
 ```
 
-2. Add the page slug to `docs.jsonc` navigation. Pages not listed in navigation won't appear in the sidebar.
+## Add or change a page
 
-## Config
+1. Write `src/docs/<name>.mdx`, with the frontmatter the other pages have:
+   `title`, `sidebarTitle`, `description`, `icon`, and `prompt`, which records
+   what the page was written from.
+2. List it in `docs.jsonc`, under the group it belongs to. A page that is not
+   listed is not served.
+3. Link to other pages by their file, relatively: `[webhooks](./webhooks.mdx)`.
+4. After touching a table, run `npx -y @holocron.so/cli diagrams fix <file>`.
+5. Run `pnpm build`, and look at the page in both themes.
 
-`docs.jsonc` controls site name, colors, navbar, footer, and the full navigation tree (tabs, groups, pages, anchors). See the config schema for all supported fields.
+## What the pages hold to
+
+- Every claim is checked against the code: the backend for routes, error codes
+  and limits, the SDKs for what a call takes and returns. An example that could
+  not be checked says so in the pull request.
+- Plain prose. No stack of cards, no marketing tone, bold only where a reader
+  scans for the word.
+- Code for Express, Next.js and NestJS, as tabs, wherever the three differ.
+- A full answer is collapsed, under "See a full answer", after the short
+  example.
+- Nothing floats beside the text: no `Aside`. Notes go in the paragraph.
+- It says API key, never secret key, and does not mention a network: a plan has
+  no choice of one yet.
+- No line of code or table wider than the column: check it in the browser.
+- The accent is Mesub's orange, `#f46036`, in both themes.
