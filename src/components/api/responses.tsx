@@ -68,7 +68,7 @@ export function Responses({ responses }: { responses: ResponseModel[] }) {
       {shown.headers.length > 0 && (
         <>
           <h3 className='mapi-h3'>Headers</h3>
-          <FieldList fields={shown.headers} />
+          <FieldList fields={shown.headers} side='received' />
         </>
       )}
 
@@ -92,7 +92,7 @@ export function Responses({ responses }: { responses: ResponseModel[] }) {
       {fields && (
         <>
           {shown.codes.length > 0 && <h3 className='mapi-h3'>Body</h3>}
-          <FieldList fields={fields.fields} />
+          <FieldList fields={fields.fields} side='received' />
         </>
       )}
     </section>

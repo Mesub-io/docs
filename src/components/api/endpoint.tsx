@@ -80,7 +80,7 @@ export function Endpoint({ id, children }: { id: string; children?: ReactNode })
 
       {model.headerParams.length > 0 && (
         <Section title='Headers'>
-          <FieldList fields={model.headerParams} />
+          <FieldList fields={model.headerParams} side={webhook ? 'received' : 'sent'} />
         </Section>
       )}
 
@@ -98,7 +98,7 @@ export function Endpoint({ id, children }: { id: string; children?: ReactNode })
 
       {model.body && (
         <Section title={webhook ? 'Payload' : 'Body'} note='application/json'>
-          <FieldList fields={model.body.fields} />
+          <FieldList fields={model.body.fields} side={webhook ? 'received' : 'sent'} />
         </Section>
       )}
 
@@ -119,7 +119,7 @@ export function Endpoint({ id, children }: { id: string; children?: ReactNode })
 export function SchemaFields({ name }: { name: string }) {
   return (
     <div className='mapi'>
-      <FieldList fields={schemaFields(name)} />
+      <FieldList fields={schemaFields(name)} side='received' />
     </div>
   )
 }

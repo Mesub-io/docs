@@ -21,13 +21,18 @@ export function Md({ text }: { text: string }) {
   )
 }
 
-function Row({ field }: { field: Field }) {
+/** `sent`: what you send, where a field can be required. `received`: what Mesub answers or posts. */
+type Side = 'sent' | 'received'
+
+function Row({ field, side }: { field: Field; side: Side }) {
   return (
     <div className='mapi-field'>
       <div className='mapi-field-head'>
         <span className='mapi-field-name'>{field.name}</span>
         <span className='mapi-pill'>{field.type}</span>
-        {field.required && <span className='mapi-pill mapi-pill-required'>required</span>}
+        {side === 'sent' && field.required && <span className='mapi-pill mapi-pill-required'>required</span>}
+        {/* An answer requires nothing of the reader: only a field that may be missing is marked. */}
+        {side === 'received' && !field.required && <span className='mapi-pill'>not always present</span>}
         {field.fallback !== undefined && <span className='mapi-pill'>default: {field.fallback}</span>}
       </div>
       {field.description && (
@@ -62,18 +67,18 @@ function Row({ field }: { field: Field }) {
             <span className='mapi-children-closed'>Show child attributes</span>
             <span className='mapi-children-open'>Hide child attributes</span>
           </summary>
-          <FieldList fields={field.children} />
+          <FieldList fields={field.children} side={side} />
         </details>
       )}
     </div>
   )
 }
 
-export function FieldList({ fields }: { fields: Field[] }) {
+export function FieldList({ fields, side = 'sent' }: { fields: Field[]; side?: Side }) {
   return (
     <div className='mapi-fields'>
       {fields.map((field) => (
-        <Row key={field.name} field={field} />
+        <Row key={field.name} field={field} side={side} />
       ))}
     </div>
   )
