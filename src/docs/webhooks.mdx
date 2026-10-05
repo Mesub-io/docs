@@ -174,17 +174,18 @@ A handler running on your machine needs a public URL. A tunnel such as
 
 ## Events
 
-| Event                         | Sent when                                               |
-| ----------------------------- | ------------------------------------------------------- |
-| `subscription.created`        | The first payment landed                                |
-| `subscription.renewed`        | A period was paid                                       |
-| `subscription.payment_failed` | A charge missed                                         |
-| `subscription.stopped`        | Mesub stopped charging after missed payments            |
-| `subscription.cancelled`      | The customer cancelled; access runs to the period's end |
-| `subscription.resumed`        | A cancellation was undone                               |
-| `subscription.ended`          | It is over; `data.end_reason` says why                  |
-| `subscription.expired`        | A checkout was started and never signed                 |
-| `test`                        | You sent one from the dashboard                         |
+| Event                           | Sent when                                               |
+| ------------------------------- | ------------------------------------------------------- |
+| `subscription.created`          | The first payment landed                                |
+| `subscription.renewal_upcoming` | A renewal is near, and whether it can pay               |
+| `subscription.renewed`          | A period was paid                                       |
+| `subscription.payment_failed`   | A charge missed                                         |
+| `subscription.stopped`          | Mesub stopped charging after missed payments            |
+| `subscription.cancelled`        | The customer cancelled; access runs to the period's end |
+| `subscription.resumed`          | A cancellation was undone                               |
+| `subscription.ended`            | It is over; `data.end_reason` says why                  |
+| `subscription.expired`          | A checkout was started and never signed                 |
+| `test`                          | You sent one from the dashboard                         |
 
 Mesub may add a type later: keep a default branch.
 
@@ -283,6 +284,45 @@ body: it is the `webhook-id` header, which the SDK gives you as `event.id`.
 
 `data` is read when the delivery is first attempted, so it can be newer than
 the event itself. `created_at` is when the event happened.
+
+## Before a renewal
+
+`subscription.renewal_upcoming` is sent once per period, when a subscription
+enters the last quarter of it: about a week before the charge on a monthly
+plan. Mesub reads the customer's wallet at that moment, and `data.detail` says
+what the coming charge would meet:
+
+```json
+{
+    "can_pay": false,
+    "renewal_issue": "balance",
+    "amount": "9990000",
+    "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "due_at": "2026-03-02T00:00:00.000Z"
+}
+```
+
+| Field           | What it holds                                                               |
+| --------------- | --------------------------------------------------------------------------- |
+| `can_pay`       | Whether the charge would go through as the wallet stood when it was read    |
+| `renewal_issue` | `balance`, `authority`, or null when it can pay                             |
+| `amount`        | What will be charged, in the token's smallest unit                          |
+| `mint`          | The token                                                                   |
+| `due_at`        | When the charge is due                                                      |
+
+`balance` means the wallet holds less than the amount, or has no account for
+the token: the customer adds funds. `authority` means Mesub can no longer move
+the tokens: the approval was replaced or is too small, or the account is
+frozen. Subscribing again gives a new approval.
+
+It is sent whether the charge can pay or not, so it also works as a plain
+reminder before a renewal. It is a reading, not a promise: a wallet topped up
+or emptied afterwards changes the outcome, and the charge itself answers with
+`subscription.renewed` or `subscription.payment_failed`.
+
+An endpoint receives it only if that event is selected for it in the
+dashboard: an endpoint created before it existed does not get it by itself. Mesub also mails the customer when the charge cannot pay and the
+subscription carries an email.
 
 ## Delivery behavior
 
