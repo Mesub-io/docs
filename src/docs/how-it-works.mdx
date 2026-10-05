@@ -1,0 +1,76 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "How Mesub charges a wallet on a schedule"
+sidebarTitle: How it works
+description: "Who signs what, who is charged and when, and the three things a merchant builds: a plan, a server check, and optionally a button."
+icon: lucide:workflow
+prompt: |
+  Explain how Mesub works from @https://github.com/Mesub-io/node-sdk (README,
+  sections How it fits, Gate a route, Subscribe from your server) and
+  @https://github.com/Mesub-io/react-sdk.
+  Cover who signs what, who is charged, what the merchant builds, and that the
+  subscriber has no Mesub account. One diagram of the whole flow.
+---
+
+Mesub is **recurring billing for Solana wallets**. A customer approves a plan
+once; from then on Mesub pulls the plan's price from their wallet to yours at
+every period, and your server asks Mesub who has access.
+
+## The three parties
+
+**You, the merchant**, publish a plan from the dashboard: a price, a token, a
+period, and the wallet that receives the money. Those terms are **signed on
+chain** when the plan is created and cannot change after.
+
+**Your customer** pays from their own wallet. They have **no Mesub account**:
+they stay signed in to your site, with your login. Subscribing takes two
+approvals in their wallet, the terms and then the first payment.
+
+**Mesub** sends each charge when it is due, retries a missed one, keeps the
+record of every attempt, and answers your server.
+
+<Aside>
+<Note>
+Mesub is **non-custodial**. The wallet delegates the right to pull the plan's
+price, once per period, to the plan's destination. Nothing else can be taken.
+</Note>
+</Aside>
+
+## From a click to a renewal
+
+```diagram
+  your pages                  your server (@mesub/node)                  Mesub
+ ────────────                ───────────────────────────                ───────
+
+ "Subscribe"        ───────>  subscriptions.create          ───────>  reserves it, builds
+                                                                      the terms and the
+ wallet signs       <───────  terms + unsigned transaction  <───────  transaction
+ terms, then
+ the payment        ───────>  subscriptions.submit          ───────>  co-signs, sends,
+                                                                      first period paid
+
+ a paid page        ───────>  hasAccess(customer, 'pro')    ───────>  yes or no, cached
+
+                              your webhook endpoint         <───────  renewed, late,
+                                                                      stopped, ended
+```
+
+Your pages never talk to Mesub and never hold a key. **Everything goes through
+your server**, which is the only place the API key lives.
+
+## What you build
+
+1. **A plan**, in the dashboard. No code.
+2. **A check on your server.** Install `@mesub/node`, give it your API key, and
+   ask `hasAccess` before serving anything paid. This is the only required
+   code.
+3. **A way to subscribe.** Either your own button calling your server, or the
+   ready-made window of `@mesub/react`, which is optional and calls the routes
+   `@mesub/node` mounts for it.
+
+## What Mesub knows about a customer
+
+Mesub finds a customer by **your own id for them** (`external_id`), by the
+**wallet that pays**, or by the **email** given when they subscribed. Pass your
+id when your app has a login: access then follows the person, whichever wallet
+they pay from.
