@@ -18,7 +18,7 @@
       {
         "group": "Getting started",
         "icon": "lucide:rocket",
-        "pages": ["index", "docs/how-it-works", "docs/quickstart"]
+        "pages": ["index", "docs/how-it-works", "docs/quickstart", "docs/api-key"]
       },
       {
         "group": "Guides",

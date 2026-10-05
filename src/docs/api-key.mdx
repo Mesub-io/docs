@@ -1,0 +1,82 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Get your Mesub API key"
+sidebarTitle: API key
+description: "Create a project's API key in the dashboard, put it on your server, check that it works, and rotate it when it leaks."
+icon: lucide:key-round
+prompt: |
+  Explain how a merchant gets the API key of a project: where it is created in
+  the dashboard, that it is shown once and stored hashed, where it goes on the
+  server, how to check it with GET /v1/project, what rotating does, and the two
+  401 codes. Short, no marketing.
+---
+
+Every call your server makes to Mesub carries the project's **API key**. A
+project has one key at a time, and the key is the project: no call names a
+project id.
+
+## Create it
+
+1. Open the [dashboard](https://mesub.io/dashboard#developers) and pick the
+   project in the top bar.
+2. Open **Developers**. Under **API key**, press **Create the key**.
+3. Copy the key. It starts with `SUB_`.
+
+The key is shown **once**. Mesub stores a hash of it, so nobody can read it
+again afterwards, you included. Once the window is closed, the dashboard only
+says that the project has a key and when it was last used. If you lose it,
+[rotate it](#rotate-it).
+
+## Put it on your server
+
+```bash
+MESUB_API_KEY=SUB_...
+```
+
+`@mesub/node` reads that variable by itself:
+
+```ts
+import { Mesub } from '@mesub/node';
+
+const mesub = new Mesub(); // reads MESUB_API_KEY
+```
+
+Keep the key on your server. It creates subscriptions and reads your
+subscribers, so it never goes in a browser, a mobile app or a repository. The
+React widget does not need it: it talks to the routes `@mesub/node` mounts on
+your server.
+
+## Check that it works
+
+```bash
+curl "https://api.mesub.io/v1/project" \
+  -H "Authorization: Bearer $MESUB_API_KEY"
+```
+
+A `200` with the project's id means the key is good:
+
+```json
+{ "id": "cmufsl77w001ag2s6pp1ngf9p" }
+```
+
+In **Developers**, the line under the key then says it was last used just now.
+
+| Status | Code              | Meaning                                          |
+| ------ | ----------------- | ------------------------------------------------ |
+| 401    | `missing_api_key` | No `Authorization: Bearer` header was sent       |
+| 401    | `invalid_api_key` | Not a key Mesub issued, or one rotated since     |
+
+## Rotate it
+
+In **Developers**, **Rotate** draws a new key and shows it once, like the
+first.
+
+The old key stops working at that moment. There is no period where both are
+accepted, so rotate when you are ready to deploy the new one: between the
+rotation and your deploy, your server's calls answer `401`.
+
+Rotate when a key may have leaked, when someone who knew it leaves, or when it
+is lost.
+
+Next: [your first subscriber](./quickstart.mdx), or the
+[API reference](./api.mdx).
