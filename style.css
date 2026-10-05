@@ -1,0 +1,882 @@
+/* The API reference's own components (src/components/api). Everything here is
+   under .mapi-, and takes Holocron's tokens so both themes follow. */
+@reference "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Room for the reference's two columns: parameters, then samples. */
+  --grid-max-width: 1340px;
+
+  --mapi-get: #047857;
+  --mapi-post: #1d4ed8;
+  --mapi-required: #b91c1c;
+  --mapi-line: var(--border-subtle);
+  --mapi-surface: color-mix(in oklch, var(--foreground) 3%, var(--background));
+
+  @variant dark {
+    --mapi-get: #6ee7b7;
+    --mapi-post: #93c5fd;
+    --mapi-required: #fca5a5;
+    --mapi-surface: color-mix(in oklch, var(--foreground) 5%, var(--background));
+  }
+}
+
+.mapi {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--type-body-size);
+  line-height: var(--lh-prose);
+  color: var(--prose-text);
+  min-width: 0;
+}
+
+.mapi code,
+.mapi-dialog code {
+  font-family: var(--font-code);
+  font-size: 0.86em;
+}
+
+.mapi p code,
+.mapi-code-when code,
+.mapi-dialog p code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--accent);
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.mapi a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.mapi a:hover {
+  text-decoration: underline;
+}
+
+/* ── Title ─────────────────────────────────────────────────────────────── */
+
+.mapi-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mapi-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.mapi-title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  text-wrap: balance;
+}
+
+.mapi-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 15px;
+}
+
+/* ── The bar: method, address, Try it ──────────────────────────────────── */
+
+.mapi-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 5px 5px 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  min-width: 0;
+}
+
+.mapi-method {
+  flex: none;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--mapi-get);
+  background: color-mix(in oklch, var(--mapi-get) 13%, transparent);
+}
+
+.mapi-method[data-method='POST'] {
+  color: var(--mapi-post);
+  background: color-mix(in oklch, var(--mapi-post) 13%, transparent);
+}
+
+.mapi-url {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.mapi-url-host {
+  color: var(--muted-foreground);
+}
+
+.mapi-url-slash {
+  margin: 0 3px;
+  color: var(--text-tertiary);
+}
+
+.mapi-url-param {
+  color: var(--primary);
+}
+
+.mapi-bar-note {
+  flex: none;
+  padding-right: 8px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.mapi-try,
+.mapi-send {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 120ms ease;
+}
+
+.mapi-try:hover,
+.mapi-send:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.mapi-try:focus-visible,
+.mapi-send:focus-visible,
+.mapi-status:focus-visible,
+.mapi-shape:focus-visible,
+.mapi-copy:focus-visible,
+.mapi-close:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.mapi-send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.mapi-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+/* ── Sections and rows ─────────────────────────────────────────────────── */
+
+.mapi-section {
+  margin-top: 40px;
+  min-width: 0;
+}
+
+.mapi-section-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--mapi-line);
+}
+
+.mapi-h2 {
+  margin: 0;
+  flex: 1;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  scroll-margin-top: var(--sticky-top);
+}
+
+.mapi-h3 {
+  margin: 22px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.mapi-media {
+  font-family: var(--font-code);
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+.mapi-lead {
+  margin: 14px 0 0;
+}
+
+.mapi-fields {
+  display: flex;
+  flex-direction: column;
+}
+
+.mapi-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--mapi-line);
+  min-width: 0;
+}
+
+.mapi-fields > .mapi-field:last-child {
+  border-bottom: 0;
+}
+
+.mapi-field-head,
+.mapi-input label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.mapi-field-name {
+  font-family: var(--font-code);
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--primary);
+  overflow-wrap: anywhere;
+}
+
+.mapi-pill {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--accent);
+  font-family: var(--font-code);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: color-mix(in oklch, var(--foreground) 62%, var(--background));
+  white-space: nowrap;
+}
+
+.mapi-pill-required {
+  background: color-mix(in oklch, var(--mapi-required) 12%, transparent);
+  color: var(--mapi-required);
+}
+
+.mapi-field-text {
+  margin: 0;
+}
+
+.mapi-field-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.mapi-field-meta code,
+.mapi-limit {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--accent);
+  font-family: var(--font-code);
+  font-size: 11.5px;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.mapi-limit {
+  color: color-mix(in oklch, var(--foreground) 62%, var(--background));
+}
+
+.mapi-children {
+  margin-top: 4px;
+  border: 1px solid var(--mapi-line);
+  border-radius: 10px;
+}
+
+.mapi-children > summary {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--foreground);
+  cursor: pointer;
+  list-style: none;
+}
+
+.mapi-children > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mapi-children > summary::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 10px;
+  border-right: 1.5px solid var(--muted-foreground);
+  border-bottom: 1.5px solid var(--muted-foreground);
+  transform: translateY(-2px) rotate(-45deg);
+  transition: transform 120ms ease;
+}
+
+.mapi-children[open] > summary::before {
+  transform: translateY(-3px) rotate(45deg);
+}
+
+.mapi-children[open] > summary {
+  border-bottom: 1px solid var(--mapi-line);
+}
+
+.mapi-children-open,
+.mapi-children[open] .mapi-children-closed {
+  display: none;
+}
+
+.mapi-children[open] > summary > .mapi-children-open {
+  display: inline;
+}
+
+.mapi-children > .mapi-fields {
+  padding: 0 14px;
+}
+
+/* ── Response: statuses, shapes, codes ─────────────────────────────────── */
+
+.mapi-statuses,
+.mapi-shapes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.mapi-shapes {
+  margin-top: 18px;
+}
+
+.mapi-status,
+.mapi-shape {
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: none;
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.mapi-shape {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.mapi-status:hover,
+.mapi-shape:hover {
+  color: var(--foreground);
+}
+
+.mapi-status[aria-selected='true'],
+.mapi-shape[aria-selected='true'] {
+  border-color: var(--border);
+  background: var(--mapi-surface);
+  color: var(--foreground);
+}
+
+.mapi-status[aria-selected='true'][data-tone='ok'] {
+  color: var(--mapi-get);
+}
+
+.mapi-status[aria-selected='true'][data-tone='refused'],
+.mapi-status[aria-selected='true'][data-tone='down'] {
+  color: var(--mapi-required);
+}
+
+.mapi-codes {
+  margin-top: 18px;
+  border: 1px solid var(--mapi-line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.mapi-codes-title {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--mapi-line);
+  background: var(--mapi-surface);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.mapi-code {
+  display: grid;
+  grid-template-columns: minmax(0, 230px) minmax(0, 1fr);
+  gap: 4px 16px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--mapi-line);
+}
+
+.mapi-code:last-child {
+  border-bottom: 0;
+}
+
+.mapi-code-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mapi-code-name > code {
+  font-weight: 600;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.mapi-code-when {
+  font-size: 13.5px;
+}
+
+/* ── The try-it panel ──────────────────────────────────────────────────── */
+
+.mapi-dialog {
+  width: min(1180px, calc(100vw - 32px));
+  max-width: none;
+  max-height: min(860px, calc(100dvh - 32px));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--background);
+  color: var(--prose-text);
+  font-size: var(--type-body-size);
+  line-height: var(--lh-prose);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+
+.mapi-dialog[open] {
+  display: flex;
+}
+
+.mapi-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.mapi-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.mapi-panel-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--mapi-line);
+}
+
+.mapi-panel-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  color: var(--foreground);
+  font-size: 14px;
+}
+
+.mapi-panel-url {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--mapi-surface);
+  font-family: var(--font-code);
+  font-size: 12.5px;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mapi-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.mapi-close:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.mapi-ask {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--mapi-line);
+  background: color-mix(in oklch, var(--primary) 9%, var(--background));
+}
+
+.mapi-ask p {
+  flex: 1;
+  min-width: 240px;
+  margin: 0;
+  color: var(--foreground);
+}
+
+.mapi-ask > div {
+  display: flex;
+  gap: 8px;
+}
+
+.mapi-ask-yes,
+.mapi-ask-no {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mapi-ask-yes {
+  border: 0;
+  background: var(--primary);
+  color: #fff;
+}
+
+.mapi-ask-no {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.mapi-panel-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.mapi-panel-form,
+.mapi-panel-out {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.mapi-panel-out {
+  border-left: 1px solid var(--mapi-line);
+  background: var(--mapi-surface);
+}
+
+.mapi-warning {
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in oklch, var(--primary) 35%, transparent);
+  border-radius: 10px;
+  background: color-mix(in oklch, var(--primary) 7%, transparent);
+  font-size: 13px;
+  color: var(--foreground);
+}
+
+.mapi-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--mapi-line);
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.mapi-group > legend {
+  padding: 0 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.mapi-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 8px 14px;
+}
+
+.mapi-input input,
+.mapi-input select {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-code);
+  font-size: 12.5px;
+}
+
+.mapi-input input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.mapi-input input:focus-visible,
+.mapi-input select:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--primary) 55%, transparent);
+  outline-offset: 0;
+  border-color: var(--primary);
+}
+
+.mapi-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+.mapi-keep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--foreground);
+}
+
+.mapi-keep input {
+  accent-color: var(--primary);
+}
+
+.mapi-card {
+  border: 1px solid var(--mapi-line);
+  border-radius: 12px;
+  background: var(--background);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mapi-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--mapi-line);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.mapi-card-head > span:first-child {
+  flex: 1;
+}
+
+.mapi-status-line {
+  font-family: var(--font-code);
+  font-size: 12px;
+  color: var(--mapi-required);
+}
+
+.mapi-status-line[data-ok='true'] {
+  color: var(--mapi-get);
+}
+
+.mapi-time {
+  font-family: var(--font-code);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted-foreground);
+}
+
+.mapi-copy {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.mapi-copy:hover {
+  color: var(--foreground);
+}
+
+.mapi-pre {
+  margin: 0;
+  padding: 12px;
+  max-height: 340px;
+  overflow: auto;
+  font-family: var(--font-code);
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+.mapi-pre code {
+  font-size: inherit;
+}
+
+.mapi-empty,
+.mapi-problem {
+  margin: 0;
+  padding: 14px 12px;
+  font-size: 13px;
+  color: var(--muted-foreground);
+}
+
+.mapi-problem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--prose-text);
+}
+
+.mapi-problem p {
+  margin: 0;
+}
+
+.mapi-problem strong {
+  color: var(--foreground);
+}
+
+.mapi-headers {
+  border-bottom: 1px solid var(--mapi-line);
+  font-size: 12.5px;
+}
+
+.mapi-headers > summary {
+  padding: 7px 12px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.mapi-headers dl {
+  margin: 0;
+  padding: 0 12px 10px;
+  font-family: var(--font-code);
+  font-size: 12px;
+}
+
+.mapi-headers dl > div {
+  display: flex;
+  gap: 8px;
+}
+
+.mapi-headers dt {
+  flex: none;
+  color: var(--muted-foreground);
+}
+
+.mapi-headers dt::after {
+  content: ':';
+}
+
+.mapi-headers dd {
+  margin: 0;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 820px) {
+  .mapi-title {
+    font-size: 24px;
+  }
+
+  .mapi-code {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mapi-dialog {
+    width: 100vw;
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 0;
+    border: 0;
+  }
+
+  .mapi-panel-top {
+    flex-wrap: wrap;
+  }
+
+  .mapi-panel-name {
+    flex: 1;
+  }
+
+  .mapi-panel-url {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .mapi-panel-body {
+    display: block;
+    overflow-y: auto;
+  }
+
+  .mapi-panel-form,
+  .mapi-panel-out {
+    overflow: visible;
+  }
+
+  .mapi-panel-out {
+    border-left: 0;
+    border-top: 1px solid var(--mapi-line);
+  }
+
+  .mapi-input {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
