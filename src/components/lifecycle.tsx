@@ -1,163 +1,205 @@
-// The statuses of a subscription and what moves it from one to the next,
-// drawn here so it takes the site's colors in both themes.
+// A subscription's statuses as two small trees, after the one in the Mesub
+// deck: every step is a question with two answers. Drawn here so it takes the
+// site's colors in both themes.
 
-type Box = { id: string; x: number; y: number; final?: boolean }
+type Tone = 'neutral' | 'good' | 'bad'
+type Node = { id: string; col: number; row: number; status: string; note: string; tone?: Tone }
+type Edge = { from: string; to: string; label?: string; tone: Tone }
+type Tree = { title: string; rows: number; nodes: Node[]; edges: Edge[] }
 
-const W = 100
-const H = 34
+const W = 132
+const H = 46
+const COL = 176
+const ROW = 70
+const TITLE = 26
 
-const BOXES: Box[] = [
-  { id: 'pending', x: 0, y: 78 },
-  { id: 'active', x: 180, y: 78 },
-  { id: 'unpaid', x: 370, y: 20 },
-  { id: 'stopped', x: 560, y: 20, final: true },
-  { id: 'cancelled', x: 370, y: 136 },
-  { id: 'ended', x: 560, y: 136, final: true },
-]
-
-const at = (id: string) => BOXES.find((box) => box.id === id)!
-const ink = 'var(--foreground)'
-const accent = 'var(--primary)'
-
-function Arrow({
-  d,
-  label,
-  lx,
-  ly,
-  dashed,
-  anchor = 'middle',
-}: {
-  d: string
-  label: string
-  lx: number
-  ly: number
-  dashed?: boolean
-  anchor?: 'start' | 'middle' | 'end'
-}) {
-  return (
-    <g>
-      <path
-        d={d}
-        fill='none'
-        stroke={ink}
-        strokeWidth='1.25'
-        strokeDasharray={dashed ? '4 4' : undefined}
-        markerEnd='url(#life-arrow)'
-      />
-      <text x={lx} y={ly} textAnchor={anchor} fontSize='11.5' fill='var(--muted-foreground)'>
-        {label}
-      </text>
-    </g>
-  )
+const COLOR: Record<Tone, string> = {
+  neutral: 'var(--foreground)',
+  good: '#12a594',
+  bad: '#e5484d',
 }
 
-export function Lifecycle() {
-  const pending = at('pending')
-  const active = at('active')
-  const unpaid = at('unpaid')
-  const stopped = at('stopped')
-  const cancelled = at('cancelled')
-  const ended = at('ended')
-  const mid = (box: Box) => box.y + H / 2
+const TREES: Tree[] = [
+  {
+    title: 'Each period',
+    rows: 3,
+    nodes: [
+      { id: 'start', col: 0, row: 1, status: 'pending', note: 'checkout signed' },
+      { id: 'active', col: 1, row: 1, status: 'active', note: 'a charge is due' },
+      { id: 'paid', col: 2, row: 0, status: 'active', note: 'next period', tone: 'good' },
+      { id: 'unpaid', col: 2, row: 2, status: 'unpaid', note: 'Mesub retries' },
+      { id: 'back', col: 3, row: 1, status: 'active', note: 'back on schedule', tone: 'good' },
+      { id: 'stopped', col: 3, row: 2, status: 'stopped', note: 'access off', tone: 'bad' },
+    ],
+    edges: [
+      { from: 'start', to: 'active', tone: 'neutral' },
+      { from: 'active', to: 'paid', label: 'paid', tone: 'good' },
+      { from: 'active', to: 'unpaid', label: 'missed', tone: 'bad' },
+      { from: 'unpaid', to: 'back', label: 'retry paid', tone: 'good' },
+      { from: 'unpaid', to: 'stopped', label: 'retries spent', tone: 'bad' },
+    ],
+  },
+  {
+    title: 'When the customer cancels',
+    rows: 2,
+    nodes: [
+      { id: 'active', col: 0, row: 0.5, status: 'active', note: 'customer cancels' },
+      { id: 'cancelled', col: 1, row: 0.5, status: 'cancelled', note: 'access to period end' },
+      { id: 'resumed', col: 2, row: 0, status: 'active', note: 'charged again', tone: 'good' },
+      { id: 'ended', col: 2, row: 1, status: 'ended', note: 'access off', tone: 'bad' },
+    ],
+    edges: [
+      { from: 'active', to: 'cancelled', tone: 'neutral' },
+      { from: 'cancelled', to: 'resumed', label: 'resumes', tone: 'good' },
+      { from: 'cancelled', to: 'ended', label: 'period ends', tone: 'bad' },
+    ],
+  },
+]
+
+function TreeView({ tree, index }: { tree: Tree; index: number }) {
+  const height = TITLE + (tree.rows - 1) * ROW + H + 2
+  const x = (node: Node) => node.col * COL
+  const y = (node: Node) => TITLE + node.row * ROW
+  const find = (id: string) => tree.nodes.find((node) => node.id === id)!
 
   return (
     <svg
       className='no-bleed'
-      viewBox='0 0 660 196'
+      viewBox={`0 0 660 ${height}`}
       role='img'
-      aria-label='A subscription starts pending and turns active when the first payment lands. A missed charge makes it unpaid; a retry that pays makes it active again, and when the retries run out it is stopped. Cancelling makes it cancelled; resuming makes it active again, and at the end of the paid period it is ended.'
+      aria-label={`${tree.title}: ${tree.edges
+        .map((edge) => `${find(edge.from).status} to ${find(edge.to).status}${edge.label ? ` when ${edge.label}` : ''}`)
+        .join(', ')}.`}
       style={{ width: '100%', height: 'auto', fontFamily: 'inherit' }}
     >
       <defs>
-        <marker
-          id='life-arrow'
-          viewBox='0 0 8 8'
-          refX='7'
-          refY='4'
-          markerWidth='7'
-          markerHeight='7'
-          orient='auto-start-reverse'
-        >
-          <path d='M0 0.5 L7 4 L0 7.5 z' fill={ink} />
-        </marker>
+        {(Object.keys(COLOR) as Tone[]).map((tone) => (
+          <marker
+            key={tone}
+            id={`life-${index}-${tone}`}
+            viewBox='0 0 10 10'
+            refX='9'
+            refY='5'
+            markerWidth='6'
+            markerHeight='6'
+            orient='auto-start-reverse'
+          >
+            <path d='M 0 0 L 10 5 L 0 10 z' fill={COLOR[tone]} />
+          </marker>
+        ))}
       </defs>
 
-      <Arrow
-        d={`M${pending.x + W + 3} ${mid(pending)} H${active.x - 4}`}
-        label='first payment'
-        lx={(pending.x + W + active.x) / 2}
-        ly={pending.y - 8}
-      />
-      <Arrow
-        d={`M${active.x + W + 3} ${mid(active) - 8} L${unpaid.x - 4} ${mid(unpaid) - 4}`}
-        label='charge missed'
-        lx={318}
-        ly={50}
-        anchor='end'
-      />
-      <Arrow
-        d={`M${unpaid.x - 4} ${mid(unpaid) + 10} L${active.x + W + 3} ${mid(active) + 2}`}
-        label='retry paid'
-        lx={340}
-        ly={88}
-        anchor='start'
-        dashed
-      />
-      <Arrow
-        d={`M${unpaid.x + W + 3} ${mid(unpaid)} H${stopped.x - 4}`}
-        label='retries spent'
-        lx={(unpaid.x + W + stopped.x) / 2}
-        ly={mid(unpaid) - 8}
-      />
-      <Arrow
-        d={`M${active.x + W + 3} ${mid(active) + 10} L${cancelled.x - 4} ${mid(cancelled) + 4}`}
-        label='cancel'
-        lx={318}
-        ly={148}
-        anchor='end'
-      />
-      <Arrow
-        d={`M${cancelled.x - 4} ${mid(cancelled) - 10} L${active.x + W + 3} ${mid(active) + 2}`}
-        label='resume'
-        lx={340}
-        ly={112}
-        anchor='start'
-        dashed
-      />
-      <Arrow
-        d={`M${cancelled.x + W + 3} ${mid(cancelled)} H${ended.x - 4}`}
-        label='period ends'
-        lx={(cancelled.x + W + ended.x) / 2}
-        ly={mid(cancelled) - 8}
-      />
+      <text
+        x={0}
+        y={12}
+        fontSize='11'
+        fontWeight='600'
+        letterSpacing='0.08em'
+        fill='var(--muted-foreground)'
+        style={{ textTransform: 'uppercase' }}
+      >
+        {tree.title}
+      </text>
 
-      {BOXES.map((box) => {
-        const on = box.id === 'active'
+      {tree.edges.map((edge) => {
+        const from = find(edge.from)
+        const to = find(edge.to)
+        const x1 = x(from) + W
+        const y1 = y(from) + H / 2
+        const x2 = x(to) - 2
+        const y2 = y(to) + H / 2
+        const bend = (x2 - x1) * 0.5
         return (
-          <g key={box.id}>
+          <g key={`${edge.from}-${edge.to}`}>
+            <path
+              d={`M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`}
+              fill='none'
+              stroke={COLOR[edge.tone]}
+              strokeWidth='1.4'
+              markerEnd={`url(#life-${index}-${edge.tone})`}
+            />
+          </g>
+        )
+      })}
+
+      {tree.nodes.map((node) => {
+        const tone = node.tone ?? 'neutral'
+        const toned = tone !== 'neutral'
+        return (
+          <g key={node.id}>
             <rect
-              x={box.x}
-              y={box.y}
-              width={W}
-              height={H}
-              rx={8}
-              fill={on ? accent : box.final ? 'var(--muted)' : 'var(--background)'}
-              stroke={on ? accent : 'var(--border)'}
+              x={x(node) + 0.5}
+              y={y(node) + 0.5}
+              width={W - 1}
+              height={H - 1}
+              rx={9}
+              fill={toned ? `color-mix(in srgb, ${COLOR[tone]} 9%, var(--background))` : 'var(--background)'}
+              stroke={toned ? `color-mix(in srgb, ${COLOR[tone]} 45%, transparent)` : 'var(--border)'}
             />
             <text
-              x={box.x + W / 2}
-              y={box.y + 22}
+              x={x(node) + W / 2}
+              y={y(node) + 20}
               textAnchor='middle'
               fontSize='13'
               fontWeight='600'
               fontFamily='var(--font-mono, ui-monospace, monospace)'
-              fill={on ? 'var(--primary-foreground, #fff)' : ink}
+              fill='var(--foreground)'
             >
-              {box.id}
+              {node.status}
+            </text>
+            <text
+              x={x(node) + W / 2}
+              y={y(node) + 36}
+              textAnchor='middle'
+              fontSize='11.5'
+              fill='var(--muted-foreground)'
+            >
+              {node.note}
             </text>
           </g>
         )
       })}
+
+      {/* the answers, written on the nodes they lead to */}
+      {tree.edges
+        .filter((edge) => edge.label)
+        .map((edge) => {
+          const to = find(edge.to)
+          const width = edge.label!.length * 7 + 14
+          return (
+            <g key={`label-${edge.to}`}>
+              <rect
+                x={x(to) + 10}
+                y={y(to) - 8}
+                width={width}
+                height={16}
+                rx={4}
+                fill='var(--background)'
+              />
+              <text
+                x={x(to) + 16}
+                y={y(to) + 3.5}
+                fontSize='10'
+                fontWeight='600'
+                letterSpacing='0.08em'
+                fill={COLOR[edge.tone]}
+                style={{ textTransform: 'uppercase' }}
+              >
+                {edge.label}
+              </text>
+            </g>
+          )
+        })}
     </svg>
+  )
+}
+
+export function Lifecycle() {
+  return (
+    <div className='no-bleed' style={{ display: 'grid', gap: 28 }}>
+      {TREES.map((tree, index) => (
+        <TreeView key={tree.title} tree={tree} index={index} />
+      ))}
+    </div>
   )
 }
