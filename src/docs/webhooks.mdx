@@ -286,8 +286,12 @@ the event itself. `created_at` is when the event happened.
 
 ### Retries
 
-A delivery that gets no 2xx is sent again for about three days, under the same
-`event.id`.
+If your endpoint does not answer with a 2xx, Mesub tries the same event again:
+after 1 minute, 5 minutes, 30 minutes, 2 hours, then every 12 hours, for about
+three days in all. Each retry carries the same `event.id` as the first try.
+
+An endpoint that fails for three days with no success in between is disabled.
+Fix it, then enable it again in the dashboard.
 
 ### Duplicates
 
