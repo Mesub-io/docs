@@ -35,9 +35,10 @@ Change tier in the [dashboard](https://mesub.io/dashboard#plans), under
 A **plan** counts while it is live: pending, active, or sunset with an end date
 still ahead. A failed plan, or one past its end, takes no slot.
 
-A **subscriber** is a wallet with a subscription that is `active`, `unpaid`,
-`stopped`, or `cancelled` and not yet past its end. A wallet subscribed to two
-of your plans counts once.
+A **subscriber** is a wallet with a subscription that is `active`, `unpaid`, or
+`cancelled` and not yet past its end. A `stopped` subscription does not count:
+it takes a seat again only if it comes back, and only if there is room. A
+wallet subscribed to two of your plans counts once.
 
 The dashboard shows both counts under **Plans**, in **Project usage**.
 
@@ -45,8 +46,9 @@ The dashboard shows both counts under **Plans**, in **Project usage**.
 
 At the plan limit, a new plan cannot be published.
 
-At the subscriber limit, a new subscription is refused with `seat_cap_reached`.
-Existing subscribers are not affected.
+At the subscriber limit, a new subscription is refused with `seat_cap_reached`,
+when it is created and again when it is submitted: of several checkouts open on
+the last seat, one goes through. Existing subscribers are not affected.
 
 After a downgrade, a project can hold more subscribers than its new tier
 allows. The seats over the limit are **parked**: nothing is charged on them,

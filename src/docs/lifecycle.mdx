@@ -126,5 +126,7 @@ already paid. Moving back up a tier puts them back on schedule.
 
 A customer whose subscription stopped or ended can subscribe again to the same
 plan, with the same wallet. The new subscription takes over, and the old one
-turns `superseded`. `subscribed_since` is the start of the current one, and
+turns `superseded`. A stopped subscription holds no seat, so coming back needs
+a free one, like any new subscriber: on a full project it is refused with
+`seat_cap_reached`. `subscribed_since` is the start of the current one, and
 `first_subscribed_at` the start of the very first.
