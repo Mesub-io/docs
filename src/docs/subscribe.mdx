@@ -172,8 +172,12 @@ Each one is thrown as a `MesubError`. `apiCode` says which:
 | `submit` | `transaction_expired`    | Create again                           |
 | `submit` | `subscription_not_found` | The id is not one of your project's    |
 
-Calling `create` again for the same plan and wallet, while nothing has landed,
-answers the same subscription with a fresh transaction.
+Calling `create` again for the same plan, wallet and customer, while nothing
+has landed, answers the same subscription with a fresh transaction. The
+customer is the `external_id` you gave, or the `email` when you gave no id.
+Another customer naming the same wallet gets a subscription of its own: only
+the one the wallet signs for lands, and the others on that wallet then read
+`expired`.
 
 ## Read a subscription back
 
