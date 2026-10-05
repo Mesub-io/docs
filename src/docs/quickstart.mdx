@@ -20,16 +20,20 @@ widget for the wallet part; without it, see `subscriptions.create` in the
 <Steps>
 <Step title="Publish a plan">
 
-In the dashboard, open **Plans** and create one: a price, a token, a period, and
-the wallet that receives the money. Your wallet signs its creation.
+In the [dashboard](https://mesub.io/dashboard#plans), open **Plans** and create
+one: a name, a price, a token, a period, and the wallet that receives the
+money. Your wallet signs its creation.
 
-Give it a short **slug**, for example `pro`. The slug is how your code names the
-plan everywhere below.
+Mesub derives the plan's **slug** from its name: a plan named Pro gets `pro`.
+The slug is how your code names the plan everywhere below. You can read it in
+the plan's **Implement** tab, where the code on this page is already filled in
+with it.
 
 </Step>
 <Step title="Give your server the API key">
 
-In the dashboard, open **Developers** and copy the project's **API key**. It
+In the [dashboard](https://mesub.io/dashboard#developers), open **Developers**
+and copy the project's **API key**. It
 starts with `SUB_`. Put it in your server's environment:
 
 ```bash
@@ -135,6 +139,7 @@ The widget signs for **devnet** by default. Pass `chain="solana:mainnet"` to
 </Tip>
 </Aside>
 
-The subscription appears in the dashboard under **Subscriptions**, with its
+The subscription appears in the [dashboard](https://mesub.io/dashboard#subscriptions)
+under **Subscriptions**, with its
 first payment under **Collection**. From here Mesub charges it every period
 without anything more from you.
