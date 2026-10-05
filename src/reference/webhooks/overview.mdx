@@ -1,0 +1,83 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Webhook events of the Mesub API"
+sidebarTitle: Overview
+description: "What Mesub posts to your endpoints: the three headers of a delivery, how it is signed, the shape of every event, and the list of events."
+prompt: |
+  Reference of webhook deliveries from @https://github.com/Mesub-io/backend
+  (src/webhooks/webhook-events.ts, src/webhooks/webhook-payload.ts,
+  src/webhooks/webhook-signature.ts, src/webhooks/webhook-delivery.constants.ts).
+  The request Mesub sends, its headers and signature, the event object, the
+  list of events linking to each one's page, and what counts as received.
+  Leave the handler code to the guide.
+---
+
+Mesub posts an event to your endpoints when a subscription changes. This
+section is the reference of what is sent. To set an endpoint up and write its
+handler, read the [Webhooks guide](../../docs/webhooks.mdx).
+
+## The request
+
+Each delivery is a `POST` to your endpoint, with a JSON body and three headers:
+
+| Header              | What it holds                                              |
+| ------------------- | ---------------------------------------------------------- |
+| `webhook-id`        | The event's id, the same on every retry. Deduplicate on it |
+| `webhook-timestamp` | When this attempt was sent, in Unix seconds                |
+| `webhook-signature` | `v1,` then the signature of this delivery, in base64       |
+
+Deliveries are signed the [Standard Webhooks](https://www.standardwebhooks.com)
+way: an HMAC-SHA256 of `id.timestamp.body`, keyed with the endpoint's signing
+secret, the part after `whsec_` decoded from base64. The signature covers the
+exact bytes sent, so verify the **raw body**. `mesub.webhooks.verify` does it
+for you.
+
+## The event object
+
+Every event has the same shape:
+
+```json
+{
+    "type": "subscription.renewed",
+    "created_at": "2026-01-31T00:01:00.000Z",
+    "data": {
+        "id": "cmg1x0abc0001",
+        "status": "active",
+        "detail": {}
+    }
+}
+```
+
+| Field         | What it says                                                                                             |
+| ------------- | -------------------------------------------------------------------------------------------------------- |
+| `type`        | The event's name                                                                                         |
+| `created_at`  | When the event happened                                                                                  |
+| `data`        | The subscription, as [Retrieve a subscription](../subscriptions/retrieve.mdx) answers it, shortened here |
+| `data.detail` | The event's own fields. Empty on most events                                                             |
+| `test`        | `true` on a delivery sent by hand from the dashboard. Absent otherwise                                   |
+
+`data` is read when the delivery is first attempted, so it can be newer than
+the event itself. The id to deduplicate on is not in the body: it is the
+`webhook-id` header.
+
+## Events
+
+| Event                                                              | Sent when                                               |
+| ------------------------------------------------------------------ | ------------------------------------------------------- |
+| [`subscription.created`](./subscription-created.mdx)               | The first payment landed                                |
+| [`subscription.renewed`](./subscription-renewed.mdx)               | A period was paid                                       |
+| [`subscription.payment_failed`](./subscription-payment-failed.mdx) | A charge missed                                         |
+| [`subscription.stopped`](./subscription-stopped.mdx)               | Mesub stopped charging after missed payments            |
+| [`subscription.cancelled`](./subscription-cancelled.mdx)           | The customer cancelled; access runs to the period's end |
+| [`subscription.resumed`](./subscription-resumed.mdx)               | A cancellation was undone                               |
+| [`subscription.ended`](./subscription-ended.mdx)                   | It is over; `data.end_reason` says why                  |
+| [`subscription.expired`](./subscription-expired.mdx)               | A checkout was started and never signed                 |
+| [`test`](./test.mdx)                                               | You sent one from the dashboard                         |
+
+Mesub may add a type later: keep a default branch.
+
+## Your answer
+
+Answer with a 2xx within 10 seconds. Anything else, a redirect included,
+counts as a failure and is retried: after 1 minute, 5 minutes, 30 minutes,
+2 hours, then every 12 hours, for about three days in all.

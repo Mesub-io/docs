@@ -1,0 +1,105 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Mesub API reference"
+sidebarTitle: Introduction
+description: "The base URL of the Mesub API, how a request is authenticated, the conventions every route follows, and the list of routes with their SDK call."
+prompt: |
+  Introduce the reference of the public API from @/public/openapi.json, itself
+  written from @https://github.com/Mesub-io/backend
+  (src/access/access.controller.ts, src/access/project.controller.ts,
+  src/plans/server-plans.controller.ts,
+  src/subscriptions/server-subscriptions.controller.ts).
+  Base URL, one authenticated call, the conventions, how to try a request from
+  a page, every route in tables with the SDK call beside it, and pagination.
+---
+
+`@mesub/node` wraps this API. Use it directly from any other language.
+
+## Base URL
+
+```bash
+curl "https://api.mesub.io/v1/project" \
+  -H "Authorization: Bearer $MESUB_API_KEY"
+```
+
+Every route lives under `https://api.mesub.io/v1` and takes the project's
+**API key** as a bearer token. The key identifies the project: there is no
+project id in any path. [Authentication](./authentication.mdx) has the detail.
+
+## Conventions
+
+- Fields are in **snake case**.
+- Dates are ISO 8601 strings in UTC.
+- Token amounts are **strings** in the token's smallest unit: `"9990000"` is
+  9.99 of a token with six decimals.
+- Statuses and reasons are lowercase. Mesub may add one later: keep a default
+  branch.
+- A field the route does not know is refused with a 400, not ignored.
+- Every error has [the same body](./errors.mdx), with a `code` to branch on.
+
+## Try a request
+
+Each route's page has a **Try it** button. It opens a panel where you paste an
+API key, fill the parameters and send the request from your browser.
+
+Calls are real: they act on the project the key belongs to. The key stays in
+your browser and goes only to the API.
+
+The whole API is also described in one
+[OpenAPI file](https://docs.mesub.io/openapi.json), which these pages are
+drawn from.
+
+## Routes
+
+### Access
+
+| Route                                       | What it answers                                         | SDK                   |
+| ------------------------------------------- | ------------------------------------------------------- | --------------------- |
+| [`GET /v1/access`](./access/check.mdx)      | Whether a customer has access to a plan                 | `hasAccess`, `access` |
+| [`GET /v1/access`](./access/check.mdx)      | Without `plan`: every plan the customer has anything on | `accessList`          |
+| [`GET /v1/project`](./project/retrieve.mdx) | The id of the project the key belongs to                |                       |
+
+### Plans
+
+| Route                                         | What it answers                                             | SDK              |
+| --------------------------------------------- | ----------------------------------------------------------- | ---------------- |
+| [`GET /v1/plans`](./plans/list.mdx)           | Every published plan of the project that has a slug, sorted | `plans.list`     |
+| [`GET /v1/plans/:slug`](./plans/retrieve.mdx) | One plan: name, price, period, token, status, end date      | `plans.retrieve` |
+
+### Subscriptions
+
+| Route                                                                      | What it does                          | `subscriptions.` |
+| -------------------------------------------------------------------------- | ------------------------------------- | ---------------- |
+| [`POST /v1/subscriptions`](./subscriptions/create.mdx)                     | Reserves one, builds what is signed   | `create`         |
+| [`POST /v1/subscriptions/:id/submit`](./subscriptions/submit.mdx)          | Sends what the wallet signed          | `submit`         |
+| [`GET /v1/subscriptions`](./subscriptions/list.mdx)                        | A customer's subscriptions, paginated | `list`           |
+| [`GET /v1/subscriptions/:id`](./subscriptions/retrieve.mdx)                | One subscription                      | `retrieve`       |
+| [`GET /v1/subscriptions/:id/attempts`](./subscriptions/attempts.mdx)       | Its charges, with the total paid      | `attempts`       |
+| [`POST /v1/subscriptions/:id/cancel`](./manage/cancel.mdx)                 | Builds the cancellation               | `cancel`         |
+| [`POST /v1/subscriptions/:id/cancel/confirm`](./manage/confirm-cancel.mdx) | Confirms it                           | `confirmCancel`  |
+| [`POST /v1/subscriptions/:id/resume`](./manage/resume.mdx)                 | Builds the undo of a cancellation     | `resume`         |
+| [`POST /v1/subscriptions/:id/resume/confirm`](./manage/confirm-resume.mdx) | Confirms it                           | `confirmResume`  |
+| [`POST /v1/subscriptions/:id/close`](./manage/close.mdx)                   | Builds the closing of an ended one    | `close`          |
+| [`POST /v1/subscriptions/:id/close/confirm`](./manage/confirm-close.mdx)   | Confirms it                           | `confirmClose`   |
+
+See [Subscribe from your server](../docs/subscribe.mdx) and
+[Manage from your server](../docs/manage.mdx) for how these calls chain.
+
+## Pagination
+
+Lists take `limit` (1 to 100, 20 by default) and `starting_after`, the id of
+the last item of the previous page, and answer `{ data, has_more }`. Items come
+newest first.
+
+```bash
+curl "https://api.mesub.io/v1/subscriptions?external_id=user_42&limit=50&starting_after=cmg1x0abc0001" \
+  -H "Authorization: Bearer $MESUB_API_KEY"
+```
+
+With the SDK, `subscriptions.listAll` and `subscriptions.allAttempts` walk
+every page for you.
+
+## Webhooks
+
+Mesub also calls you. [Webhooks](./webhooks/overview.mdx) lists every event
+and its payload.
