@@ -35,9 +35,12 @@ every webhook carry.
 | `failed`     | false               | `none`           | What landed on chain is not what Mesub reserved, so it is not billed. Rare |
 | `superseded` | false               | `none`           | Replaced by a newer subscription of the same wallet to the same plan       |
 
-`stopped`, `ended`, `failed` and `superseded` are final. Gate on `access`, not
-on `status`: a `cancelled` subscription still grants access for a while, and an
-`unpaid` one may or may not.
+`ended`, `failed` and `superseded` are final. `stopped` is not: Mesub charges
+nothing more, but the wallet's approval stays open on Solana until the customer
+cancels then closes it, and until then they can [come back](#coming-back).
+
+Gate on `access`, not on `status`: a `cancelled` subscription still grants
+access for a while, and an `unpaid` one may or may not.
 
 A checkout nobody signed turns `expired`. It never appears in `/v1/access`, only
 when you read a subscription by its id, and in the `subscription.expired`
