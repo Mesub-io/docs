@@ -5,7 +5,10 @@
   "description": "Documentation for Mesub, recurring payments on Solana.",
   "favicon": "/icon.png",
   "colors": {
-    "primary": "#f46036"
+    // The same orange in both themes: left alone, dark mode washes it to pink.
+    "primary": "#f46036",
+    "light": "#f46036",
+    "dark": "#f46036"
   },
   "icons": {
     "library": "lucide"

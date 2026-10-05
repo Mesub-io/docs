@@ -49,16 +49,17 @@ Its address is `De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44`.
 
 Three accounts are involved, all PDAs of that program:
 
-| Account                  | One per         | Created by   | What it holds                                                                                         |
-| ------------------------ | --------------- | ------------ | ----------------------------------------------------------------------------------------------------- |
-| `Plan`                   | plan            | you          | `mint`, `amount`, `period_hours`, `end_ts`, up to 4 `destinations`, up to 4 `pullers`                 |
-| `SubscriptionAuthority`  | wallet and mint | the customer | Nothing to configure. It is the single delegate of the customer's token account                       |
-| `SubscriptionDelegation` | wallet and plan | the customer | A snapshot of the plan's terms, `amount_pulled_in_period`, `current_period_start_ts`, `expires_at_ts` |
+| Account                  | One per                          | What it holds                         |
+| ------------------------ | -------------------------------- | ------------------------------------- |
+| `Plan`                   | plan, created by you             | The price, the period, who receives   |
+| `SubscriptionAuthority`  | wallet and token, the customer's | The right to move that token          |
+| `SubscriptionDelegation` | wallet and plan, the customer's  | The terms signed and the period state |
 
 ### The plan
 
 Creating a plan in the dashboard sends one transaction, signed by your wallet,
-that creates the `Plan` account. `amount` and `period_hours` are immutable.
+that creates the `Plan` account with its `mint`, `amount`, `period_hours` and
+`end_ts`. `amount` and `period_hours` are immutable.
 `destinations` lists the wallets that may receive the money, and `pullers`
 lists who may trigger a charge besides you: Mesub's puller is one of them,
 which is what lets Mesub charge on schedule without your signature.
@@ -66,7 +67,8 @@ which is what lets Mesub charge on schedule without your signature.
 ### The subscription
 
 Subscribing creates the customer's `SubscriptionAuthority` for that token if
-they have none, and a `SubscriptionDelegation` to your plan. The authority is
+they have none, and a `SubscriptionDelegation` to your plan, which tracks
+`amount_pulled_in_period`, `current_period_start_ts` and `expires_at_ts`. The authority is
 approved as delegate on their token account; it can only move tokens when a
 delegation says so, and a delegation only allows this:
 
