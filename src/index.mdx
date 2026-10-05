@@ -1,0 +1,21 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Recurring payments on Solana, billed from your server"
+sidebarTitle: Home
+description: "Mesub charges a wallet on a schedule and tells your server who has access. Publish a plan, add the Node SDK, and gate your routes."
+prompt: |
+  Write the home page of the Mesub docs from @https://github.com/Mesub-io/node-sdk
+  and @https://github.com/Mesub-io/react-sdk.
+  Say in a few lines what Mesub does and what a merchant has to build.
+---
+
+**Mesub** charges a customer's wallet on a schedule, without holding their funds:
+the customer approves a plan once, and each period Mesub pulls the price to your
+wallet.
+
+Your part is small. You **publish a plan** from the dashboard, add
+**`@mesub/node`** to your server with an API key, and ask one question before
+serving anything paid: does this customer have access?
+
+**`@mesub/react`** is optional. It adds a subscribe button and a manage window to
+your pages, and talks only to your own server.

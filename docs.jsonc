@@ -1,0 +1,21 @@
+{
+  "$schema": "https://holocron.so/docs.json",
+  "name": "Mesub",
+  "description": "Documentation for Mesub, recurring payments on Solana.",
+  "favicon": "/icon.png",
+  "colors": {
+    "primary": "#f46036"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting started",
+        "icon": "lucide:rocket",
+        "pages": ["index"]
+      }
+    ]
+  }
+}
