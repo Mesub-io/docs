@@ -14,7 +14,6 @@
     "library": "lucide"
   },
   // The pill at the bottom, so the right column of a reference page starts with its samples.
-  "assistant": { "display": "floating" },
   // Room for the reference's two columns: parameters, then samples.
   "layout": { "maxWidth": 1320 },
   "navbar": {

@@ -884,3 +884,17 @@
     display: none;
   }
 }
+
+/* Every page title at the size of an endpoint's, so the reference reads as one. */
+h1.editorial-heading.editorial-h1 {
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* The page foot keeps its previous and next links, and nothing else. */
+footer .text-xs.opacity-40:has(> span:first-child) {
+  display: none;
+}
