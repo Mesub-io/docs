@@ -6,3 +6,4 @@ dist
 
 # iCloud leaves numbered copies of files beside the originals.
 * [0-9].*
+* [0-9]
