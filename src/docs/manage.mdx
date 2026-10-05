@@ -132,7 +132,7 @@ not over the page.
         {
             "id": "cmg9x4k2c0007",
             "attempted_at": "2026-02-02T00:01:04.512Z",
-            "outcome": "PAID",
+            "outcome": "paid",
             "reason": null,
             "amount": "9990000",
             "signature": "5wHu1qwD4kLDLoREEPBpKvGvhbxWFxFFfr5nQq...",
@@ -144,7 +144,7 @@ not over the page.
         {
             "id": "cmg9x1b7a0003",
             "attempted_at": "2026-01-31T00:00:02.000Z",
-            "outcome": "SKIPPED",
+            "outcome": "skipped",
             "reason": "insufficient-balance",
             "amount": "9990000",
             "signature": null,
@@ -156,7 +156,7 @@ not over the page.
         {
             "id": "cmg1x0abd0002",
             "attempted_at": "2026-01-01T00:00:05.000Z",
-            "outcome": "PAID",
+            "outcome": "paid",
             "reason": null,
             "amount": "9990000",
             "signature": "3kPzT9yLmR4vP7wJ8sN2aHcVbE5uYtKfDgQxWz1o...",
@@ -175,13 +175,13 @@ not over the page.
 
 | Field                             | What it says                                             |
 | --------------------------------- | -------------------------------------------------------- |
-| `outcome`                         | `PAID`, `SKIPPED`, `REJECTED` or `BLOCKED`               |
+| `outcome`                         | `paid`, `skipped`, `rejected` or `blocked`               |
 | `reason`                          | Why it did not pay. Null on a paid one                   |
 | `amount`                          | In the token's smallest unit, as a string                |
 | `signature`                       | The transaction. Null when nothing was sent              |
 | `retry_number`, `retries_allowed` | Which retry it was, out of how many. Null on a first try |
 | `period_start`                    | The start of the period it was for                       |
 
-`SKIPPED` means nothing was sent because the chain said it could not work, most
-often a wallet that is short. `REJECTED` was sent and refused. `BLOCKED` was
+`skipped` means nothing was sent because the chain said it could not work, most
+often a wallet that is short. `rejected` was sent and refused. `blocked` was
 not tried, and is never the customer's doing.

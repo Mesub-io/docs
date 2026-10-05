@@ -104,7 +104,7 @@ Mesub's own code, `close_too_early` for instance.
 
 ```ts
 fake.addSubscription({ id: 'sub_1', wallet, plan: 'pro', status: 'active' });
-fake.setAttempts('sub_1', [{ outcome: 'PAID', amount: '9990000' }]);
+fake.setAttempts('sub_1', [{ outcome: 'paid', amount: '9990000' }]);
 ```
 
 `addSubscription` adds one for `retrieve` and `list`, and `setAttempts` gives
