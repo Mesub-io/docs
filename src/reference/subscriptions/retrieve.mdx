@@ -13,10 +13,12 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
+import { More } from '../../components/api/more'
+import { Samples } from '../../components/api/samples'
 
-<Aside full>
+<Aside full width={460}>
 
-<RequestExample>
+<Samples groups="Request:3,Response:4:cut" lines="2,5,11,23,7,7,7">
 
 ```bash title="cURL" lines=false
 curl "https://api.mesub.io/v1/subscriptions/cmg1x0abc0001" \
@@ -42,11 +44,6 @@ if (!response.ok) {
 }
 const data = await response.json();
 ```
-
-</RequestExample>
-
-<ResponseExample>
-
 ```json title="200" lines=false
 {
     "id": "cmg1x0abc0001",
@@ -100,7 +97,7 @@ const data = await response.json();
 }
 ```
 
-</ResponseExample>
+</Samples>
 
 </Aside>
 
@@ -108,6 +105,10 @@ const data = await response.json();
 
 One subscription: its status, whether it grants access and until when, its wallet, email and `external_id`, the period it last paid for, and what comes next. `access`, `payment_status` and `access_until` are what [Check access](../access/check.mdx) answers for it.
 
+<More>
+
 A `superseded` id, left out of the list, still answers here, so an id you stored keeps working.
+
+</More>
 
 </Endpoint>

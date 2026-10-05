@@ -13,10 +13,12 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
+import { More } from '../../components/api/more'
+import { Samples } from '../../components/api/samples'
 
-<Aside full>
+<Aside full width={460}>
 
-<RequestExample>
+<Samples groups="Request:3,Response:5:cut" lines="2,12,11,28,9,7,7,7">
 
 ```bash title="cURL" lines=false
 curl "https://api.mesub.io/v1/subscriptions?external_id=user_42" \
@@ -49,11 +51,6 @@ if (!response.ok) {
 }
 const data = await response.json();
 ```
-
-</RequestExample>
-
-<ResponseExample>
-
 ```json title="200" lines=false
 {
     "data": [
@@ -123,7 +120,7 @@ const data = await response.json();
 }
 ```
 
-</ResponseExample>
+</Samples>
 
 </Aside>
 
@@ -131,6 +128,10 @@ const data = await response.json();
 
 A customer's subscriptions to your project's plans, newest first: what a "my subscriptions" page needs. A customer with nothing is not an error: `data` is empty.
 
+<More>
+
 Expired checkouts are listed too, and `access` says they grant nothing. A subscription replaced by a newer one of the same wallet (`superseded`) is left out, though its id still answers on [Retrieve](./retrieve.mdx).
+
+</More>
 
 </Endpoint>

@@ -13,10 +13,12 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
+import { More } from '../../components/api/more'
+import { Samples } from '../../components/api/samples'
 
-<Aside full>
+<Aside full width={460}>
 
-<RequestExample>
+<Samples groups="Request:3,Response:7:cut" lines="2,14,11,19,19,24,7,7,7,7">
 
 ```bash title="cURL" lines=false
 curl "https://api.mesub.io/v1/access?external_id=user_42&plan=pro" \
@@ -51,11 +53,6 @@ if (!response.ok) {
 }
 const data = await response.json();
 ```
-
-</RequestExample>
-
-<ResponseExample>
-
 ```json title="200 With a plan" lines=false
 {
     "wallet": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
@@ -161,7 +158,7 @@ const data = await response.json();
 }
 ```
 
-</ResponseExample>
+</Samples>
 
 </Aside>
 
@@ -169,6 +166,10 @@ const data = await response.json();
 
 Whether a customer may use a plan, and what explains the answer. Always 200 for a customer, subscribed or not: a customer who never subscribed answers `access: false` with `status: "none"`. The 404 is about the slug, never about them.
 
+<More>
+
 Leave `plan` out to get every plan of the project the customer has anything on.
+
+</More>
 
 </Endpoint>

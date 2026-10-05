@@ -136,6 +136,36 @@ function page({ kind, method, route, operation }) {
     ? webhookExamples(route, operation)
     : { request: requestExamples(method, route, operation), response: responseExamples(operation) }
 
+  // One card in the right column: each group, how many fences it takes, and
+  // whether a long one folds. The line counts let the fold be drawn at once.
+  const groups = webhook
+    ? [
+        { name: 'Payload', fences: examples.request.slice(0, 3), cut: true },
+        { name: 'Handler', fences: examples.request.slice(3), cut: false },
+      ]
+    : [
+        { name: 'Request', fences: examples.request, cut: false },
+        { name: 'Response', fences: examples.response, cut: true },
+      ]
+  const count = (fences) => fences.filter((line) => line.startsWith('```') && line.length > 3).length
+  const lineCounts = groups.flatMap((group) => {
+    const counts = []
+    let open = -1
+    group.fences.forEach((line, index) => {
+      if (!line.startsWith('```')) return
+      if (line.length > 3) open = index
+      else counts.push(group.fences[open + 1].split('\n').length)
+    })
+    return counts
+  })
+  const groupsProp = groups
+    .filter((group) => group.fences.length > 0)
+    .map((group) => `${group.name}:${count(group.fences)}${group.cut ? ':cut' : ''}`)
+    .join(',')
+
+  // The first paragraph says what the route does. The rest waits behind "Read more".
+  const [lead, ...rest] = relink(operation.description, extra.href).split('\n\n')
+
   const lines = [
     '---',
     '$schema: https://holocron.so/frontmatter.json',
@@ -152,23 +182,23 @@ function page({ kind, method, route, operation }) {
     '---',
     '',
     `import { Endpoint } from '${'../'.repeat(depth)}components/api/endpoint'`,
+    ...(rest.length ? [`import { More } from '${'../'.repeat(depth)}components/api/more'`] : []),
+    `import { Samples } from '${'../'.repeat(depth)}components/api/samples'`,
     '',
-    '<Aside full>',
+    '<Aside full width={460}>',
     '',
-    '<RequestExample>',
+    `<Samples groups="${groupsProp}" lines="${lineCounts.join(',')}">`,
     '',
-    ...examples.request,
+    ...groups.flatMap((group) => group.fences),
     '',
-    '</RequestExample>',
+    '</Samples>',
     '',
-    ...(examples.response.length
-      ? ['<ResponseExample>', '', ...examples.response, '', '</ResponseExample>', '']
-      : []),
     '</Aside>',
     '',
     `<Endpoint id="${operation.operationId}">`,
     '',
-    relink(operation.description, extra.href),
+    lead,
+    ...(rest.length ? ['', '<More>', '', rest.join('\n\n'), '', '</More>'] : []),
     '',
     '</Endpoint>',
     '',

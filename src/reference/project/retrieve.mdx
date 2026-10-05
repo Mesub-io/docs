@@ -13,10 +13,11 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
+import { Samples } from '../../components/api/samples'
 
-<Aside full>
+<Aside full width={460}>
 
-<RequestExample>
+<Samples groups="Request:2,Response:3:cut" lines="2,11,3,7,7">
 
 ```bash title="cURL" lines=false
 curl "https://api.mesub.io/v1/project" \
@@ -35,11 +36,6 @@ if (!response.ok) {
 }
 const data = await response.json();
 ```
-
-</RequestExample>
-
-<ResponseExample>
-
 ```json title="200" lines=false
 {
     "id": "cmufsl77w001ag2s6pp1ngf9p"
@@ -64,7 +60,7 @@ const data = await response.json();
 }
 ```
 
-</ResponseExample>
+</Samples>
 
 </Aside>
 

@@ -12,10 +12,12 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
+import { More } from '../../components/api/more'
+import { Samples } from '../../components/api/samples'
 
-<Aside full>
+<Aside full width={460}>
 
-<RequestExample>
+<Samples groups="Payload:1:cut,Handler:1" lines="28,11">
 
 ```json title="Payload" lines=false
 {
@@ -61,7 +63,7 @@ if (event.type === 'subscription.ended') {
 }
 ```
 
-</RequestExample>
+</Samples>
 
 </Aside>
 
@@ -69,6 +71,10 @@ if (event.type === 'subscription.ended') {
 
 It is over. `data.end_reason` says why. A cancellation reaching its end sends no event of its own.
 
+<More>
+
 Mesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.
+
+</More>
 
 </Endpoint>

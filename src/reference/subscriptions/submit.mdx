@@ -13,10 +13,12 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
+import { More } from '../../components/api/more'
+import { Samples } from '../../components/api/samples'
 
-<Aside full>
+<Aside full width={460}>
 
-<RequestExample>
+<Samples groups="Request:3,Response:9:cut" lines="7,12,17,25,26,9,7,7,7,7,7,7">
 
 ```bash title="cURL" lines=false
 curl -X POST "https://api.mesub.io/v1/subscriptions/cmg1x0abc0001/submit" \
@@ -60,11 +62,6 @@ if (!response.ok) {
 }
 const data = await response.json();
 ```
-
-</RequestExample>
-
-<ResponseExample>
-
 ```json title="201 Landed" lines=false
 {
     "subscription": {
@@ -186,7 +183,7 @@ const data = await response.json();
 }
 ```
 
-</ResponseExample>
+</Samples>
 
 </Aside>
 
@@ -194,6 +191,10 @@ const data = await response.json();
 
 Relays what the wallet signed: the transaction and the terms. Mesub checks both signatures, co-signs, sends the transaction and waits for the chain, so this call is slow by design: up to 90 seconds.
 
+<More>
+
 Safe to send again unchanged. Mesub recognises what it already co-signed and answers from the chain, so a customer is never charged twice.
+
+</More>
 
 </Endpoint>

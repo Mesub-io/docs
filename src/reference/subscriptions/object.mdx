@@ -15,12 +15,13 @@ prompt: |
 ---
 
 import { SchemaFields } from '../../components/api/endpoint'
+import { Samples } from '../../components/api/samples'
 
-<Aside full>
+<Aside full width={460}>
 
-<ResponseExample>
+<Samples groups="The subscription object:1:cut" lines="23">
 
-```json title="The subscription object" lines=false
+```json title="Example" lines=false
 {
     "id": "cmg1x0abc0001",
     "status": "active",
@@ -46,7 +47,7 @@ import { SchemaFields } from '../../components/api/endpoint'
 }
 ```
 
-</ResponseExample>
+</Samples>
 
 </Aside>
 

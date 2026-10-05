@@ -13,10 +13,12 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
+import { More } from '../../components/api/more'
+import { Samples } from '../../components/api/samples'
 
-<Aside full>
+<Aside full width={460}>
 
-<RequestExample>
+<Samples groups="Request:3,Response:7:cut" lines="9,11,19,26,9,7,7,7,7,7">
 
 ```bash title="cURL" lines=false
 curl -X POST "https://api.mesub.io/v1/subscriptions" \
@@ -63,11 +65,6 @@ if (!response.ok) {
 }
 const data = await response.json();
 ```
-
-</RequestExample>
-
-<ResponseExample>
-
 ```json title="201" lines=false
 {
     "subscription": {
@@ -153,7 +150,7 @@ const data = await response.json();
 }
 ```
 
-</ResponseExample>
+</Samples>
 
 </Aside>
 
@@ -161,8 +158,12 @@ const data = await response.json();
 
 Reserves a subscription to one of your plans for the wallet named, and builds what that wallet signs: the terms, as a message, then the transaction, without sending it. Hand both to [Submit](./submit.mdx).
 
+<More>
+
 Called again for the same plan, wallet and customer while nothing has landed, it answers the same subscription with a fresh transaction. The customer is the `external_id`, else the `email`, else nobody. Another customer naming the same wallet gets a subscription of its own: only the one the wallet signs for lands.
 
 A wallet whose subscription to this plan stopped comes back over its existing authorisation: a new subscription, with `costs.rent` at zero.
+
+</More>
 
 </Endpoint>

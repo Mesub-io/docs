@@ -983,3 +983,276 @@ footer .text-xs.opacity-40:has(> span:first-child) {
   }
 }
 
+
+/* ── A field is two lines; the rest waits behind "Details" ─────────────── */
+
+.mapi-field {
+  gap: 6px;
+  padding: 14px 0;
+}
+
+.mapi-field-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.mapi-field-toggle:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.mapi-field-toggle svg,
+.mapi-more-button svg {
+  transition: transform 120ms ease-out;
+}
+
+.mapi-field-toggle[aria-expanded='true'] svg,
+.mapi-more-button[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.mapi-field-toggle:focus-visible,
+.mapi-more-button:focus-visible,
+.mapi-samples button:focus-visible,
+.mapi-samples select:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.mapi-field-details:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--mapi-surface);
+}
+
+/* ── The introduction: its first paragraph, then "Read more" ───────────── */
+
+.mapi-more {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.mapi-more-body:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mapi-more-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground);
+  cursor: pointer;
+}
+
+.mapi-more-button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── The one card of the right column ──────────────────────────────────── */
+
+.mapi-samples {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--background);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.mapi-samples-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 8px 8px 10px;
+  border-bottom: 1px solid var(--mapi-line);
+  background: var(--mapi-surface);
+}
+
+.mapi-switch {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--accent);
+}
+
+.mapi-switch button {
+  padding: 3px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.mapi-switch button[aria-selected='true'] {
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.mapi-samples-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.mapi-samples-copy {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.mapi-samples-copy:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.mapi-samples-pick {
+  padding: 8px 12px 0;
+}
+
+.mapi-samples-tabs {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mapi-samples-tabs button {
+  flex: none;
+  padding: 2px 0 6px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+
+.mapi-samples-tabs button:hover {
+  color: var(--foreground);
+}
+
+.mapi-samples-tabs button[aria-pressed='true'] {
+  border-bottom-color: var(--primary);
+  color: var(--foreground);
+}
+
+.mapi-samples-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+}
+
+.mapi-samples-select select {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-code);
+  font-size: 12px;
+}
+
+.mapi-samples-body {
+  position: relative;
+  padding: 4px 12px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.mapi-samples-body[data-folded]::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 44px;
+  background: linear-gradient(to bottom, transparent, var(--background));
+  pointer-events: none;
+}
+
+/* FRAGILE: the fence's own copy button, which the card's replaces. Left
+   showing on hover if Holocron renames it. */
+.mapi-samples-body figure > button[aria-label='Copy code'] {
+  display: none;
+}
+
+.mapi-samples-more {
+  padding: 8px 12px;
+  border: 0;
+  border-top: 1px solid var(--mapi-line);
+  background: var(--mapi-surface);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+}
+
+.mapi-samples-more:hover {
+  color: var(--primary);
+}
+
+/* The reference's right column holds its samples and nothing else: the
+   assistant's box stays on the guides.
+   FRAGILE: both hooks are Holocron's own markup. If one is renamed the box
+   comes back, or the Markdown link sits above the card again. */
+.slot-page:has(.mapi-samples) [data-chat-shell='sidebar'],
+.slot-page:has(.slot-sidebar-left a[aria-current='page'][href^='/reference']) [data-chat-shell='sidebar'] {
+  display: none;
+}
+
+.slot-aside:has(.mapi-samples) > div:has(> button[title='Copy page as Markdown']) {
+  order: 2;
+  justify-content: flex-end;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapi-field-toggle svg,
+  .mapi-more-button svg {
+    transition: none;
+  }
+}

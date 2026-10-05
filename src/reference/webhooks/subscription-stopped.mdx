@@ -12,10 +12,12 @@ prompt: |
 ---
 
 import { Endpoint } from '../../components/api/endpoint'
+import { More } from '../../components/api/more'
+import { Samples } from '../../components/api/samples'
 
-<Aside full>
+<Aside full width={460}>
 
-<RequestExample>
+<Samples groups="Payload:1:cut,Handler:1" lines="30,11">
 
 ```json title="Payload" lines=false
 {
@@ -63,7 +65,7 @@ if (event.type === 'subscription.stopped') {
 }
 ```
 
-</RequestExample>
+</Samples>
 
 </Aside>
 
@@ -71,6 +73,10 @@ if (event.type === 'subscription.stopped') {
 
 Mesub stopped charging after missed payments.
 
+<More>
+
 Mesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.
+
+</More>
 
 </Endpoint>

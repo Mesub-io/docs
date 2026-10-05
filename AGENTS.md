@@ -29,6 +29,8 @@ src/reference/*/*.mdx    one page per route and per webhook event: GENERATED
 public/openapi.json      the description of the public API, served at /openapi.json
 scripts/reference.mjs    writes the generated pages from the spec
 src/components/api/      the endpoint page and its try-it panel, drawn from the spec
+                         (samples.tsx: the one card of the right column;
+                         more.tsx: "Read more" under an introduction)
 src/components/          the diagrams: sequence.tsx, lifecycle.tsx
 style.css                the styles of src/components/api, all under .mapi-
 public/                  logo, icon, robots.txt
