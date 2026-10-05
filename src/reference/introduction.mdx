@@ -92,8 +92,11 @@ the last item of the previous page, and answer `{ data, has_more }`. Items come
 newest first.
 
 ```bash
-curl "https://api.mesub.io/v1/subscriptions?external_id=user_42&limit=50&starting_after=cmg1x0abc0001" \
-  -H "Authorization: Bearer $MESUB_API_KEY"
+curl -G "https://api.mesub.io/v1/subscriptions" \
+  -H "Authorization: Bearer $MESUB_API_KEY" \
+  -d external_id=user_42 \
+  -d limit=50 \
+  -d starting_after=cmg1x0abc0001
 ```
 
 With the SDK, `subscriptions.listAll` and `subscriptions.allAttempts` walk

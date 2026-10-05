@@ -5,7 +5,7 @@
 import type { ReactNode } from 'react'
 import { FieldList, Md } from './fields'
 import { Responses } from './responses'
-import { endpoint, schemaFields, errorCodes, SERVER, type Field } from './spec'
+import { endpoint, schemaFields, SERVER, type Field } from './spec'
 import { TryIt } from './try-it'
 
 function Section({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
@@ -120,47 +120,6 @@ export function SchemaFields({ name }: { name: string }) {
   return (
     <div className='mapi'>
       <FieldList fields={schemaFields(name)} />
-    </div>
-  )
-}
-
-const STATUS_NAMES: Record<string, string> = {
-  '400': 'Bad request',
-  '401': 'Unauthorized',
-  '403': 'Forbidden',
-  '404': 'Not found',
-  '409': 'Conflict',
-  '429': 'Too many requests',
-  '503': 'Unavailable',
-}
-
-/** Every code the routes of the spec answer, grouped by status. */
-export function ErrorCodes() {
-  const codes = errorCodes()
-  const statuses = [...new Set(codes.map((code) => code.status))].sort()
-
-  return (
-    <div className='mapi'>
-      {statuses.map((status) => (
-        <div key={status} className='mapi-codes mapi-codes-page'>
-          <div className='mapi-codes-title'>
-            {status} {STATUS_NAMES[status]}
-          </div>
-          {codes
-            .filter((code) => code.status === status)
-            .map((code) => (
-              <div key={code.code} className='mapi-code'>
-                <div className='mapi-code-name'>
-                  <code>{code.code}</code>
-                  {code.retryable && <span className='mapi-pill'>retryable</span>}
-                </div>
-                <div className='mapi-code-when'>
-                  <Md text={code.when} />
-                </div>
-              </div>
-            ))}
-        </div>
-      ))}
     </div>
   )
 }

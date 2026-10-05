@@ -108,13 +108,13 @@ function typeOf(node: Json): string {
 
 function limitsOf(schema: Json): string[] {
   const limits: string[] = []
-  const { minimum, maximum, minLength, maxLength, pattern } = schema
+  // A pattern stays in the spec, for machines: the description says it in words.
+  const { minimum, maximum, minLength, maxLength } = schema
   if (minimum !== undefined && maximum !== undefined) limits.push(`${minimum} to ${maximum}`)
   else if (minimum !== undefined) limits.push(`at least ${minimum}`)
   else if (maximum !== undefined) limits.push(`at most ${maximum}`)
   if (minLength !== undefined && maxLength !== undefined) limits.push(`${minLength} to ${maxLength} characters`)
   else if (maxLength !== undefined) limits.push(`at most ${maxLength} characters`)
-  if (pattern) limits.push(`matches ${pattern}`)
   return limits
 }
 
@@ -260,19 +260,4 @@ export function schemaFields(name: string): Field[] {
   const schema = spec.components.schemas[name]
   if (!schema) throw new Error(`No schema ${name} in public/openapi.json.`)
   return fieldsOf(schema)
-}
-
-/** Every error code the routes answer, once each, with the statuses it comes under. */
-export function errorCodes(): (ErrorCode & { status: string })[] {
-  const seen = new Map<string, ErrorCode & { status: string }>()
-  for (const methods of Object.values(spec.paths as Json)) {
-    for (const operation of Object.values(methods as Json)) {
-      for (const [status, response] of Object.entries((operation as Json).responses ?? {})) {
-        for (const code of ((response as Json)['x-codes'] ?? []) as ErrorCode[]) {
-          if (!seen.has(code.code)) seen.set(code.code, { ...code, status })
-        }
-      }
-    }
-  }
-  return [...seen.values()]
 }

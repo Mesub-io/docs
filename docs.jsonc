@@ -74,6 +74,7 @@
           {
             "group": "Subscriptions",
             "pages": [
+              "reference/subscriptions/object",
               "reference/subscriptions/create",
               "reference/subscriptions/submit",
               "reference/subscriptions/list",

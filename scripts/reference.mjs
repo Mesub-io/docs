@@ -122,8 +122,8 @@ function webhookExamples(name, operation) {
     '}',
   ].join('\n')
   return {
-    request: fence('json', 'Payload', pretty(payload)),
-    response: fence('ts', '@mesub/node', handler),
+    request: [...fence('json', 'Payload', pretty(payload)), ...fence('ts', '@mesub/node', handler)],
+    response: [],
   }
 }
 
@@ -161,12 +161,9 @@ function page({ kind, method, route, operation }) {
     '',
     '</RequestExample>',
     '',
-    '<ResponseExample>',
-    '',
-    ...examples.response,
-    '',
-    '</ResponseExample>',
-    '',
+    ...(examples.response.length
+      ? ['<ResponseExample>', '', ...examples.response, '', '</ResponseExample>', '']
+      : []),
     '</Aside>',
     '',
     `<Endpoint id="${operation.operationId}">`,

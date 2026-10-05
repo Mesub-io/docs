@@ -9,31 +9,28 @@ These pages explain how to build on it.
 
 ## What is in it
 
-**Getting started**
-
-| Page             | What it covers                                                              |
-| ---------------- | --------------------------------------------------------------------------- |
-| How it works     | The flow from a click to a renewal, and the on-chain accounts behind it     |
-| First subscriber | A plan, an API key, the server routes and a subscribe button, in four steps |
-
 **Guides**
 
-| Page                       | What it covers                                                       |
-| -------------------------- | -------------------------------------------------------------------- |
-| Check access               | `hasAccess`, the guards, `GET /v1/access`, its answer and its errors |
-| Lifecycle                  | Every status, late payments and retries, cancelling, why one ends    |
-| Webhooks                   | The endpoint, the handler, testing it, the events and their bodies   |
-| React widget               | The subscribe and manage buttons of `@mesub/react`                   |
-| Subscribe from your server | Create, sign in the browser, submit, without the widget              |
-| Manage from your server    | Cancel, resume, close, and a subscription's payments                 |
-| Test your integration      | The fake Mesub of `@mesub/node/testing`                              |
+| Page                       | What it covers                                                              |
+| -------------------------- | --------------------------------------------------------------------------- |
+| First subscriber           | A plan, an API key, the server routes and a subscribe button, in four steps |
+| How it works               | The flow from a click to a renewal, and the on-chain accounts behind it     |
+| API key                    | Creating the key, putting it on a server, rotating it                       |
+| Check access               | `hasAccess`, the guards, `GET /v1/access`, its answer and its errors        |
+| Lifecycle                  | Every status, late payments and retries, cancelling, why one ends           |
+| Webhooks                   | The endpoint, the handler, testing it, the events and their bodies          |
+| React widget               | The subscribe and manage buttons of `@mesub/react`                          |
+| Subscribe from your server | Create, sign in the browser, submit, without the widget                     |
+| Manage from your server    | Cancel, resume, close, and a subscription's payments                        |
+| Test your integration      | The fake Mesub of `@mesub/node/testing`                                     |
+| Pricing and limits         | The tiers, what counts toward a limit, the API's rate limits                |
 
-**Reference**
+**API reference**
 
-| Page               | What it covers                                               |
-| ------------------ | ------------------------------------------------------------ |
-| Pricing and limits | The tiers, what counts toward a limit, the API's rate limits |
-| API reference      | Every route, the shape of an error, and every error code     |
+One page per route and per webhook event, with its parameters, its answers,
+its error codes, samples in cURL, `@mesub/node` and `fetch`, and a panel to try
+the request from the page. It is drawn from one OpenAPI file, served at
+`/openapi.json`.
 
 Code examples are given for Express, Next.js and NestJS wherever the three
 differ.

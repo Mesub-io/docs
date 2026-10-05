@@ -659,7 +659,7 @@
                   "plan": {
                     "type": "string",
                     "pattern": "^(?=.*[a-z])[a-z0-9]+(?:-[a-z0-9]+)*$",
-                    "description": "The plan's slug."
+                    "description": "The plan's slug: lowercase letters, digits and single hyphens."
                   },
                   "wallet": {
                     "type": "string",
