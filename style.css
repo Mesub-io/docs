@@ -1024,8 +1024,7 @@ footer .text-xs.opacity-40:has(> span:first-child) {
 
 .mapi-field-toggle:focus-visible,
 .mapi-more-button:focus-visible,
-.mapi-samples button:focus-visible,
-.mapi-samples select:focus-visible {
+.mapi-samples button:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
@@ -1152,16 +1151,66 @@ footer .text-xs.opacity-40:has(> span:first-child) {
   color: var(--foreground);
 }
 
-.mapi-samples-select {
-  flex: 1;
-  min-width: 0;
-  padding: 3px 8px;
+/* The answers of a route, one chip per status: the dot says how it went. */
+.mapi-samples-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--mapi-line);
+}
+
+.mapi-samples-status {
+  --tone: var(--mapi-required);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px 3px 8px;
   border: 1px solid var(--border);
-  border-radius: 7px;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-code);
+  border-radius: 999px;
+  background: none;
+  font: inherit;
   font-size: 12px;
+  line-height: 18px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: border-color 120ms ease-out, background-color 120ms ease-out, color 120ms ease-out;
+}
+
+.mapi-samples-status[data-tone='ok'] {
+  --tone: var(--mapi-get);
+}
+
+.mapi-samples-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tone);
+}
+
+.mapi-samples-code {
+  font-family: var(--font-code);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+
+.mapi-samples-status:hover {
+  border-color: color-mix(in oklch, var(--tone) 45%, var(--border));
+  color: var(--foreground);
+}
+
+.mapi-samples-status[aria-pressed='true'] {
+  border-color: color-mix(in oklch, var(--tone) 55%, transparent);
+  background: color-mix(in oklch, var(--tone) 10%, transparent);
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapi-samples-status {
+    transition: none;
+  }
 }
 
 .mapi-samples-body {

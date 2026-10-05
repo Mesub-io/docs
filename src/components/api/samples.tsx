@@ -21,8 +21,10 @@ import {
 const CUT_LINES = 12
 /** Not worth a control to hide two or three lines. */
 const CUT_FROM = CUT_LINES + 4
-/** Up to this many samples are tabs, more are a list to pick from. */
-const TABS_UP_TO = 4
+/** `404`, or `200 With a plan` when a status has several answers. */
+const STATUS = /^(\d{3})(?:\s+(.+))?$/
+
+const tone = (code: string) => (code.startsWith('2') ? 'ok' : code.startsWith('5') ? 'down' : 'refused')
 
 /** The language picked last, kept so the next page opens on it. */
 const LANGUAGE_STORE = 'mesub-docs-sample'
@@ -80,7 +82,9 @@ function Card({ group }: { group: Group }) {
   const [open, setOpen] = useState<Record<number, boolean>>({})
   const [copied, setCopied] = useState(false)
   const body = useRef<HTMLDivElement>(null)
-  const asTabs = group.samples.length > 1 && group.samples.length <= TABS_UP_TO
+  // Answers are named by their status, `200 With a plan`: those are picked by status, not as languages.
+  const byStatus = group.samples.length > 1 && group.samples.every((entry) => STATUS.test(entry.label))
+  const asTabs = !byStatus && group.samples.length > 1
 
   // After the first paint, so the server's page and the browser's agree.
   useEffect(() => {
@@ -136,20 +140,6 @@ function Card({ group }: { group: Group }) {
             ))}
           </div>
         )}
-        {group.samples.length > TABS_UP_TO && (
-          <select
-            className='mapi-samples-select'
-            aria-label={`${group.name} status`}
-            value={index}
-            onChange={(event) => pick(Number(event.target.value))}
-          >
-            {group.samples.map((entry, at) => (
-              <option key={entry.label} value={at}>
-                {entry.label}
-              </option>
-            ))}
-          </select>
-        )}
         <button
           type='button'
           className='mapi-samples-copy'
@@ -159,6 +149,28 @@ function Card({ group }: { group: Group }) {
           <CopyIcon done={copied} />
         </button>
       </div>
+
+      {byStatus && (
+        <div className='mapi-samples-statuses' role='group' aria-label={`${group.name} status`}>
+          {group.samples.map((entry, at) => {
+            const [, code = '', variant] = STATUS.exec(entry.label) ?? []
+            return (
+              <button
+                key={entry.label}
+                type='button'
+                className='mapi-samples-status'
+                data-tone={tone(code)}
+                aria-pressed={at === index}
+                onClick={() => pick(at)}
+              >
+                <span className='mapi-samples-dot' aria-hidden='true' />
+                <span className='mapi-samples-code'>{code}</span>
+                {variant && <span className='mapi-samples-variant'>{variant}</span>}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       <div
         ref={body}
