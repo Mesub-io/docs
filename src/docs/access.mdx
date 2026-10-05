@@ -1,0 +1,205 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Check a customer's access to a plan"
+sidebarTitle: Check access
+description: "Ask Mesub whether a customer has access before serving a paid route, with hasAccess, a guard, or GET /v1/access. What the answer says and what happens during an outage."
+icon: lucide:shield-check
+prompt: |
+  Document checking access from @https://github.com/Mesub-io/node-sdk (README:
+  Gate a route, Who to ask about, When Mesub does not answer) and
+  @https://github.com/Mesub-io/backend (src/access/access.controller.ts,
+  src/access/access.service.ts).
+  hasAccess, the three guards as tabs, the raw HTTP call, who to ask about, the
+  answer with a full example in a collapsed block, the guards' refusals, and
+  the outage behavior. Leave the detail of each status to the lifecycle page.
+---
+
+Your own login says who the user is. Mesub says whether they have access to a
+plan. Ask before serving anything paid.
+
+## Ask the question
+
+`hasAccess` answers `true` or `false`:
+
+```ts
+import { Mesub } from '@mesub/node';
+
+const mesub = new Mesub(); // reads MESUB_API_KEY
+
+if (!(await mesub.hasAccess({ external_id: user.id }, 'pro'))) {
+    // not subscribed, or no longer
+}
+```
+
+A guard does the same in one line and answers the refusal itself:
+
+<CodeGroup>
+
+```ts Express
+import { requirePlan } from '@mesub/node/express';
+
+app.get(
+    '/api/analytics',
+    yourLogin,
+    requirePlan('pro', {
+        customer: (req) =>
+            req.user ? { external_id: req.user.id } : null,
+    }),
+    (req, res) => {
+        const { customer, wallet, answer } = res.locals.mesub;
+        res.json(buildAnalytics(customer));
+    },
+);
+```
+
+```ts Next.js
+// app/api/analytics/route.ts
+import { withMesub } from '@mesub/node/next';
+
+export const GET = withMesub(
+    async (request, mesub) => Response.json(await analytics(mesub)),
+    {
+        plan: 'pro',
+        customer: async (request) => {
+            const session = await yourSession(request);
+            return session ? { external_id: session.userId } : null;
+        },
+    },
+);
+```
+
+```ts NestJS
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { MesubAccess, type MesubRequest, RequirePlan } from '@mesub/node/nest';
+
+interface AuthedRequest extends MesubRequest {
+    user?: { id: string };
+}
+
+@Controller('analytics')
+@UseGuards(
+    YourAuthGuard,
+    RequirePlan<AuthedRequest>('pro', {
+        customer: (req) =>
+            req.user ? { external_id: req.user.id } : null,
+    }),
+)
+export class AnalyticsController {
+    @Get()
+    list(@MesubAccess() mesub: MesubAccess) {
+        return buildAnalytics(mesub.customer);
+    }
+}
+```
+
+</CodeGroup>
+
+`customer` is required. It must come from a session you verified, never from
+the request itself: a guard that reads `req.query.wallet` lets in anyone who
+types a subscriber's address.
+
+A guard also takes a list, `requirePlan(['pro', 'team'], ...)`: the first plan
+that grants access lets the request through. Three plans at most.
+
+Without the SDK, it is one authenticated GET:
+
+```bash
+curl "https://api.mesub.io/v1/access?external_id=user_42&plan=pro" \
+  -H "Authorization: Bearer $MESUB_API_KEY"
+```
+
+## Who to ask about
+
+Name the customer by exactly one of these:
+
+| By            | Use it when                          | Good to know                                                     |
+| ------------- | ------------------------------------ | ---------------------------------------------------------------- |
+| `external_id` | Your app has its own login           | Follows the person whichever wallet pays                         |
+| `wallet`      | The connected wallet is the customer | A string alone works too                                         |
+| `email`       | A support lookup                     | The address they typed when subscribing, never verified by Mesub |
+
+`external_id` is the id you passed when the subscription was created. The
+widget routes pass it for you, from what your `customer` function returns.
+
+## Read the answer
+
+`hasAccess` keeps only `access`. To show a customer where they stand, `access`
+returns the whole answer:
+
+```ts
+const answer = await mesub.access({ external_id: user.id }, 'pro');
+```
+
+<Expandable title="See a full answer">
+
+```json
+{
+    "wallet": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+    "plan": "pro",
+    "access": true,
+    "status": "active",
+    "paused": false,
+    "end_reason": null,
+    "payment_status": "paid",
+    "subscribed_since": "2026-01-01T00:00:05.000Z",
+    "first_subscribed_at": "2026-01-01T00:00:05.000Z",
+    "current_period_end": "2026-01-31T00:00:00.000Z",
+    "cancelled_at": null,
+    "access_until": "2026-01-31T00:00:00.000Z",
+    "next_charge_at": "2026-01-31T00:00:00.000Z",
+    "next_retry_at": null,
+    "retry_deadline": null,
+    "revalidate_after": 300
+}
+```
+
+</Expandable>
+
+| Field              | What it says                                                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `access`           | The only field a guard needs                                                                                                  |
+| `status`           | Where the subscription stands: `none`, `pending`, `active`, `unpaid`, `cancelled`, `stopped`, `ended`, `failed`, `superseded` |
+| `payment_status`   | `paid`, `late` or `none`                                                                                                      |
+| `access_until`     | When access ends unless a charge renews it. Null while `access` is false                                                      |
+| `next_charge_at`   | The next charge. Null when a retry is pending instead                                                                         |
+| `next_retry_at`    | The next retry of a missed charge                                                                                             |
+| `wallet`           | The wallet that pays. Null when the customer has nothing on that plan                                                         |
+| `revalidate_after` | Seconds this answer stays true. The SDK caches it for that long                                                               |
+
+Mesub may add a status later, so keep a default branch. Asked with
+`{ attempts: true }`, the answer also carries the last charges.
+
+Without a plan, `accessList` answers every plan the customer has anything on:
+
+```ts
+const { plans } = await mesub.accessList({ external_id: user.id });
+```
+
+## What a guard answers
+
+| Status | When                                                 | Body                                             |
+| ------ | ---------------------------------------------------- | ------------------------------------------------ |
+| 401    | `customer` returned nothing: nobody is signed in     | `{ access: false, reason: 'unauthenticated' }`   |
+| 402    | Mesub said this customer has no access               | `{ access: false, reason: 'no_access', status }` |
+| 503    | Mesub could not answer about a customer it never saw | `{ access: false, reason: 'unavailable' }`       |
+
+A 402 only ever means Mesub said no. To answer differently, a redirect to your
+pricing page for instance, pass `onDenied`.
+
+A bad API key or an unknown plan is not a refusal: it is thrown, so a broken
+integration never reads as "not subscribed".
+
+## When Mesub does not answer
+
+The SDK caches each answer for its `revalidate_after`. If Mesub then fails or
+is too slow:
+
+- `hasAccess` and the guards serve the **last answer they knew** for that
+  customer and plan, for up to 24 hours. A paying customer is not locked out
+  by an outage.
+- For a customer never seen before, `hasAccess` answers `false` and a guard
+  answers 503 with `Retry-After: 30`.
+- `access` throws instead, since it is meant for a screen.
+
+A guard never holds a request more than 2 seconds for this check
+(`guardTimeout`).
