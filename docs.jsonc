@@ -18,7 +18,12 @@
       {
         "group": "Getting started",
         "icon": "lucide:rocket",
-        "pages": ["index", "docs/how-it-works", "docs/quickstart", "docs/access", "docs/lifecycle", "docs/webhooks"]
+        "pages": ["index", "docs/how-it-works", "docs/quickstart"]
+      },
+      {
+        "group": "Guides",
+        "icon": "lucide:book-open",
+        "pages": ["docs/access", "docs/lifecycle", "docs/webhooks", "docs/react"]
       },
       {
         "group": "AI",
