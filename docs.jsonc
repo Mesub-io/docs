@@ -63,53 +63,64 @@
             "pages": ["reference/introduction", "reference/authentication", "reference/errors"]
           },
           {
-            "group": "Access",
-            "pages": ["reference/access/check"]
-          },
-          {
-            "group": "Plans",
-            "pages": ["reference/plans/list", "reference/plans/retrieve"]
-          },
-          {
-            "group": "Subscriptions",
+            // Nested groups fold: only the one holding the current page is open.
+            "group": "Endpoints",
             "pages": [
-              "reference/subscriptions/object",
-              "reference/subscriptions/create",
-              "reference/subscriptions/submit",
-              "reference/subscriptions/list",
-              "reference/subscriptions/retrieve",
-              "reference/subscriptions/attempts"
+              {
+                "group": "Access",
+                "pages": ["reference/access/check"]
+              },
+              {
+                "group": "Plans",
+                "pages": ["reference/plans/list", "reference/plans/retrieve"]
+              },
+              {
+                "group": "Subscriptions",
+                "pages": [
+                  "reference/subscriptions/object",
+                  "reference/subscriptions/create",
+                  "reference/subscriptions/submit",
+                  "reference/subscriptions/list",
+                  "reference/subscriptions/retrieve",
+                  "reference/subscriptions/attempts"
+                ]
+              },
+              {
+                "group": "Cancel, resume, close",
+                "pages": [
+                  "reference/manage/cancel",
+                  "reference/manage/confirm-cancel",
+                  "reference/manage/resume",
+                  "reference/manage/confirm-resume",
+                  "reference/manage/close",
+                  "reference/manage/confirm-close"
+                ]
+              },
+              {
+                "group": "Project",
+                "pages": ["reference/project/retrieve"]
+              }
             ]
-          },
-          {
-            "group": "Cancel, resume, close",
-            "pages": [
-              "reference/manage/cancel",
-              "reference/manage/confirm-cancel",
-              "reference/manage/resume",
-              "reference/manage/confirm-resume",
-              "reference/manage/close",
-              "reference/manage/confirm-close"
-            ]
-          },
-          {
-            "group": "Project",
-            "pages": ["reference/project/retrieve"]
           },
           {
             "group": "Webhooks",
             "pages": [
               "reference/webhooks/overview",
-              "reference/webhooks/subscription-created",
-              "reference/webhooks/subscription-renewal-upcoming",
-              "reference/webhooks/subscription-renewed",
-              "reference/webhooks/subscription-payment-failed",
-              "reference/webhooks/subscription-stopped",
-              "reference/webhooks/subscription-cancelled",
-              "reference/webhooks/subscription-resumed",
-              "reference/webhooks/subscription-ended",
-              "reference/webhooks/subscription-expired",
-              "reference/webhooks/test"
+              {
+                "group": "Events",
+                "pages": [
+                  "reference/webhooks/subscription-created",
+                  "reference/webhooks/subscription-renewal-upcoming",
+                  "reference/webhooks/subscription-renewed",
+                  "reference/webhooks/subscription-payment-failed",
+                  "reference/webhooks/subscription-stopped",
+                  "reference/webhooks/subscription-cancelled",
+                  "reference/webhooks/subscription-resumed",
+                  "reference/webhooks/subscription-ended",
+                  "reference/webhooks/subscription-expired",
+                  "reference/webhooks/test"
+                ]
+              }
             ]
           }
         ]
