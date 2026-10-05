@@ -1,0 +1,128 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Test a Mesub integration without the network"
+sidebarTitle: Test your integration
+description: "Use the fake Mesub of @mesub/node/testing in your own tests: grant and deny access, simulate an outage, and send signed webhooks to your handler."
+icon: lucide:flask-conical
+prompt: |
+  Document @mesub/node/testing from @https://github.com/Mesub-io/node-sdk
+  (README: Test your integration; src/testing.ts).
+  What FakeMesub is, access in a test, a guard end to end, an outage, a
+  webhook, subscribing and managing, and what the fake does not do.
+---
+
+`@mesub/node/testing` is a fake Mesub for your own tests. It answers what the
+SDK asks from what each test sets, with no network and no Mesub account, and
+none of it ends up in your production bundle.
+
+```ts
+import { FakeMesub } from '@mesub/node/testing';
+
+const fake = new FakeMesub();
+const mesub = fake.client(); // a real Mesub client, wired to the fake
+```
+
+Call `fake.reset()` between tests.
+
+## Access
+
+```ts
+fake.grant({ external_id: 'user_42' }, 'pro'); // active and paid
+fake.deny({ external_id: 'user_7' }, 'pro', { status: 'stopped' });
+
+await mesub.hasAccess({ external_id: 'user_42' }, 'pro'); // true
+await mesub.hasAccess({ external_id: 'user_7' }, 'pro'); // false
+```
+
+A customer is answered as named: a wallet you granted is not found by its
+`external_id`. For any other answer, `fake.setAccess(...)` takes the fields
+you want.
+
+`new FakeMesub({ plans: ['pro'] })` makes every other slug answer
+`plan_not_found`, as a typo would.
+
+## A guard, end to end
+
+Hand the fake's client to the guard, and let the test say who is signed in:
+
+```ts
+import request from 'supertest';
+import { requirePlan } from '@mesub/node/express';
+
+const customer = () => ({ external_id: 'user_42' });
+app.get('/api/analytics', requirePlan('pro', { client: mesub, customer }), handler);
+
+fake.grant({ external_id: 'user_42' }, 'pro');
+await request(app).get('/api/analytics').expect(200);
+
+fake.deny({ external_id: 'user_42' }, 'pro');
+await request(app).get('/api/analytics').expect(402);
+```
+
+## An outage
+
+```ts
+fake.fail('outage'); // every call answers 503, until fake.fail(null)
+fake.fail({ status: 429, code: 'rate_limited', retryAfter: 2 });
+```
+
+This is how to check what [your routes do when Mesub does not
+answer](./access.mdx#when-mesub-does-not-answer): a customer seen before keeps
+their last answer, one never seen gets a 503.
+
+The fake's answers are stale at once, so a change shows on the next call. Pass
+`revalidate_after` to an answer to test the cache.
+
+## A webhook
+
+`fake.webhook` builds a delivery signed with `fake.webhookSecret`, which the
+fake's client verifies with:
+
+```ts
+const { body, headers } = await fake.webhook('subscription.renewed', {
+    subscription: { external_id: 'user_42' },
+});
+
+await request(app)
+    .post('/webhooks/mesub')
+    .set(headers)
+    .type('json')
+    .send(body)
+    .expect(200);
+```
+
+`signWebhook(body, { secret })` signs a body of your own.
+
+## Subscribing and managing
+
+`subscriptions.create` then `submit` land at once and grant the plan. `cancel`,
+`resume` and `close` answer a made-up transaction, and their confirms land at
+once with any signature. A step the status does not allow is refused with
+Mesub's own code, `close_too_early` for instance.
+
+```ts
+fake.addSubscription({ id: 'sub_1', wallet, plan: 'pro', status: 'active' });
+fake.setAttempts('sub_1', [{ outcome: 'PAID', amount: '9990000' }]);
+```
+
+`addSubscription` adds one for `retrieve` and `list`, and `setAttempts` gives
+it charges, answered by `subscriptions.attempts` with their `paid` total.
+
+## What was called
+
+```ts
+fake.requests; // every call: method, path, query, headers, body
+```
+
+## With your own client
+
+```ts
+import { Mesub } from '@mesub/node';
+
+const mesub = new Mesub({
+    apiKey: fake.apiKey,
+    baseUrl: fake.baseUrl,
+    fetch: fake.fetch,
+    webhookSecret: fake.webhookSecret,
+});
+```

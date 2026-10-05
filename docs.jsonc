@@ -1,10 +1,14 @@
 {
   "$schema": "https://holocron.so/docs.json",
-  "name": "Mesub",
+  "name": "Mesub - Docs",
+  "logo": { "light": "/logo.svg", "dark": "/logo-dark.svg", "href": "https://mesub.io" },
   "description": "Documentation for Mesub, recurring payments on Solana.",
   "favicon": "/icon.png",
   "colors": {
-    "primary": "#f46036"
+    // The same orange in both themes: left alone, dark mode washes it to pink.
+    "primary": "#f46036",
+    "light": "#f46036",
+    "dark": "#f46036"
   },
   "icons": {
     "library": "lucide"
@@ -14,7 +18,22 @@
       {
         "group": "Getting started",
         "icon": "lucide:rocket",
-        "pages": ["index"]
+        "pages": ["index", "docs/how-it-works", "docs/quickstart"]
+      },
+      {
+        "group": "Guides",
+        "icon": "lucide:book-open",
+        "pages": ["docs/access", "docs/lifecycle", "docs/webhooks", "docs/react", "docs/subscribe", "docs/manage", "docs/testing"]
+      },
+      {
+        "group": "Reference",
+        "icon": "lucide:library",
+        "pages": ["docs/pricing", "docs/api"]
+      },
+      {
+        "group": "AI",
+        "icon": "lucide:bot",
+        "pages": ["docs/mcp", "docs/skills"]
       }
     ]
   }
