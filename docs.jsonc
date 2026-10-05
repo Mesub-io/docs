@@ -14,7 +14,7 @@
       {
         "group": "Getting started",
         "icon": "lucide:rocket",
-        "pages": ["index", "docs/how-it-works"]
+        "pages": ["index", "docs/how-it-works", "docs/quickstart"]
       }
     ]
   }

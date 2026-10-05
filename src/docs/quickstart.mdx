@@ -1,0 +1,146 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Your first Solana subscriber in four steps"
+sidebarTitle: First subscriber
+description: "Publish a plan, give your server an API key, mount the Mesub routes, and put a subscribe button on a page. Ends with a paid route."
+icon: lucide:zap
+prompt: |
+  Walk a merchant from an empty project to a first paying subscriber, from
+  @https://github.com/Mesub-io/node-sdk (README: Install, Configuration, Gate a
+  route, Routes for the React widget) and @https://github.com/Mesub-io/react-sdk
+  (README: One line on each side, Subscribe).
+  Four steps: plan, API key, server, page. Express examples, Next as a tab.
+  End with what to read next.
+---
+
+This takes a project from nothing to **one paying subscriber**: a plan, a
+server that knows who has access, and a button. It uses the React widget for
+the wallet part, because it is the shortest path.
+
+<Steps>
+<Step title="Publish a plan">
+
+In the dashboard, open **Plans** and create one: a price, a token, a period, and
+the wallet that receives the money. Your wallet signs its creation.
+
+Give it a short **slug**, for example `pro`. The slug is how your code names the
+plan everywhere below.
+
+</Step>
+<Step title="Give your server the API key">
+
+In the dashboard, open **Developers** and copy the project's **API key**. It
+starts with `SUB_`. Put it in your server's environment:
+
+```bash
+MESUB_API_KEY=SUB_...
+```
+
+Then install the SDK:
+
+```bash
+npm install @mesub/node
+```
+
+</Step>
+<Step title="Mount the routes and gate a route">
+
+Two things on your server. **The routes** are what the widget calls to subscribe
+and manage. **The gate** is the question you ask before serving anything paid.
+Both need to know who is asking, and that comes from **your own login**.
+
+<CodeGroup>
+
+```ts Express
+import { Mesub } from '@mesub/node';
+import { mesubRoutes } from '@mesub/node/express';
+
+const mesub = new Mesub(); // reads MESUB_API_KEY
+
+// What the widget calls. Mount it after your own login.
+app.use(
+    '/api/mesub',
+    yourLogin,
+    mesubRoutes({
+        customer: (req) => (req.user ? { external_id: req.user.id } : null),
+    }),
+);
+
+// A paid route.
+app.get('/api/reports', yourLogin, async (req, res) => {
+    if (!(await mesub.hasAccess({ external_id: req.user.id }, 'pro'))) {
+        res.status(402).json({ error: 'The Pro plan is needed.' });
+        return;
+    }
+    res.json(buildReport(req.user));
+});
+```
+
+```ts Next.js
+// app/api/mesub/[...mesub]/route.ts
+import { mesubRouteHandlers } from '@mesub/node/next';
+
+export const { GET, POST } = mesubRouteHandlers({
+    customer: async (request) => {
+        const session = await yourSession(request);
+        return session ? { external_id: session.userId } : null;
+    },
+});
+```
+
+</CodeGroup>
+
+`customer` must come from **a session you verified**, never from what the
+browser sends. When it returns `null`, the routes answer 401.
+
+</Step>
+<Step title="Put the button on a page">
+
+```bash
+npm install @mesub/react
+```
+
+Wrap your app once, pointing at where you mounted the routes:
+
+```tsx
+import { MesubProvider } from '@mesub/react';
+import '@mesub/react/styles.css';
+
+export function App({ children }) {
+    return <MesubProvider endpoint="/api/mesub">{children}</MesubProvider>;
+}
+```
+
+Then place the button, with the plan's slug:
+
+```tsx
+import { SubscribeButton } from '@mesub/react';
+
+<SubscribeButton plan="pro">Subscribe to Pro</SubscribeButton>;
+```
+
+</Step>
+</Steps>
+
+## Try it
+
+Sign in to your own site and click the button. The window shows the plan, asks
+for a wallet, then for **two approvals**: the terms, then the first payment.
+Once it lands, `/api/reports` answers for that customer.
+
+<Aside>
+<Tip>
+The widget signs for **devnet** by default. Pass `chain="solana:mainnet"` to
+`MesubProvider` when you go live.
+</Tip>
+</Aside>
+
+The subscription appears in the dashboard under **Subscriptions**, with its
+first payment under **Collection**. From here Mesub charges it every period
+without anything more from you.
+
+## What you did not have to do
+
+Your pages hold **no key** and never call Mesub. Your customer created **no
+account** anywhere but on your site. And no code of yours touched a
+transaction: the widget and the routes did the signing and the sending.
