@@ -2,20 +2,50 @@
 $schema: https://holocron.so/frontmatter.json
 title: "Mesub - Docs"
 sidebarTitle: Home
-description: "Mesub charges a wallet on a schedule and tells your server who has access. Publish a plan, add the Node SDK, and gate your routes."
+description: "Build recurring payments on Solana with Mesub: publish a plan, check a customer's access from your server, and let them subscribe and manage from your pages."
+hideTitle: true
+sidebarToc: false
 prompt: |
-  Write the home page of the Mesub docs from @https://github.com/Mesub-io/node-sdk
-  and @https://github.com/Mesub-io/react-sdk.
-  Say in a few lines what Mesub does and what a merchant has to build.
+  Write the home page of the Mesub docs from the pages under @./docs/.
+  One heading, what Mesub does in two sentences, then where to go: the two
+  starting pages, each guide and each reference page with one line on what it
+  answers. Plain lists, no cards.
 ---
 
-**Mesub** charges a customer's wallet on a schedule, without holding their funds:
-the customer approves a plan once, and each period Mesub pulls the price to your
-wallet.
+<h1 style={{ fontSize: '30px', lineHeight: 1.2, fontWeight: 600, letterSpacing: '-0.02em', textWrap: 'balance' }}>Recurring payments on Solana, billed from your server</h1>
 
-Your part is small. You **publish a plan** from the [dashboard](https://mesub.io/dashboard), add
-**`@mesub/node`** to your server with an API key, and ask one question before
-serving anything paid: does this customer have access?
+Mesub charges a customer's wallet on a schedule, without holding their funds.
+The customer approves a plan once, Mesub pulls the price to your wallet at
+every period, and your server asks Mesub who has access.
 
-**`@mesub/react`** is optional. It adds a subscribe button and a manage window to
-your pages, and talks only to your own server.
+You publish a plan in the [dashboard](https://mesub.io/dashboard), add
+`@mesub/node` to your server, and gate what is paid. A React widget is there
+for the wallet part if you want it.
+
+## Start here
+
+- [How it works](./docs/how-it-works.mdx): the flow from a click to a renewal,
+  and the on-chain accounts behind it.
+- [Your first subscriber](./docs/quickstart.mdx): a plan, an API key, the
+  server routes and a button, in four steps.
+
+## Build
+
+- [Check access](./docs/access.mdx): ask whether a customer has access, with
+  `hasAccess`, a guard, or `GET /v1/access`.
+- [Lifecycle](./docs/lifecycle.mdx): every status, what a late payment does,
+  cancelling and resuming.
+- [Webhooks](./docs/webhooks.mdx): hear when a subscription renews, misses a
+  payment or ends.
+- [React widget](./docs/react.mdx): the subscribe and manage buttons.
+- [Subscribe from your server](./docs/subscribe.mdx): the same without the
+  widget.
+- [Manage from your server](./docs/manage.mdx): cancel, resume, close, and list
+  a subscription's payments.
+- [Test your integration](./docs/testing.mdx): a fake Mesub for your own tests.
+
+## Look up
+
+- [Pricing and limits](./docs/pricing.mdx): the tiers, what counts toward a
+  limit, the API's rate limits.
+- [API reference](./docs/api.mdx): every route and every error code.
