@@ -18,7 +18,12 @@
       {
         "group": "Getting started",
         "icon": "lucide:rocket",
-        "pages": ["index", "docs/how-it-works", "docs/quickstart", "docs/access", "docs/webhooks"]
+        "pages": ["index", "docs/how-it-works", "docs/quickstart", "docs/access", "docs/lifecycle", "docs/webhooks"]
+      },
+      {
+        "group": "AI",
+        "icon": "lucide:bot",
+        "pages": ["docs/mcp", "docs/skills"]
       }
     ]
   }
