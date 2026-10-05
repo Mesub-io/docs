@@ -1,0 +1,64 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Authenticate a request to the Mesub API"
+sidebarTitle: Authentication
+description: "Send the project's API key as a bearer token on every request. What a missing or wrong key answers, and how many calls a key may make."
+prompt: |
+  Document authentication of the public API from
+  @https://github.com/Mesub-io/backend (src/access/api-key.guard.ts,
+  src/access/api-key.middleware.ts, src/access/access-throttle.ts,
+  src/auth/auth.constants.ts).
+  The bearer header, that the key is the project, where it must stay, the two
+  401 codes, and the rate limits per key and without a key.
+---
+
+Every request carries the project's **API key** in the `Authorization` header,
+as a bearer token:
+
+```bash
+curl "https://api.mesub.io/v1/project" \
+  -H "Authorization: Bearer $MESUB_API_KEY"
+```
+
+A project has one key at a time, and the key is the project: every route
+answers about that project only, and no call names a project id. The key starts
+with `SUB_`. [Get your API key](../docs/api-key.mdx) says where to create it and
+how to rotate it.
+
+The key goes in the header, never in the query string: a query string ends up
+in access logs and in browser history.
+
+Keep the key on your server. It creates subscriptions and reads your
+subscribers, so it never goes in a browser, a mobile app or a repository.
+
+## When the key is refused
+
+| Status | `code`            | Meaning                                      |
+| ------ | ----------------- | -------------------------------------------- |
+| 401    | `missing_api_key` | No `Authorization: Bearer` header was sent   |
+| 401    | `invalid_api_key` | Not a key Mesub issued, or one rotated since |
+
+```json
+{
+    "statusCode": 401,
+    "message": "That API key is not valid.",
+    "error": "Unauthorized",
+    "code": "invalid_api_key",
+    "retryable": false
+}
+```
+
+## Rate limits
+
+Limits are per API key, per route, per minute.
+
+| Calls                                                                | Limit          |
+| -------------------------------------------------------------------- | -------------- |
+| Reads: `/v1/access`, `/v1/plans`, `/v1/subscriptions`, `/v1/project` | 1,000 a minute |
+| Writes: create, submit, cancel, resume, close and their confirms     | 60 a minute    |
+
+Requests with no key, or with a wrong one, are counted by IP address instead:
+120 a minute.
+
+Past a limit, Mesub answers 429 `rate_limited` with a `Retry-After` header.
+[Pricing and limits](../docs/pricing.mdx) has every other limit.

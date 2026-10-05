@@ -3,7 +3,7 @@ $schema: https://holocron.so/frontmatter.json
 title: "Create a subscription from your server"
 sidebarTitle: Subscribe from your server
 description: "Subscribe a customer without the React widget: create on your server, have the wallet sign the terms and the transaction, then submit both to Mesub."
-icon: lucide:server
+icon: "lucide:server"
 prompt: |
   Document subscribing without the widget from
   @https://github.com/Mesub-io/node-sdk (README: Subscribe from your server,
@@ -189,6 +189,12 @@ for await (const sub of mesub.subscriptions.listAll({ external_id: user.id })) {
     // every page
 }
 ```
+
+The raw routes are in the reference:
+[create](../reference/subscriptions/create.mdx),
+[submit](../reference/subscriptions/submit.mdx),
+[retrieve](../reference/subscriptions/retrieve.mdx) and
+[list](../reference/subscriptions/list.mdx).
 
 `list` names the customer the way [`hasAccess`](./access.mdx#who-to-ask-about)
 does: by `external_id`, `wallet` or `email`. The fields and statuses are the

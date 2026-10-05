@@ -13,28 +13,122 @@
   "icons": {
     "library": "lucide"
   },
+  // The pill at the bottom, so the right column of a reference page starts with its samples.
+  // Room for the reference's two columns: parameters, then samples.
+  "layout": { "maxWidth": 1320 },
+  "navbar": {
+    "primary": { "type": "button", "label": "Dashboard", "href": "https://mesub.io/dashboard" }
+  },
   "navigation": {
-    "groups": [
+    "tabs": [
       {
-        "group": "Getting started",
-        "icon": "lucide:rocket",
-        "pages": ["index", "docs/how-it-works", "docs/quickstart", "docs/api-key"]
-      },
-      {
-        "group": "Guides",
+        "tab": "Guides",
         "icon": "lucide:book-open",
-        "pages": ["docs/access", "docs/lifecycle", "docs/webhooks", "docs/react", "docs/subscribe", "docs/manage", "docs/testing"]
+        "groups": [
+          {
+            "group": "Get started",
+            "icon": "lucide:rocket",
+            "pages": ["index", "docs/quickstart", "docs/how-it-works", "docs/api-key"]
+          },
+          {
+            "group": "Access and status",
+            "icon": "lucide:lock-keyhole",
+            "pages": ["docs/access", "docs/lifecycle", "docs/webhooks"]
+          },
+          {
+            "group": "Subscribe and manage",
+            "icon": "lucide:repeat",
+            "pages": ["docs/react", "docs/subscribe", "docs/manage"]
+          },
+          {
+            "group": "Go live",
+            "icon": "lucide:send",
+            "pages": ["docs/testing", "docs/pricing"]
+          },
+          {
+            "group": "AI",
+            "icon": "lucide:bot",
+            "pages": ["docs/mcp", "docs/skills"]
+          }
+        ]
       },
       {
-        "group": "Reference",
-        "icon": "lucide:library",
-        "pages": ["docs/pricing", "docs/api"]
-      },
-      {
-        "group": "AI",
-        "icon": "lucide:bot",
-        "pages": ["docs/mcp", "docs/skills"]
+        // Every page below "Overview" is written by scripts/reference.mjs from
+        // public/openapi.json. A new route goes in the spec, then here.
+        "tab": "API reference",
+        "icon": "lucide:braces",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": ["reference/introduction", "reference/authentication", "reference/errors"]
+          },
+          {
+            // Nested groups fold: only the one holding the current page is open.
+            "group": "Endpoints",
+            "pages": [
+              {
+                "group": "Access",
+                "pages": ["reference/access/check"]
+              },
+              {
+                "group": "Plans",
+                "pages": ["reference/plans/list", "reference/plans/retrieve"]
+              },
+              {
+                "group": "Subscriptions",
+                "pages": [
+                  "reference/subscriptions/object",
+                  "reference/subscriptions/create",
+                  "reference/subscriptions/submit",
+                  "reference/subscriptions/list",
+                  "reference/subscriptions/retrieve",
+                  "reference/subscriptions/attempts"
+                ]
+              },
+              {
+                "group": "Cancel, resume, close",
+                "pages": [
+                  "reference/manage/cancel",
+                  "reference/manage/confirm-cancel",
+                  "reference/manage/resume",
+                  "reference/manage/confirm-resume",
+                  "reference/manage/close",
+                  "reference/manage/confirm-close"
+                ]
+              },
+              {
+                "group": "Project",
+                "pages": ["reference/project/retrieve"]
+              }
+            ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "reference/webhooks/overview",
+              {
+                "group": "Events",
+                "pages": [
+                  "reference/webhooks/subscription-created",
+                  "reference/webhooks/subscription-renewal-upcoming",
+                  "reference/webhooks/subscription-renewed",
+                  "reference/webhooks/subscription-payment-failed",
+                  "reference/webhooks/subscription-stopped",
+                  "reference/webhooks/subscription-cancelled",
+                  "reference/webhooks/subscription-resumed",
+                  "reference/webhooks/subscription-ended",
+                  "reference/webhooks/subscription-expired",
+                  "reference/webhooks/test"
+                ]
+              }
+            ]
+          }
+        ]
       }
     ]
-  }
+  },
+  "redirects": [
+    // The single API page became the reference tab.
+    { "source": "/docs/api", "destination": "/reference/introduction", "permanent": true }
+  ]
 }

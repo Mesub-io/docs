@@ -3,7 +3,7 @@ $schema: https://holocron.so/frontmatter.json
 title: "Handle Mesub webhooks on your server"
 sidebarTitle: Webhooks
 description: "Register an endpoint, verify each delivery with its signing secret, and react to renewals, missed payments and cancellations."
-icon: lucide:webhook
+icon: "lucide:webhook"
 prompt: |
   Document webhooks from @https://github.com/Mesub-io/node-sdk (README, section
   Webhooks) and @https://github.com/Mesub-io/backend (src/webhooks/webhook-payload.ts,
@@ -187,7 +187,8 @@ A handler running on your machine needs a public URL. A tunnel such as
 | `subscription.expired`          | A checkout was started and never signed                 |
 | `test`                          | You sent one from the dashboard                         |
 
-Mesub may add a type later: keep a default branch.
+Mesub may add a type later: keep a default branch. The reference has
+[one page per event](../reference/webhooks/overview.mdx), with its payload.
 
 ## The event object
 

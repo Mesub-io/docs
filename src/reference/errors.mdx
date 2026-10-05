@@ -1,76 +1,14 @@
 ---
 $schema: https://holocron.so/frontmatter.json
-title: "Mesub API reference"
-sidebarTitle: API reference
-description: "Every route of the Mesub API, how to authenticate, the shape of an error, and the full list of error codes."
-icon: lucide:braces
+title: "Errors of the Mesub API"
+sidebarTitle: Errors
+description: "The body every error of the Mesub API carries, how to branch on its code, when to retry, and the full list of error codes with their status."
 prompt: |
-  Reference of the public API from @https://github.com/Mesub-io/backend
-  (src/access/access.controller.ts, src/access/project.controller.ts,
-  src/plans/server-plans.controller.ts,
-  src/subscriptions/server-subscriptions.controller.ts,
-  src/common/error-codes.ts).
-  Base URL and authentication, every route in tables with the SDK call beside
-  it, the error shape, and every error code grouped by what it is about.
+  Reference of the API's errors from @https://github.com/Mesub-io/backend
+  (src/common/error-codes.ts, src/common/error-body.filter.ts).
+  The error shape with each field, what retryable means, and every error code
+  grouped by what it is about, with its status.
 ---
-
-`@mesub/node` wraps this API. Use it directly from any other language.
-
-## Base URL and authentication
-
-```bash
-curl "https://api.mesub.io/v1/project" \
-  -H "Authorization: Bearer $MESUB_API_KEY"
-```
-
-Every route takes the project's **API key** as a bearer token. The key
-identifies the project: there is no project id in any path. Keep it on your
-server. [Where to get it](./api-key.mdx).
-
-Fields are in snake case, dates are ISO 8601 strings in UTC, and token amounts
-are strings in the token's smallest unit.
-
-## Access
-
-| Route             | What it answers                                         | SDK                   |
-| ----------------- | ------------------------------------------------------- | --------------------- |
-| `GET /v1/access`  | Whether a customer has access to a plan                 | `hasAccess`, `access` |
-| `GET /v1/access`  | Without `plan`: every plan the customer has anything on | `accessList`          |
-| `GET /v1/project` | The id of the project the key belongs to                |                       |
-
-Query: exactly one of `wallet`, `external_id`, `email`, and optionally `plan`
-and `attempts=true`. See [Check access](./access.mdx).
-
-## Plans
-
-| Route                 | What it answers                                           | SDK              |
-| --------------------- | --------------------------------------------------------- | ---------------- |
-| `GET /v1/plans`       | Every plan of the project that has a slug, sorted by slug | `plans.list`     |
-| `GET /v1/plans/:slug` | One plan: name, price, period, token, status, end date    | `plans.retrieve` |
-
-## Subscriptions
-
-| Route                                       | What it does                          | `subscriptions.` |
-| ------------------------------------------- | ------------------------------------- | ---------------- |
-| `POST /v1/subscriptions`                    | Reserves one, builds what is signed   | `create`         |
-| `POST /v1/subscriptions/:id/submit`         | Sends what the wallet signed          | `submit`         |
-| `GET /v1/subscriptions`                     | A customer's subscriptions, paginated | `list`           |
-| `GET /v1/subscriptions/:id`                 | One subscription                      | `retrieve`       |
-| `GET /v1/subscriptions/:id/attempts`        | Its charges, with the total paid      | `attempts`       |
-| `POST /v1/subscriptions/:id/cancel`         | Builds the cancellation               | `cancel`         |
-| `POST /v1/subscriptions/:id/cancel/confirm` | Confirms it                           | `confirmCancel`  |
-| `POST /v1/subscriptions/:id/resume`         | Builds the undo of a cancellation     | `resume`         |
-| `POST /v1/subscriptions/:id/resume/confirm` | Confirms it                           | `confirmResume`  |
-| `POST /v1/subscriptions/:id/close`          | Builds the closing of an ended one    | `close`          |
-| `POST /v1/subscriptions/:id/close/confirm`  | Confirms it                           | `confirmClose`   |
-
-Lists take `limit` (1 to 100, 20 by default) and `starting_after`, the id of
-the last item of the previous page, and answer `{ data, has_more }`.
-
-See [Subscribe from your server](./subscribe.mdx) and
-[Manage from your server](./manage.mdx).
-
-## Errors
 
 Every error has the same body:
 
@@ -84,11 +22,24 @@ Every error has the same body:
 }
 ```
 
-Branch on `code`. A code is never renamed or reused, but new ones are added:
-keep a default branch. When `retryable` is true, the same request sent again
-unchanged may succeed later; a `Retry-After` header says when.
+| Field        | What it says                                                                           |
+| ------------ | -------------------------------------------------------------------------------------- |
+| `statusCode` | The HTTP status, repeated                                                              |
+| `message`    | A sentence for a person. A validation error answers a list of them. It may be reworded |
+| `error`      | The status's name                                                                      |
+| `code`       | What your code reads                                                                   |
+| `retryable`  | Whether the same request, sent again unchanged, may succeed later                      |
 
-### General
+Branch on `code`, never on `message`. A code is never renamed or reused, but
+new ones are added: keep a default branch.
+
+When `retryable` is true, the same request sent again unchanged may succeed
+later; a `Retry-After` header says when, in seconds. It never means "retry at
+once". Every route is safe to call twice.
+
+Each route's page lists the codes that route answers. This page lists them all.
+
+## General
 
 | `code`                | Status | When                                          |
 | --------------------- | ------ | --------------------------------------------- |
@@ -104,7 +55,7 @@ unchanged may succeed later; a `Retry-After` header says when.
 | `unavailable`         | 503    | Mesub cannot answer right now. Retryable      |
 | `network_unavailable` | 503    | The Solana network does not answer. Retryable |
 
-### Plans
+## Plans
 
 | `code`                     | Status | When                                                  |
 | -------------------------- | ------ | ----------------------------------------------------- |
@@ -118,7 +69,7 @@ unchanged may succeed later; a `Retry-After` header says when.
 | `receiver_account_missing` | 409    | The wallet that receives has no account for the token |
 | `mint_not_on_chain`        | 400    | The token does not exist on chain                     |
 
-### Subscribing
+## Subscribing
 
 | `code`                       | Status | When                                                       |
 | ---------------------------- | ------ | ---------------------------------------------------------- |
@@ -127,7 +78,7 @@ unchanged may succeed later; a `Retry-After` header says when.
 | `seat_cap_reached`           | 409    | The project is at its subscriber limit                     |
 | `pending_cap_reached`        | 429    | Too many subscriptions wait for a signature. Retryable     |
 | `wallet_mismatch`            | 409    | The wallet is not the one the subscription was created for |
-| `payment_pending`            | 409    | A payment for it is still in flight                        |
+| `payment_pending`            | 409    | A payment on it failed and is being retried                |
 | `subscription_cancelled`     | 409    | It was cancelled already                                   |
 | `subscription_stopped`       | 409    | It stopped after missed payments                           |
 | `subscription_terms_changed` | 409    | The plan's terms changed since it was created              |
@@ -135,7 +86,7 @@ unchanged may succeed later; a `Retry-After` header says when.
 | `comeback_landed`            | 409    | A return to this plan already landed                       |
 | `comeback_period_rolling`    | 409    | A return while its billing period turns. Retryable         |
 
-### Signing and sending
+## Signing and sending
 
 | `code`                    | Status | When                                                |
 | ------------------------- | ------ | --------------------------------------------------- |
@@ -151,7 +102,7 @@ unchanged may succeed later; a `Retry-After` header says when.
 | `not_awaiting_signature`  | 409    | The subscription is past the signing step           |
 | `subscription_changed`    | 409    | It changed while the request ran. Retryable         |
 
-### Managing
+## Managing
 
 | `code`                       | Status | When                                              |
 | ---------------------------- | ------ | ------------------------------------------------- |

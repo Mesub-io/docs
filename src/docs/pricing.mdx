@@ -3,7 +3,7 @@ $schema: https://holocron.so/frontmatter.json
 title: "Mesub pricing and limits"
 sidebarTitle: Pricing and limits
 description: "What each Mesub tier costs, how many plans and subscribers a project can hold, how retries differ, and the rate limits of the API."
-icon: lucide:gauge
+icon: "lucide:gauge"
 prompt: |
   Document tiers and limits from @https://github.com/Mesub-io/backend
   (src/projects/projects.service.ts, src/access/access-throttle.ts,
@@ -63,6 +63,8 @@ Limits are per API key, per minute.
 | ---------------------------------------------------------------- | -------------- |
 | Reads: `/v1/access`, `/v1/plans`, `/v1/subscriptions`            | 1,000 a minute |
 | Writes: create, submit, cancel, resume, close and their confirms | 60 a minute    |
+
+Requests with no key, or a wrong one, are counted by IP address: 120 a minute.
 
 Past a limit, Mesub answers 429 `rate_limited` with a `Retry-After` header. The
 SDK caches access answers, so one customer checked on every request costs far

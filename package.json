@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
+    "reference": "node scripts/reference.mjs",
+    "dev": "node scripts/reference.mjs && vite dev",
+    "build": "node scripts/reference.mjs && vite build",
     "start": "node dist/rsc/index.js"
   },
   "dependencies": {

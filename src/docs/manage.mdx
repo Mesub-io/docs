@@ -3,7 +3,7 @@ $schema: https://holocron.so/frontmatter.json
 title: "Cancel, resume and close a subscription"
 sidebarTitle: Manage from your server
 description: "Let a customer cancel, resume or close a subscription from your own UI, and list its payments, with @mesub/node and no widget."
-icon: lucide:sliders-horizontal
+icon: "lucide:sliders-horizontal"
 prompt: |
   Document managing a subscription without the widget from
   @https://github.com/Mesub-io/node-sdk (README: Cancel, resume and close from
@@ -114,7 +114,9 @@ Each is thrown as a `MesubError`. `apiCode` says which:
 | `subscription_not_on_chain`  | It is closed already                                |
 | `nothing_to_confirm`         | A confirm before any transaction was built          |
 
-These six calls are limited to 60 a minute per API key.
+These six calls are limited to 60 a minute per API key. Each has its page in
+the reference, from [cancel](../reference/manage/cancel.mdx) to
+[confirm a close](../reference/manage/confirm-close.mdx).
 
 ## List its payments
 
