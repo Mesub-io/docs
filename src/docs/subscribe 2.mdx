@@ -1,0 +1,191 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Create a subscription from your server"
+sidebarTitle: Subscribe from your server
+description: "Subscribe a customer without the React widget: create on your server, have the wallet sign the terms and the transaction, then submit both to Mesub."
+icon: lucide:server
+prompt: |
+  Document subscribing without the widget from
+  @https://github.com/Mesub-io/node-sdk (README: Subscribe from your server,
+  Errors; src/subscriptions.ts for the shape of what create answers).
+  Three steps as Steps: create, sign in the browser, submit. What create
+  returns in a collapsed block, how long submit takes and what to do when its
+  outcome is unknown, the refusals, and reading a subscription back.
+---
+
+The [React widget](./react.mdx) does this for you. Without it, subscribing is
+three calls: your server creates the subscription, the customer's wallet signs
+twice in the browser, and your server submits what was signed. The API key
+never leaves your server.
+
+<Steps>
+<Step title="Create, on your server">
+
+```ts
+const { subscription, transaction, terms, costs } =
+    await mesub.subscriptions.create({
+        plan: 'pro',
+        wallet, // the wallet that signs and pays
+        external_id: user.id, // optional: your own id for this customer
+        email: user.email, // optional: where their notices go
+    });
+```
+
+Mesub reserves the subscription and builds what the wallet signs. Keep
+`subscription.id`, and send `transaction`, `terms` and `costs` to your page.
+
+Pass `external_id` when your app has a login: it is how
+[`hasAccess`](./access.mdx) finds this customer later, whichever wallet pays.
+
+<Expandable title="See what create answers">
+
+```json
+{
+    "subscription": { "id": "cmg1x0abc0001", "status": "pending" },
+    "transaction": "gAIBBg0Xq3ZkT9yLmR4vP7wJ8sN2aHcVbE5uYtKfDgQxWz1oMiCj6rA0lSnU...",
+    "last_valid_block_height": "301245678",
+    "terms": {
+        "message": "Mesub: the terms of the subscription...\nAmount: 9.99 USDC every month\n...",
+        "expires_at": "2026-01-01T00:05:00.000Z"
+    },
+    "costs": {
+        "rent": {
+            "subscription": "1969680",
+            "authority": "1628640",
+            "total": "3598320"
+        },
+        "fee": {
+            "signatures": 2,
+            "per_signature": "5000",
+            "priority": "0",
+            "total": "10000"
+        },
+        "total": "3608320"
+    }
+}
+```
+
+</Expandable>
+
+`costs` is in lamports, as strings. `rent` is a deposit the customer gets back
+when the subscription is closed; `fee` is spent. `rent.authority` is null when
+the customer already has an authority for that token.
+
+</Step>
+<Step title="Sign, in the browser">
+
+`terms.message` is plain text, one fact per line: the amount, the period,
+who is paid, how to cancel. Show it and the costs to the customer, then ask the wallet for two
+signatures: the terms first, as a message, then the transaction, **without
+sending it**.
+
+```ts
+import bs58 from 'bs58';
+import { VersionedTransaction } from '@solana/web3.js';
+
+// wallet: the connected wallet, for instance useWallet() of
+// @solana/wallet-adapter-react.
+const signature = await wallet.signMessage(
+    new TextEncoder().encode(terms.message),
+);
+const terms_signature = bs58.encode(signature);
+
+const bytes = Uint8Array.from(atob(transaction), (c) => c.charCodeAt(0));
+const signed = await wallet.signTransaction(
+    VersionedTransaction.deserialize(bytes),
+);
+const signedTransaction = btoa(String.fromCharCode(...signed.serialize()));
+```
+
+Both must be signed before `terms.expires_at`, five minutes after `create`.
+Send `terms_signature` and `signedTransaction` back to your server.
+
+</Step>
+<Step title="Submit, on your server">
+
+```ts
+const { subscription, reason } = await mesub.subscriptions.submit(
+    subscriptionId,
+    { transaction: signedTransaction, terms_signature },
+);
+
+if (subscription.access) {
+    // it landed: grant the plan
+} else {
+    // it did not land, and `reason` says why: create again
+}
+```
+
+Mesub checks both signatures, co-signs, sends the transaction and waits for the
+chain.
+
+</Step>
+</Steps>
+
+## How long submit takes
+
+`submit` waits for the chain, so it is slow by design: up to 90 seconds for one
+send, and up to **130 seconds** in all with its own retries. That is longer
+than many serverless functions allow. Lower it there:
+
+```ts
+await mesub.subscriptions.submit(id, body, { timeout: 25_000, budget: 40_000 });
+```
+
+A retry sends the **same request** again. Mesub recognises what it already
+co-signed and answers from the chain, so a customer is never charged twice.
+
+## When the outcome is unknown
+
+If no send got an answer, `submit` throws a `MesubSubmitError`. The wallet may
+still have paid, so do not create a new subscription right away:
+
+```ts
+import { MesubSubmitError } from '@mesub/node';
+
+try {
+    await mesub.subscriptions.submit(id, body);
+} catch (error) {
+    if (error instanceof MesubSubmitError) {
+        // error.subscription is the subscription read back, or null
+        const now = await mesub.subscriptions.retrieve(id);
+        // active: it landed. pending: it may still land, read again later.
+    }
+    throw error;
+}
+```
+
+A `pending` subscription is settled by Mesub on its own within the hour: it
+turns `active` if the transaction landed, `expired` if it did not. Create a new
+one only once it is `expired`.
+
+## Refusals
+
+Each one is thrown as a `MesubError`. `apiCode` says which:
+
+| On       | `apiCode`                | What to do                             |
+| -------- | ------------------------ | -------------------------------------- |
+| `create` | `already_subscribed`     | This wallet already holds this plan    |
+| `create` | `insufficient_balance`   | The wallet cannot pay the first period |
+| `create` | `plan_not_found`         | Fix the slug                           |
+| `submit` | `terms_expired`          | Create again and sign the fresh terms  |
+| `submit` | `transaction_expired`    | Create again                           |
+| `submit` | `subscription_not_found` | The id is not one of your project's    |
+
+Calling `create` again for the same plan and wallet, while nothing has landed,
+answers the same subscription with a fresh transaction.
+
+## Read a subscription back
+
+```ts
+await mesub.subscriptions.retrieve(id);
+await mesub.subscriptions.list({ external_id: user.id }); // { data, has_more }
+
+for await (const sub of mesub.subscriptions.listAll({ external_id: user.id })) {
+    // every page
+}
+```
+
+`list` names the customer the way [`hasAccess`](./access.mdx#who-to-ask-about)
+does: by `external_id`, `wallet` or `email`. The fields and statuses are the
+ones described in [Lifecycle](./lifecycle.mdx).
