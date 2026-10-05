@@ -150,7 +150,7 @@ request it receives. It is the quickest way to see what Mesub sends.
 1. Open [webhook.site](https://webhook.site) and copy **Your unique URL**.
 2. In the [dashboard](https://mesub.io/dashboard#developers), under
    **Developers** then **Webhooks**, add that URL as an endpoint.
-3. Send a test event to it from the endpoint's row.
+3. On that endpoint, click **Send test**.
 4. Back on webhook.site, the request appears with its JSON body and three
    headers: `webhook-id`, `webhook-timestamp` and `webhook-signature`.
 
@@ -160,10 +160,14 @@ done: it would receive your real events too.
 
 ### Send a test event to your own handler
 
-In the dashboard, open your endpoint and send it a test event of the type you
-choose. A test delivery is signed like a real one and carries `"test": true` in
-its body, with a made-up subscription whose id is `sub_test`, so your handler
-can recognise and ignore it.
+In the dashboard, on your endpoint, pick the event to simulate and click
+**Send test**. With no event picked, the plain `test` event is sent. A test
+delivery is signed like a real one and carries `"test": true` at the top of its
+body, with a made-up subscription whose id is `sub_test`, so your handler can
+recognise and ignore it.
+
+The endpoint must be enabled, and one test is pending at a time: wait for it
+to be delivered before sending the next.
 
 A handler running on your machine needs a public URL. A tunnel such as
 [ngrok](https://ngrok.com) gives it one.
