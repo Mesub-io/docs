@@ -133,6 +133,7 @@ unchanged may succeed later; a `Retry-After` header says when.
 | `subscription_terms_changed` | 409    | The plan's terms changed since it was created              |
 | `comeback_in_flight`         | 409    | A return to this plan is being confirmed. Retryable        |
 | `comeback_landed`            | 409    | A return to this plan already landed                       |
+| `comeback_period_rolling`    | 409    | A return while its billing period turns. Retryable         |
 
 ### Signing and sending
 
