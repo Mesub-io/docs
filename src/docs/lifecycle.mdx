@@ -51,6 +51,19 @@ webhook.
 When a charge misses, most often because the wallet holds less than the price,
 the subscription turns `unpaid` and `payment_status` reads `late`.
 
+`late_reason` says why, as the last failed charge found it. It is null on
+every other status, and when Mesub cannot name the cause.
+
+| `late_reason`          | What happened                                 | What fixes it    |
+| ---------------------- | --------------------------------------------- | ---------------- |
+| `insufficient_balance` | The wallet holds less than the price          | Adding funds     |
+| `approval_revoked`     | The wallet no longer lets Mesub charge it     | Not adding funds |
+| `authority_closed`     | The wallet closed its authorisation, for good | Nothing          |
+
+An approval is revoked in the wallet itself, or replaced when another app is
+approved on the same token. Read `late_reason` before you tell a customer to
+top up.
+
 ### On Dev and Business
 
 Mesub retries on its own. A plan gets **3 retries** by default, so a period has
@@ -68,8 +81,8 @@ Access stays on while retries run. `next_retry_at` says when the next one is,
 `access_until` is the date of the last retry: if that one fails too, the
 subscription turns `stopped` and access ends.
 
-A retry that pays turns it back to `active`. The customer has nothing to sign:
-they only need to add funds.
+A retry that pays turns it back to `active`. On `insufficient_balance` the
+customer has nothing to sign: they only need to add funds.
 
 You can change the number of retries and the wait between them per plan, in
 the plan's **Retry policy** in the dashboard. All the retries must fit inside
