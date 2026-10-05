@@ -29,8 +29,8 @@ type Values = Record<string, string>
 
 type Outcome =
   | { kind: 'answer'; status: number; statusText: string; ms: number; headers: [string, string][]; body: string }
-  | { kind: 'cors'; origin: string; base: string }
-  | { kind: 'unreachable'; base: string; message: string }
+  | { kind: 'blocked'; origin: string; base: string }
+  | { kind: 'offline' }
 
 const keyOf = (input: Input) => `${input.in}:${input.name}`
 
@@ -237,19 +237,10 @@ export function TryIt({ server, method, path, summary, inputs, confirm }: Props)
         headers: [...response.headers.entries()],
         body: pretty(body),
       })
-    } catch (error) {
-      // A browser reports a refused cross-origin request and a dead host the
-      // same way. An opaque request to the health route tells them apart: it
-      // carries no key and reads nothing back.
-      const reachable = await fetch(`${base}/health`, { mode: 'no-cors', cache: 'no-store' }).then(
-        () => true,
-        () => false,
-      )
-      setOutcome(
-        reachable
-          ? { kind: 'cors', origin: window.location.origin, base }
-          : { kind: 'unreachable', base, message: error instanceof Error ? error.message : 'The request failed.' },
-      )
+    } catch {
+      // fetch rejects the same way for a request the browser refused to make
+      // across origins and for a host that is down: a page is not told which.
+      setOutcome(navigator.onLine ? { kind: 'blocked', origin: window.location.origin, base } : { kind: 'offline' })
     } finally {
       setSending(false)
     }
@@ -428,22 +419,25 @@ export function TryIt({ server, method, path, summary, inputs, confirm }: Props)
                   </>
                 )}
 
-                {outcome?.kind === 'cors' && (
+                {outcome?.kind === 'blocked' && (
                   <div className='mapi-problem'>
                     <p>
-                      <strong>The browser blocked this request.</strong> The API answered, but it does not allow pages
-                      served from <code>{outcome.origin}</code> to call it (CORS), so the answer cannot be read here.
-                      Nothing is wrong with your key or the request.
+                      <strong>The browser could not read an answer.</strong> Most likely the API does not allow pages
+                      served from <code>{outcome.origin}</code> to call it (CORS). The browser then stops the request
+                      before the key is sent: nothing is wrong with your key or your parameters.
                     </p>
-                    <p>Copy the cURL above and run it in a terminal: it is the same request.</p>
+                    <p>
+                      A host that is down reads the same from a page. Copy the cURL above and run it in a terminal: it
+                      is the same request, and it tells the two apart.
+                    </p>
                   </div>
                 )}
 
-                {outcome?.kind === 'unreachable' && (
+                {outcome?.kind === 'offline' && (
                   <div className='mapi-problem'>
                     <p>
-                      <strong>No answer from {outcome.base}.</strong> The host could not be reached from this browser:
-                      check your connection, then try again.
+                      <strong>This browser is offline.</strong> Nothing was sent. Check your connection, then send
+                      again.
                     </p>
                   </div>
                 )}

@@ -64,6 +64,8 @@ Limits are per API key, per minute.
 | Reads: `/v1/access`, `/v1/plans`, `/v1/subscriptions`            | 1,000 a minute |
 | Writes: create, submit, cancel, resume, close and their confirms | 60 a minute    |
 
+Requests with no key, or a wrong one, are counted by IP address: 120 a minute.
+
 Past a limit, Mesub answers 429 `rate_limited` with a `Retry-After` header. The
 SDK caches access answers, so one customer checked on every request costs far
 fewer calls than requests.

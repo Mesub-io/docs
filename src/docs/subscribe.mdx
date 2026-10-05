@@ -190,6 +190,12 @@ for await (const sub of mesub.subscriptions.listAll({ external_id: user.id })) {
 }
 ```
 
+The raw routes are in the reference:
+[create](../reference/subscriptions/create.mdx),
+[submit](../reference/subscriptions/submit.mdx),
+[retrieve](../reference/subscriptions/retrieve.mdx) and
+[list](../reference/subscriptions/list.mdx).
+
 `list` names the customer the way [`hasAccess`](./access.mdx#who-to-ask-about)
 does: by `external_id`, `wallet` or `email`. The fields and statuses are the
 ones described in [Lifecycle](./lifecycle.mdx).

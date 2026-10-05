@@ -1,15 +1,16 @@
 ---
 $schema: https://holocron.so/frontmatter.json
 title: "Mesub - Docs"
-sidebarTitle: Home
+sidebarTitle: Introduction
 description: "Build recurring payments on Solana with Mesub: publish a plan, check a customer's access from your server, and let them subscribe and manage from your pages."
 hideTitle: true
 sidebarToc: false
 prompt: |
-  Write the home page of the Mesub docs from the pages under @./docs/.
-  One heading, what Mesub does in two sentences, then where to go: the two
-  starting pages, each guide and each reference page with one line on what it
-  answers. Plain lists, no cards.
+  Write the home page of the Mesub docs from the pages under @./docs/ and
+  @./reference/.
+  One heading, what Mesub does in two sentences, then the four ways in as
+  cards: the quickstart, checking access, webhooks, the API reference. Then
+  every other guide in a plain list, one line each on what it answers.
 ---
 
 <h1 style={{ fontSize: '30px', lineHeight: 1.2, fontWeight: 600, letterSpacing: '-0.02em', textWrap: 'balance' }}>Recurring payments on Solana, billed from your server</h1>
@@ -24,19 +25,35 @@ for the wallet part if you want it.
 
 ## Start here
 
+<Columns cols={2}>
+  <Card title="Your first subscriber" icon="lucide:zap" horizontal href="./docs/quickstart.mdx">
+    A plan, an API key, the server routes and a button, in four steps.
+  </Card>
+
+  <Card title="Check access" icon="lucide:shield-check" horizontal href="./docs/access.mdx">
+    Ask whether a customer has access, with `hasAccess`, a guard, or `GET /v1/access`.
+  </Card>
+
+  <Card title="Webhooks" icon="lucide:webhook" horizontal href="./docs/webhooks.mdx">
+    Hear when a subscription renews, misses a payment or ends.
+  </Card>
+
+  <Card title="API reference" icon="lucide:braces" horizontal href="./reference/introduction.mdx">
+    Every route with its parameters, its answers and its error codes. Try a request from the page.
+  </Card>
+</Columns>
+
+## Understand
+
 - [How it works](./docs/how-it-works.mdx): the flow from a click to a renewal,
   and the on-chain accounts behind it.
-- [Your first subscriber](./docs/quickstart.mdx): a plan, an API key, the
-  server routes and a button, in four steps.
+- [Lifecycle](./docs/lifecycle.mdx): every status, what a late payment does,
+  cancelling and resuming.
+- [Get your API key](./docs/api-key.mdx): where to create it, and how to rotate
+  it.
 
 ## Build
 
-- [Check access](./docs/access.mdx): ask whether a customer has access, with
-  `hasAccess`, a guard, or `GET /v1/access`.
-- [Lifecycle](./docs/lifecycle.mdx): every status, what a late payment does,
-  cancelling and resuming.
-- [Webhooks](./docs/webhooks.mdx): hear when a subscription renews, misses a
-  payment or ends.
 - [React widget](./docs/react.mdx): the subscribe and manage buttons.
 - [Subscribe from your server](./docs/subscribe.mdx): the same without the
   widget.
@@ -48,4 +65,4 @@ for the wallet part if you want it.
 
 - [Pricing and limits](./docs/pricing.mdx): the tiers, what counts toward a
   limit, the API's rate limits.
-- [API reference](./docs/api.mdx): every route and every error code.
+- [Errors](./reference/errors.mdx): the body of an error and every error code.

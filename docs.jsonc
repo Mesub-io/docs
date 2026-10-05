@@ -15,6 +15,8 @@
   },
   // The pill at the bottom, so the right column of a reference page starts with its samples.
   "assistant": { "display": "floating" },
+  // Room for the reference's two columns: parameters, then samples.
+  "layout": { "maxWidth": 1320 },
   "navbar": {
     "primary": { "type": "button", "label": "Dashboard", "href": "https://mesub.io/dashboard" }
   },
@@ -30,18 +32,18 @@
             "pages": ["index", "docs/quickstart", "docs/how-it-works", "docs/api-key"]
           },
           {
-            "group": "Gate what is paid",
-            "icon": "lucide:shield-check",
+            "group": "Access and status",
+            "icon": "lucide:lock-keyhole",
             "pages": ["docs/access", "docs/lifecycle", "docs/webhooks"]
           },
           {
-            "group": "Take subscriptions",
+            "group": "Subscribe and manage",
             "icon": "lucide:repeat",
             "pages": ["docs/react", "docs/subscribe", "docs/manage"]
           },
           {
-            "group": "Ship it",
-            "icon": "lucide:flask-conical",
+            "group": "Go live",
+            "icon": "lucide:send",
             "pages": ["docs/testing", "docs/pricing"]
           },
           {

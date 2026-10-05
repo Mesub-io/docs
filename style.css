@@ -4,9 +4,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Room for the reference's two columns: parameters, then samples. */
-  --grid-max-width: 1340px;
-
   --mapi-get: #047857;
   --mapi-post: #1d4ed8;
   --mapi-required: #b91c1c;
