@@ -72,12 +72,12 @@ app.use(
 );
 
 // A paid route.
-app.get('/api/reports', yourLogin, async (req, res) => {
+app.get('/api/analytics', yourLogin, async (req, res) => {
     if (!(await mesub.hasAccess({ external_id: req.user.id }, 'pro'))) {
         res.status(402).json({ error: 'The Pro plan is needed.' });
         return;
     }
-    res.json(buildReport(req.user));
+    res.json(buildAnalytics(req.user));
 });
 ```
 
@@ -92,11 +92,11 @@ export const { GET, POST } = mesubRouteHandlers({
     },
 });
 
-// app/api/reports/route.ts: a paid route.
+// app/api/analytics/route.ts: a paid route.
 import { withMesub } from '@mesub/node/next';
 
 export const GET = withMesub(
-    async (request, mesub) => Response.json(await report(mesub)),
+    async (request, mesub) => Response.json(await analytics(mesub)),
     {
         plan: 'pro',
         customer: async (request) => {
@@ -120,7 +120,7 @@ app.use(
     }),
 );
 
-// reports.controller.ts: a paid route.
+// analytics.controller.ts: a paid route.
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { MesubAccess, type MesubRequest, RequirePlan } from '@mesub/node/nest';
 
@@ -128,7 +128,7 @@ interface AuthedRequest extends MesubRequest {
     user?: { id: string };
 }
 
-@Controller('reports')
+@Controller('analytics')
 @UseGuards(
     YourAuthGuard,
     RequirePlan<AuthedRequest>('pro', {
@@ -136,10 +136,10 @@ interface AuthedRequest extends MesubRequest {
             req.user ? { external_id: req.user.id } : null,
     }),
 )
-export class ReportsController {
+export class AnalyticsController {
     @Get()
     list(@MesubAccess() mesub: MesubAccess) {
-        return buildReport(mesub.customer);
+        return buildAnalytics(mesub.customer);
     }
 }
 ```
@@ -184,7 +184,7 @@ import { SubscribeButton } from '@mesub/react';
 
 Sign in to your own site and click the button. The window shows the plan, asks
 for a wallet, then for **two approvals**: the terms, then the first payment.
-Once it lands, `/api/reports` answers for that customer.
+Once it lands, `/api/analytics` answers for that customer.
 
 <Aside>
 <Tip>
