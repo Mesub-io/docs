@@ -8,7 +8,7 @@ prompt: |
   Document webhooks from @https://github.com/Mesub-io/node-sdk (README, section
   Webhooks) and @https://github.com/Mesub-io/backend (src/webhooks/webhook-payload.ts,
   src/webhooks/webhook-samples.ts, src/pull/pull-events.ts).
-  Set up the endpoint, the handler in Express, Next.js and NestJS, testing it, the
+  Set up the endpoint, the handler in Express, Next.js and NestJS, testing it (webhook.site, then a test event), the
   table of events, full event bodies in collapsed blocks, delivery behavior.
 ---
 
@@ -142,10 +142,31 @@ else, a redirect included, counts as a failure.
 
 ## Test your handler
 
-In the dashboard, open the endpoint and send it a test event of the type you
+### See a delivery before writing any code
+
+[webhook.site](https://webhook.site) gives you a public URL that shows every
+request it receives. It is the quickest way to see what Mesub sends.
+
+1. Open [webhook.site](https://webhook.site) and copy **Your unique URL**.
+2. In the [dashboard](https://mesub.io/dashboard#developers), under
+   **Developers** then **Webhooks**, add that URL as an endpoint.
+3. Send a test event to it from the endpoint's row.
+4. Back on webhook.site, the request appears with its JSON body and three
+   headers: `webhook-id`, `webhook-timestamp` and `webhook-signature`.
+
+The signing secret is not in the request. It stays in the dashboard, and your
+handler uses it to check `webhook-signature`. Remove the endpoint when you are
+done: it would receive your real events too.
+
+### Send a test event to your own handler
+
+In the dashboard, open your endpoint and send it a test event of the type you
 choose. A test delivery is signed like a real one and carries `"test": true` in
 its body, with a made-up subscription whose id is `sub_test`, so your handler
 can recognise and ignore it.
+
+A handler running on your machine needs a public URL. A tunnel such as
+[ngrok](https://ngrok.com) gives it one.
 
 ## Events
 
