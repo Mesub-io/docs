@@ -62,7 +62,9 @@ that creates the `Plan` account with its `mint`, `amount`, `period_hours` and
 `end_ts`. `amount` and `period_hours` are immutable.
 `destinations` lists the wallets that may receive the money, and `pullers`
 lists who may trigger a charge besides you: Mesub's puller is one of them,
-which is what lets Mesub charge on schedule without your signature.
+which is what lets Mesub charge on schedule without your signature. If you take it off
+the plan, charges are blocked until it is back, and your subscribers are not
+held to be late for it.
 
 ### The subscription
 
