@@ -23,7 +23,7 @@
       {
         "group": "Guides",
         "icon": "lucide:book-open",
-        "pages": ["docs/access", "docs/lifecycle", "docs/webhooks", "docs/react"]
+        "pages": ["docs/access", "docs/lifecycle", "docs/webhooks", "docs/react", "docs/subscribe"]
       },
       {
         "group": "AI",
