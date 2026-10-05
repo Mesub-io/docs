@@ -1,0 +1,235 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Handle Mesub webhooks on your server"
+sidebarTitle: Webhooks
+description: "Register an endpoint, verify each delivery with its signing secret, and react to renewals, missed payments and cancellations."
+icon: lucide:webhook
+prompt: |
+  Document webhooks from @https://github.com/Mesub-io/node-sdk (README, section
+  Webhooks) and @https://github.com/Mesub-io/backend (src/webhooks/webhook-payload.ts,
+  src/webhooks/webhook-samples.ts, src/pull/pull-events.ts).
+  Set up the endpoint, the handler in Express and Next.js, testing it, the
+  table of events, full event bodies in collapsed blocks, delivery behavior.
+---
+
+`hasAccess` is enough to gate a route. Webhooks are for reacting when something
+changes: a renewal, a missed payment, a cancellation.
+
+## Set up your endpoint
+
+In the [dashboard](https://mesub.io/dashboard#developers), open **Developers**,
+then **Webhooks**, add your URL and pick its events. Put the endpoint's signing
+secret in your server's environment:
+
+```bash
+MESUB_WEBHOOK_SECRET=whsec_...
+```
+
+An endpoint must be a public HTTPS URL. A project can have up to 16.
+
+## Create a handler
+
+Mesub signs each delivery the [Standard Webhooks](https://www.standardwebhooks.com)
+way. The signature covers the exact bytes sent, so verify the **raw body**,
+never one a JSON parser read and wrote again.
+
+<CodeGroup>
+
+```ts Express
+import express from 'express';
+import { Mesub, MesubError } from '@mesub/node';
+
+const mesub = new Mesub(); // reads MESUB_API_KEY and MESUB_WEBHOOK_SECRET
+
+// express.raw on this route, before any express.json() reaches it.
+app.post(
+    '/webhooks/mesub',
+    express.raw({ type: 'application/json' }),
+    async (req, res) => {
+        let event;
+        try {
+            event = await mesub.webhooks.verify(req.body, req.headers);
+        } catch (error) {
+            if (error instanceof MesubError) return res.status(400).end();
+            throw error;
+        }
+
+        if (await alreadyHandled(event.id)) return res.status(200).end();
+
+        switch (event.type) {
+            case 'subscription.renewed':
+                // event.data is the subscription, event.data.detail what was paid
+                break;
+            case 'subscription.payment_failed':
+                // event.data.detail: reason, retries_left, next_retry_at
+                break;
+        }
+        res.status(200).end();
+    },
+);
+```
+
+```ts Next.js
+// app/webhooks/mesub/route.ts
+import { MesubError, verifyWebhook } from '@mesub/node';
+
+export async function POST(request: Request) {
+    let event;
+    try {
+        event = await verifyWebhook(await request.text(), request.headers);
+    } catch (error) {
+        if (error instanceof MesubError) return new Response(null, { status: 400 });
+        throw error;
+    }
+
+    if (await alreadyHandled(event.id)) return new Response(null, { status: 200 });
+
+    switch (event.type) {
+        case 'subscription.renewed':
+            break;
+        case 'subscription.payment_failed':
+            break;
+    }
+    return new Response(null, { status: 200 });
+}
+```
+
+</CodeGroup>
+
+Answer with a 2xx within 10 seconds, before any slow work of your own. Anything
+else, a redirect included, counts as a failure.
+
+## Test your handler
+
+In the dashboard, open the endpoint and send it a test event of the type you
+choose. A test delivery is signed like a real one and carries `"test": true` in
+its body, with a made-up subscription whose id is `sub_test`, so your handler
+can recognise and ignore it.
+
+## Events
+
+| Event                         | Sent when                                               |
+| ----------------------------- | ------------------------------------------------------- |
+| `subscription.created`        | The first payment landed                                |
+| `subscription.renewed`        | A period was paid                                       |
+| `subscription.payment_failed` | A charge missed                                         |
+| `subscription.stopped`        | Mesub stopped charging after missed payments            |
+| `subscription.cancelled`      | The customer cancelled; access runs to the period's end |
+| `subscription.resumed`        | A cancellation was undone                               |
+| `subscription.ended`          | It is over; `data.end_reason` says why                  |
+| `subscription.expired`        | A checkout was started and never signed                 |
+| `test`                        | You sent one from the dashboard                         |
+
+Mesub may add a type later: keep a default branch.
+
+## The event object
+
+Every event has the same shape: its `type`, when it happened (`created_at`),
+and `data`, the subscription as `subscriptions.retrieve` answers it, plus
+`detail`, which is the event's own. The id to deduplicate on is not in the
+body: it is the `webhook-id` header, which the SDK gives you as `event.id`.
+
+<Expandable title="See a full subscription.payment_failed event">
+
+```json
+{
+    "type": "subscription.payment_failed",
+    "created_at": "2026-01-31T00:01:00.000Z",
+    "data": {
+        "id": "cmg1x0abc0001",
+        "status": "unpaid",
+        "paused": false,
+        "end_reason": null,
+        "access": true,
+        "payment_status": "late",
+        "plan": "pro",
+        "wallet": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+        "email": "subscriber@example.com",
+        "external_id": "user_123",
+        "current_period_start": "2026-01-01T00:00:00.000Z",
+        "current_period_end": "2026-01-31T00:00:00.000Z",
+        "next_charge_at": null,
+        "next_retry_at": "2026-02-01T00:01:00.000Z",
+        "retry_deadline": null,
+        "next_retry_number": 1,
+        "retries_allowed": 3,
+        "access_until": "2026-02-03T00:01:00.000Z",
+        "created_at": "2026-01-01T00:00:00.000Z",
+        "confirmed_at": "2026-01-01T00:00:05.000Z",
+        "detail": {
+            "reason": "insufficient-balance",
+            "amount": "9990000",
+            "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            "period_start": "2026-01-31T00:00:00.000Z",
+            "period_end": "2026-03-02T00:00:00.000Z",
+            "next_retry_at": "2026-02-01T00:01:00.000Z",
+            "retry_deadline": null,
+            "retries_left": 3,
+            "retry_mode": "scheduled"
+        }
+    }
+}
+```
+
+</Expandable>
+
+<Expandable title="See a full subscription.renewed event">
+
+```json
+{
+    "type": "subscription.renewed",
+    "created_at": "2026-01-31T00:01:00.000Z",
+    "data": {
+        "id": "cmg1x0abc0001",
+        "status": "active",
+        "paused": false,
+        "end_reason": null,
+        "access": true,
+        "payment_status": "paid",
+        "plan": "pro",
+        "wallet": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+        "email": "subscriber@example.com",
+        "external_id": "user_123",
+        "current_period_start": "2026-01-31T00:00:00.000Z",
+        "current_period_end": "2026-03-02T00:00:00.000Z",
+        "next_charge_at": "2026-03-02T00:00:00.000Z",
+        "next_retry_at": null,
+        "retry_deadline": null,
+        "next_retry_number": null,
+        "retries_allowed": null,
+        "access_until": "2026-03-02T00:00:00.000Z",
+        "created_at": "2026-01-01T00:00:00.000Z",
+        "confirmed_at": "2026-01-01T00:00:05.000Z",
+        "detail": {
+            "amount": "9990000",
+            "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            "period_start": "2026-01-31T00:00:00.000Z",
+            "period_end": "2026-03-02T00:00:00.000Z",
+            "signature": "5wHu1qwD4kLDLoREEPBpKvGvhbxWFxFFfr5nQq7dxAsRRDXvHRqpNvfsCvC1qzjWQhqmPtBb8LnZjKmvpehJqSWk"
+        }
+    }
+}
+```
+
+</Expandable>
+
+`data` is read when the delivery is first attempted, so it can be newer than
+the event itself. `created_at` is when the event happened.
+
+## Delivery behavior
+
+### Retries
+
+A delivery that gets no 2xx is sent again for about three days, under the same
+`event.id`.
+
+### Duplicates
+
+The same event can arrive more than once. Store the ids you handled and drop a
+repeat.
+
+### Order
+
+Order is not guaranteed: a retry can land after a later event. Before granting
+or revoking anything, ask `hasAccess` rather than trusting the last event you
+saw.

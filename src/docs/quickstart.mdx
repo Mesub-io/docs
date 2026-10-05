@@ -10,7 +10,6 @@ prompt: |
   route, Routes for the React widget) and @https://github.com/Mesub-io/react-sdk
   (README: One line on each side, Subscribe).
   Four steps: plan, API key, server, page. Express, Next.js and NestJS as tabs.
-  Close with webhooks: the endpoint, verifying a delivery, the list of events.
   End with what to read next.
 ---
 
@@ -192,58 +191,5 @@ under **Subscriptions**, with its
 first payment under **Collection**. From here Mesub charges it every period
 without anything more from you.
 
-## Handle webhooks
-
-`hasAccess` is enough to gate a route. To react when something changes, a
-renewal, a missed payment, a cancellation, give Mesub an endpoint. In the
-[dashboard](https://mesub.io/dashboard#developers), open **Developers**, then
-**Webhooks**, add your URL and put its signing secret in your server's
-environment:
-
-```bash
-MESUB_WEBHOOK_SECRET=whsec_...
-```
-
-Verify each delivery on its raw body before reading it:
-
-```ts
-import { MesubError } from '@mesub/node';
-
-app.post(
-    '/webhooks/mesub',
-    express.raw({ type: 'application/json' }),
-    async (req, res) => {
-        let event;
-        try {
-            event = await mesub.webhooks.verify(req.body, req.headers);
-        } catch (error) {
-            if (error instanceof MesubError) return res.status(400).end();
-            throw error;
-        }
-
-        switch (event.type) {
-            case 'subscription.renewed':
-                // event.data is the subscription
-                break;
-            case 'subscription.payment_failed':
-                // event.data.detail: reason, retries_left, next_retry_at
-                break;
-        }
-        res.status(200).end();
-    },
-);
-```
-
-| Event                         | Sent when                                               |
-| ----------------------------- | ------------------------------------------------------- |
-| `subscription.created`        | The first payment landed                                |
-| `subscription.renewed`        | A period was paid                                       |
-| `subscription.payment_failed` | A charge missed                                         |
-| `subscription.stopped`        | Mesub stopped charging after missed payments            |
-| `subscription.cancelled`      | The customer cancelled; access runs to the period's end |
-| `subscription.resumed`        | A cancellation was undone                               |
-| `subscription.ended`          | It is over; `data.end_reason` says why                  |
-| `subscription.expired`        | A checkout was started and never signed                 |
-
-A delivery can arrive twice or out of order. Drop an `event.id` you already
-handled, and before granting or revoking anything, ask `hasAccess`.
+To be told when a subscription renews, misses a payment or ends, see
+[webhooks](./webhooks.mdx).
