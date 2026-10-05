@@ -1,9 +1,7 @@
 {
   "$schema": "https://holocron.so/docs.json",
   "name": "Mesub - Docs",
-  "logo": { "light": "/logo.svg", "href": "/" },
-  // Light only: the dashboard has no dark theme either.
-  "appearance": { "default": "light", "strict": true },
+  "logo": { "light": "/logo.svg", "dark": "/logo-dark.svg", "href": "https://mesub.io" },
   "description": "Documentation for Mesub, recurring payments on Solana.",
   "favicon": "/icon.png",
   "colors": {
