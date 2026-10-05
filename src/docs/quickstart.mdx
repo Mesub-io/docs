@@ -9,7 +9,7 @@ prompt: |
   @https://github.com/Mesub-io/node-sdk (README: Install, Configuration, Gate a
   route, Routes for the React widget) and @https://github.com/Mesub-io/react-sdk
   (README: One line on each side, Subscribe).
-  Four steps: plan, API key, server, page. Express examples, Next as a tab.
+  Four steps: plan, API key, server, page. Express, Next.js and NestJS as tabs.
   End with what to read next.
 ---
 
@@ -66,7 +66,8 @@ app.use(
     '/api/mesub',
     yourLogin,
     mesubRoutes({
-        customer: (req) => (req.user ? { external_id: req.user.id } : null),
+        customer: (req) =>
+            req.user ? { external_id: req.user.id } : null,
     }),
 );
 
@@ -81,7 +82,7 @@ app.get('/api/reports', yourLogin, async (req, res) => {
 ```
 
 ```ts Next.js
-// app/api/mesub/[...mesub]/route.ts
+// app/api/mesub/[...mesub]/route.ts: what the widget calls.
 import { mesubRouteHandlers } from '@mesub/node/next';
 
 export const { GET, POST } = mesubRouteHandlers({
@@ -90,12 +91,65 @@ export const { GET, POST } = mesubRouteHandlers({
         return session ? { external_id: session.userId } : null;
     },
 });
+
+// app/api/reports/route.ts: a paid route.
+import { withMesub } from '@mesub/node/next';
+
+export const GET = withMesub(
+    async (request, mesub) => Response.json(await report(mesub)),
+    {
+        plan: 'pro',
+        customer: async (request) => {
+            const session = await yourSession(request);
+            return session ? { external_id: session.userId } : null;
+        },
+    },
+);
+```
+
+```ts NestJS
+// main.ts: what the widget calls. Mount it after your own login.
+import { mesubRoutes } from '@mesub/node/express';
+
+app.use(
+    '/api/mesub',
+    yourLogin,
+    mesubRoutes({
+        customer: (req) =>
+            req.user ? { external_id: req.user.id } : null,
+    }),
+);
+
+// reports.controller.ts: a paid route.
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { MesubAccess, type MesubRequest, RequirePlan } from '@mesub/node/nest';
+
+interface AuthedRequest extends MesubRequest {
+    user?: { id: string };
+}
+
+@Controller('reports')
+@UseGuards(
+    YourAuthGuard,
+    RequirePlan<AuthedRequest>('pro', {
+        customer: (req) =>
+            req.user ? { external_id: req.user.id } : null,
+    }),
+)
+export class ReportsController {
+    @Get()
+    list(@MesubAccess() mesub: MesubAccess) {
+        return buildReport(mesub.customer);
+    }
+}
 ```
 
 </CodeGroup>
 
 `customer` must come from **a session you verified**, never from what the
-browser sends. When it returns `null`, the routes answer 401.
+browser sends. When it returns `null`, the routes answer 401. The Next.js and
+NestJS examples use the SDK's guards, which answer 401 and 402 themselves;
+Express has one too, `requirePlan`.
 
 </Step>
 <Step title="Put the button on a page">
