@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import { FieldList, Md } from './fields'
 import { Responses } from './responses'
 import { endpoint, schemaFields, SERVER, type Field } from './spec'
+import { Tabs, type Tab } from './tabs'
 import { TryIt } from './try-it'
 
 function Section({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
@@ -33,6 +34,95 @@ const AUTHORIZATION = (description: string): Field[] => [
 export function Endpoint({ id, children }: { id: string; children?: ReactNode }) {
   const model = endpoint(id)
   const webhook = model.kind === 'webhook'
+  const side = webhook ? 'received' : 'sent'
+
+  // What changes from one route to the next comes first; the key, which never does, last.
+  const tabs: Tab[] = []
+  if (!webhook && model.headerParams.length > 0) {
+    tabs.push({
+      id: 'headers',
+      label: 'Headers',
+      count: model.headerParams.length,
+      node: (
+        <Section title='Headers'>
+          <FieldList fields={model.headerParams} side={side} />
+        </Section>
+      ),
+    })
+  }
+  if (model.pathParams.length > 0) {
+    tabs.push({
+      id: 'path',
+      label: 'Path',
+      count: model.pathParams.length,
+      node: (
+        <Section title='Path Parameters'>
+          <FieldList fields={model.pathParams} />
+        </Section>
+      ),
+    })
+  }
+  if (model.queryParams.length > 0) {
+    tabs.push({
+      id: 'query',
+      label: 'Query',
+      count: model.queryParams.length,
+      node: (
+        <Section title='Query Parameters'>
+          <FieldList fields={model.queryParams} />
+        </Section>
+      ),
+    })
+  }
+  if (model.body) {
+    tabs.push({
+      id: webhook ? 'payload' : 'body',
+      label: webhook ? 'Payload' : 'Body',
+      count: model.body.fields.length,
+      node: (
+        <Section title={webhook ? 'Payload' : 'Body'} note='application/json'>
+          <FieldList fields={model.body.fields} side={side} />
+        </Section>
+      ),
+    })
+  }
+  // On a webhook the payload is the news, its headers come after.
+  if (webhook && model.headerParams.length > 0) {
+    tabs.push({
+      id: 'headers',
+      label: 'Headers',
+      count: model.headerParams.length,
+      node: (
+        <Section title='Headers'>
+          <FieldList fields={model.headerParams} side={side} />
+        </Section>
+      ),
+    })
+  }
+  if (webhook) {
+    tabs.push({
+      id: 'your-answer',
+      label: 'Your answer',
+      node: (
+        <Section title='Your answer'>
+          <p className='mapi-lead'>
+            <Md text={model.responses[0]?.description ?? ''} />
+          </p>
+        </Section>
+      ),
+    })
+  } else {
+    tabs.push({ id: 'response', label: 'Response', node: <Responses responses={model.responses} /> })
+    tabs.push({
+      id: 'authorization',
+      label: 'Authorization',
+      node: (
+        <Section title='Authorizations'>
+          <FieldList fields={AUTHORIZATION(model.auth).map((row) => ({ ...row, type: 'string · header' }))} />
+        </Section>
+      ),
+    })
+  }
 
   return (
     <div className='mapi'>
@@ -72,45 +162,7 @@ export function Endpoint({ id, children }: { id: string; children?: ReactNode })
         </p>
       )}
 
-      {!webhook && (
-        <Section title='Authorizations'>
-          <FieldList fields={AUTHORIZATION(model.auth).map((row) => ({ ...row, type: 'string · header' }))} />
-        </Section>
-      )}
-
-      {model.headerParams.length > 0 && (
-        <Section title='Headers'>
-          <FieldList fields={model.headerParams} side={webhook ? 'received' : 'sent'} />
-        </Section>
-      )}
-
-      {model.pathParams.length > 0 && (
-        <Section title='Path Parameters'>
-          <FieldList fields={model.pathParams} />
-        </Section>
-      )}
-
-      {model.queryParams.length > 0 && (
-        <Section title='Query Parameters'>
-          <FieldList fields={model.queryParams} />
-        </Section>
-      )}
-
-      {model.body && (
-        <Section title={webhook ? 'Payload' : 'Body'} note='application/json'>
-          <FieldList fields={model.body.fields} side={webhook ? 'received' : 'sent'} />
-        </Section>
-      )}
-
-      {webhook ? (
-        <Section title='Your answer'>
-          <p className='mapi-lead'>
-            <Md text={model.responses[0]?.description ?? ''} />
-          </p>
-        </Section>
-      ) : (
-        <Responses responses={model.responses} />
-      )}
+      <Tabs label={webhook ? 'What Mesub sends' : 'Request and response'} tabs={tabs} />
     </div>
   )
 }
