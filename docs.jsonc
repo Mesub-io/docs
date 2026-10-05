@@ -101,6 +101,7 @@
             "pages": [
               "reference/webhooks/overview",
               "reference/webhooks/subscription-created",
+              "reference/webhooks/subscription-renewal-upcoming",
               "reference/webhooks/subscription-renewed",
               "reference/webhooks/subscription-payment-failed",
               "reference/webhooks/subscription-stopped",

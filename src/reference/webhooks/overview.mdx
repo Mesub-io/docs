@@ -62,17 +62,18 @@ the event itself. The id to deduplicate on is not in the body: it is the
 
 ## Events
 
-| Event                                                              | Sent when                                               |
-| ------------------------------------------------------------------ | ------------------------------------------------------- |
-| [`subscription.created`](./subscription-created.mdx)               | The first payment landed                                |
-| [`subscription.renewed`](./subscription-renewed.mdx)               | A period was paid                                       |
-| [`subscription.payment_failed`](./subscription-payment-failed.mdx) | A charge missed                                         |
-| [`subscription.stopped`](./subscription-stopped.mdx)               | Mesub stopped charging after missed payments            |
-| [`subscription.cancelled`](./subscription-cancelled.mdx)           | The customer cancelled; access runs to the period's end |
-| [`subscription.resumed`](./subscription-resumed.mdx)               | A cancellation was undone                               |
-| [`subscription.ended`](./subscription-ended.mdx)                   | It is over; `data.end_reason` says why                  |
-| [`subscription.expired`](./subscription-expired.mdx)               | A checkout was started and never signed                 |
-| [`test`](./test.mdx)                                               | You sent one from the dashboard                         |
+| Event                                                                  | Sent when                                               |
+| ---------------------------------------------------------------------- | ------------------------------------------------------- |
+| [`subscription.created`](./subscription-created.mdx)                   | The first payment landed                                |
+| [`subscription.renewal_upcoming`](./subscription-renewal-upcoming.mdx) | A renewal is near, and whether it can pay               |
+| [`subscription.renewed`](./subscription-renewed.mdx)                   | A period was paid                                       |
+| [`subscription.payment_failed`](./subscription-payment-failed.mdx)     | A charge missed                                         |
+| [`subscription.stopped`](./subscription-stopped.mdx)                   | Mesub stopped charging after missed payments            |
+| [`subscription.cancelled`](./subscription-cancelled.mdx)               | The customer cancelled; access runs to the period's end |
+| [`subscription.resumed`](./subscription-resumed.mdx)                   | A cancellation was undone                               |
+| [`subscription.ended`](./subscription-ended.mdx)                       | It is over; `data.end_reason` says why                  |
+| [`subscription.expired`](./subscription-expired.mdx)                   | A checkout was started and never signed                 |
+| [`test`](./test.mdx)                                                   | You sent one from the dashboard                         |
 
 Mesub may add a type later: keep a default branch.
 
