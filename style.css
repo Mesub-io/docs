@@ -877,3 +877,10 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+@media (max-width: 520px) {
+  /* The path is what tells two routes apart: the host gives way to it. */
+  .mapi-bar .mapi-url-host {
+    display: none;
+  }
+}
