@@ -2,105 +2,82 @@
 $schema: https://holocron.so/frontmatter.json
 title: "How Mesub charges a wallet on a schedule"
 sidebarTitle: How it works
-description: "A customer approves a plan once, Mesub charges their wallet every period, and your server asks who has access. The whole flow in three moments."
+description: "What happens when a customer subscribes, how each period is charged, and where your server fits. Built on the Solana Foundation's subscriptions program."
 icon: lucide:workflow
 prompt: |
   Explain how Mesub works from @https://github.com/Mesub-io/node-sdk (README,
-  sections How it fits, Gate a route, Subscribe from your server) and
-  @https://github.com/Mesub-io/react-sdk.
-  Keep it simple: three moments (approve, charge, access) shown with the Flow
-  component of @../components/flow.tsx, then who does what as cards, the
-  Solana Foundation program it is built on from
-  @https://github.com/solana-foundation/subscriptions, then what the merchant
-  builds. No ASCII diagram.
+  sections How it fits, Gate a route, Subscribe from your server),
+  @https://github.com/Mesub-io/react-sdk and
+  @https://github.com/solana-foundation/subscriptions.
+  Plain prose, one sequence diagram, one table of what runs where. No cards,
+  no marketing tone.
 ---
 
-import { Flow, Moment } from '../components/flow'
+A customer approves a plan once. After that, Mesub pulls the plan's price from
+their wallet to yours at every period, and your server asks Mesub whether a
+given customer has access.
 
-Mesub is **recurring billing for Solana wallets**, built on the
-[Solana Foundation's subscriptions program](https://github.com/solana-foundation/subscriptions).
-Everything it does fits in three moments.
+## The flow
 
-<Flow>
-  <Moment step={1} tone='orange' who='Your customer' title='Approves a plan, once'>
-    Two approvals in their wallet: the terms, then the first payment.
-  </Moment>
-  <Moment step={2} tone='violet' who='Mesub' title='Charges it every period'>
-    The price goes from their wallet to yours. A missed charge is retried.
-  </Moment>
-  <Moment step={3} tone='teal' who='Your server' title='Asks who has access'>
-    One question before serving anything paid. Mesub answers yes or no.
-  </Moment>
-</Flow>
+```mermaid
+sequenceDiagram
+    participant W as Customer's wallet
+    participant S as Your server
+    participant M as Mesub
+    participant C as Solana
 
-## Who does what
+    Note over W,C: Subscribing, once
+    S->>M: create a subscription to "pro"
+    M-->>S: terms and an unsigned transaction
+    S-->>W: ask for two signatures
+    W->>S: signed terms, signed transaction
+    S->>M: submit
+    M->>C: co-sign and send, first period paid
 
-<CardGroup cols={3}>
-  <Card title="You" icon="lucide:store">
-    Publish a **plan** in the dashboard: a price, a token, a period, and the
-    wallet that receives the money.
-  </Card>
-  <Card title="Your customer" icon="lucide:wallet">
-    Pays from their **own wallet**, any that speaks the
-    [Wallet Standard](https://github.com/wallet-standard/wallet-standard). No
-    Mesub account: they stay signed in to your site.
-  </Card>
-  <Card title="Mesub" icon="lucide:repeat">
-    Sends each charge when it is due, **retries** a missed one, and keeps the
-    record of every attempt.
-  </Card>
-</CardGroup>
+    Note over W,C: Every period after
+    M->>C: pull the price to your wallet
+    M-->>S: webhook (renewed, late, stopped)
 
-## Built on the Solana Foundation's program
+    Note over W,C: On each paid request
+    S->>M: does this customer have access?
+    M-->>S: yes or no
+```
 
-The money never passes through Mesub. Every plan and every subscription lives
-in the **[subscriptions program](https://github.com/solana-foundation/subscriptions)**
-published by the Solana Foundation: open source under the
-[MIT licence](https://github.com/solana-foundation/subscriptions/blob/main/LICENSE)
-and [audited three times by Cantina](https://github.com/solana-foundation/subscriptions/blob/main/audits/AUDIT_STATUS.md).
+Your pages never call Mesub and never hold a key. The wallet signs in the
+browser, and everything else goes through your server.
 
-<CardGroup cols={2}>
-  <Card title="What the program does" icon="lucide:shield-check">
-    Holds the plan's terms on chain and lets the price be pulled **once per
-    period**, to the plan's destination, and nothing more.
-  </Card>
-  <Card title="What Mesub adds" icon="lucide:layers">
-    Sends each pull on time, retries the ones that fail, records every attempt,
-    and turns the result into the **access** your server reads.
-  </Card>
-</CardGroup>
+## What runs where
 
-<Note>
-Mesub is **non-custodial**. A subscription is a
-[capped delegation](https://github.com/solana-foundation/subscriptions#overview)
-the customer can cancel on chain at any time, with or without Mesub.
-</Note>
+| Where       | What it does                                              | What it holds             |
+| ----------- | --------------------------------------------------------- | ------------------------- |
+| Your pages  | Ask the wallet for its two signatures                     | Nothing secret            |
+| Your server | Creates subscriptions, checks access, receives webhooks   | The API key               |
+| Mesub       | Sends each charge, retries a missed one, records attempts | No funds                  |
+| Solana      | Holds the plan's terms and moves the tokens               | The customer's delegation |
 
-The program's address is `De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44`.
+Your customer has no Mesub account. Mesub finds them by the id you give them
+(`external_id`), by the wallet that pays, or by their email.
 
-## What you build
+## The on-chain program
 
-<Steps>
-<Step title="A plan">
+Mesub does not hold or route the money. Plans and subscriptions live in the
+[subscriptions program](https://github.com/solana-foundation/subscriptions)
+published by the Solana Foundation, which is open source
+([MIT](https://github.com/solana-foundation/subscriptions/blob/main/LICENSE))
+and [audited by Cantina](https://github.com/solana-foundation/subscriptions/blob/main/audits/AUDIT_STATUS.md).
+Its address is `De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44`.
 
-Created in the dashboard, **no code**. Its price, token and period are signed
-on chain and cannot change after.
+When a customer subscribes, their wallet delegates one thing: the plan's price
+may be pulled once per period, to the plan's destination. The plan's price,
+token, period and destination are fixed when the plan is created. The customer
+can cancel on chain at any time, with or without Mesub.
 
-</Step>
-<Step title="A check on your server">
+What Mesub adds on top is the operations: sending each pull on time, retrying
+the ones that fail, keeping the record of every attempt, and answering your
+server.
 
-Install **[`@mesub/node`](https://github.com/Mesub-io/node-sdk)**, give it your API key, and ask `hasAccess` before
-serving anything paid. This is the only code Mesub requires.
+## Next
 
-</Step>
-<Step title="A way to subscribe">
-
-The ready-made button of **[`@mesub/react`](https://github.com/Mesub-io/react-sdk)**, or your own button calling your
-server. Either way, your pages never hold a key and never talk to Mesub.
-
-</Step>
-</Steps>
-
-<Card title="Your first subscriber" icon="lucide:zap" href="./quickstart.mdx">
-  The four steps, with the code to copy.
-</Card>
+- [Your first subscriber](./quickstart.mdx): a plan, an API key, and the code.
+- [`@mesub/node`](https://github.com/Mesub-io/node-sdk), the server SDK.
+- [`@mesub/react`](https://github.com/Mesub-io/react-sdk), the optional subscribe button.

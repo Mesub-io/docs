@@ -13,9 +13,9 @@ prompt: |
   End with what to read next.
 ---
 
-This takes a project from nothing to **one paying subscriber**: a plan, a
-server that knows who has access, and a button. It uses the React widget for
-the wallet part, because it is the shortest path.
+This page takes an empty project to one paying subscriber. It uses the React
+widget for the wallet part; without it, see `subscriptions.create` in the
+[`@mesub/node` README](https://github.com/Mesub-io/node-sdk#subscribe-from-your-server).
 
 <Steps>
 <Step title="Publish a plan">
@@ -138,9 +138,3 @@ The widget signs for **devnet** by default. Pass `chain="solana:mainnet"` to
 The subscription appears in the dashboard under **Subscriptions**, with its
 first payment under **Collection**. From here Mesub charges it every period
 without anything more from you.
-
-## What you did not have to do
-
-Your pages hold **no key** and never call Mesub. Your customer created **no
-account** anywhere but on your site. And no code of yours touched a
-transaction: the widget and the routes did the signing and the sending.
