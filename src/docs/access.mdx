@@ -140,6 +140,7 @@ const answer = await mesub.access({ external_id: user.id }, 'pro');
     "status": "active",
     "paused": false,
     "end_reason": null,
+    "late_reason": null,
     "payment_status": "paid",
     "subscribed_since": "2026-01-01T00:00:05.000Z",
     "first_subscribed_at": "2026-01-01T00:00:05.000Z",
@@ -160,6 +161,7 @@ const answer = await mesub.access({ external_id: user.id }, 'pro');
 | `access`           | The only field a guard needs                                                                                                  |
 | `status`           | Where the subscription stands: `none`, `pending`, `active`, `unpaid`, `cancelled`, `stopped`, `ended`, `failed`, `superseded` |
 | `payment_status`   | `paid`, `late` or `none`                                                                                                      |
+| `late_reason`      | Why an `unpaid` one is late: see [late payments](./lifecycle.mdx#late-payments). Null otherwise                               |
 | `access_until`     | When access ends unless a charge renews it. Null while `access` is false                                                      |
 | `next_charge_at`   | The next charge. Null when a retry is pending instead                                                                         |
 | `next_retry_at`    | The next retry of a missed charge                                                                                             |
