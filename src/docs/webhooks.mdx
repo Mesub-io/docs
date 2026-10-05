@@ -8,7 +8,7 @@ prompt: |
   Document webhooks from @https://github.com/Mesub-io/node-sdk (README, section
   Webhooks) and @https://github.com/Mesub-io/backend (src/webhooks/webhook-payload.ts,
   src/webhooks/webhook-samples.ts, src/pull/pull-events.ts).
-  Set up the endpoint, the handler in Express and Next.js, testing it, the
+  Set up the endpoint, the handler in Express, Next.js and NestJS, testing it, the
   table of events, full event bodies in collapsed blocks, delivery behavior.
 ---
 
@@ -91,6 +91,47 @@ export async function POST(request: Request) {
             break;
     }
     return new Response(null, { status: 200 });
+}
+```
+
+```ts NestJS
+// main.ts: keep the raw body beside the parsed one.
+const app = await NestFactory.create(AppModule, { rawBody: true });
+
+// mesub-webhooks.controller.ts
+import {
+    BadRequestException,
+    Controller,
+    HttpCode,
+    Post,
+    type RawBodyRequest,
+    Req,
+} from '@nestjs/common';
+import type { Request } from 'express';
+import { MesubError, verifyWebhook } from '@mesub/node';
+
+@Controller('webhooks/mesub')
+export class MesubWebhooksController {
+    @Post()
+    @HttpCode(200)
+    async receive(@Req() req: RawBodyRequest<Request>) {
+        let event;
+        try {
+            event = await verifyWebhook(req.rawBody!, req.headers);
+        } catch (error) {
+            if (error instanceof MesubError) throw new BadRequestException();
+            throw error;
+        }
+
+        if (await alreadyHandled(event.id)) return;
+
+        switch (event.type) {
+            case 'subscription.renewed':
+                break;
+            case 'subscription.payment_failed':
+                break;
+        }
+    }
 }
 ```
 
