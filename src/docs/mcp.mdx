@@ -1,12 +1,174 @@
 ---
 $schema: https://holocron.so/frontmatter.json
-title: "MCP server for Mesub"
+title: "Connect an AI agent to your Mesub project with MCP"
 sidebarTitle: MCP server
-description: "An MCP server that lets an AI agent read your Mesub project, its plans and subscriptions. Not available yet."
+description: "A hosted MCP server that lets your AI agent read one Mesub project and act on it: what it can do, what it never can, and the risks."
 icon: "lucide:plug"
-tag: SOON
 prompt: |
-  A short page saying this is not available yet and what it will do.
+  Document the Mesub MCP server from @https://github.com/Mesub-io/mcp (README,
+  src/tools), @https://github.com/Mesub-io/backend (src/agent-auth for how a
+  connection works, src/agent-routes for what an agent reaches and its limits)
+  and @https://github.com/Mesub-io/frontend
+  (lib/dashboard/agent-consent.ts for the consent page's words,
+  lib/dashboard/agent-connections.ts for Connected agents).
+  What it is and is not, next to the skills. Connecting, generically: no
+  product named. The tools as a table, Read, Act, Prepare, one plain line each,
+  no parameters. What it can never do, the limits, cutting a connection, the
+  risks, a few example requests. The server's address is written once, in
+  @../components/mcp.tsx.
 ---
 
-**Soon.** This is not available yet.
+import { McpAddress, McpCommand, McpJson } from '../components/mcp'
+
+## What it is
+
+An [MCP](https://modelcontextprotocol.io) server that Mesub hosts. Your AI tool
+connects to it, and its agent can then read **one project** and act on it, the
+way you would in the dashboard. There is nothing to install and no
+[API key](./api-key.mdx) to hand over.
+
+It is not the [agent skills](./skills.mdx). The skills teach an agent to
+**write** your integration, in your codebase. The MCP server lets an agent
+**act** on your project: look at a subscription, retry a charge, add a webhook.
+
+It is **all or nothing**. A connected agent can use every tool listed below.
+There is no read-only mode, so connect an agent only if you would let it do
+all of it.
+
+## Connect
+
+1. Add the server's address to your AI tool, as a remote MCP server.
+2. The tool opens a Mesub page in your browser. **Sign in** to the dashboard.
+3. **Choose one project.** Nothing is chosen for you.
+4. Read what the page lists, then press **Authorize**.
+
+The address:
+
+<McpAddress />
+
+A tool configured by a JSON file takes an entry like this one:
+
+<McpJson />
+
+Some tools want `"type": "http"` beside the `url`. A tool configured from a
+terminal takes the same two things, a name and the address. The words of the
+command are your tool's own, this is only its usual shape:
+
+<McpCommand />
+
+The page that asks you to authorize shows the **name the application gave
+itself**. Beside it is the host that publishes the application when Mesub
+could check one, and **Unverified app** when it could not. The page also says
+where your browser is sent back to: check both before you authorize. A request
+you leave open is dropped after ten minutes.
+
+An agent works on the project you chose and no other. To work on **another
+project**, connect again and choose it.
+
+## What the agent can do
+
+**Read**
+
+| Tool                      | What it does                                                                |
+| ------------------------- | --------------------------------------------------------------------------- |
+| `get_project`             | The project, its tier, and how much of its limits is used                   |
+| `list_plans`              | Every plan, with its subscribers and what it collected this period          |
+| `get_plan`                | One plan: its subscribers by status, its latest charges, why charges fail   |
+| `list_subscriptions`      | Subscriptions, by plan or by status, or found by wallet                     |
+| `get_subscription`        | One subscription and every charge tried on it                               |
+| `check_access`            | Whether a customer has [access](./access.mdx), and why not when they do not |
+| `list_events`             | What happened on a day: payments, subscribers, changes to the project       |
+| `list_upcoming_charges`   | The charges and retries to come, and the renewals at risk                   |
+| `get_overview`            | Collected, failed and recovered over 7, 30 or 90 days                       |
+| `list_webhooks`           | The [webhook](./webhooks.mdx) endpoints, never their secret                 |
+| `list_webhook_deliveries` | An endpoint's deliveries and what your server answered                      |
+| `get_webhook_secret`      | An endpoint's signing secret                                                |
+| `search_docs`             | Search these docs. It reads nothing of your project                         |
+| `ping`                    | Whether Mesub answers                                                       |
+
+**Act**
+
+| Tool                        | What it does                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------- |
+| `retry_charge`              | Retry a failed charge, when a customer is [late](./lifecycle.mdx#late-payments) |
+| `update_retry_policy`       | Change how many times a plan retries, and how far apart                         |
+| `create_webhook`            | Add an endpoint and return its signing secret                                   |
+| `update_webhook`            | Change the URL or the events of an endpoint, turn it off or back on             |
+| `delete_webhook`            | Delete an endpoint                                                              |
+| `regenerate_webhook_secret` | Draw a new signing secret. The old one stops signing at once                    |
+| `send_test_webhook`         | Send a test delivery to an endpoint                                             |
+| `update_project`            | Rename the project                                                              |
+
+**Prepare**
+
+| Tool           | What it does                                                                          |
+| -------------- | ------------------------------------------------------------------------------------- |
+| `prepare_plan` | Fill in a plan for you. It does not exist until you sign it yourself in the dashboard |
+
+Before preparing, your agent asks you two things: whether to **lock the receiving wallets** (up to four, and which one is paid for now) and whether the plan **ends on a date**. A locked list can never change once you sign. With no list, the plan pays your own wallet.
+
+The tools describe their own parameters to the agent, so there is nothing to
+learn here: ask in plain words.
+
+## What it can never do
+
+Whatever the agent is asked, by you or by anything it reads:
+
+- See or change your **API key**.
+- Change the project's tier.
+- Delete a project or a plan.
+- Close a plan, or change the end or the receiving wallets of a plan you already signed.
+- Resend an old webhook delivery.
+- Cancel or change a customer's subscription. Only their wallet can.
+
+These are not tools switched off: the server has no such tool, and Mesub gives
+an agent no way to them.
+
+## Limits
+
+Per connection: **120 reads** and **20 changes** a minute, and 5 test
+deliveries a minute. A project holds up to 10 connected agents, and an account
+30 across its projects.
+
+## See and cut a connection
+
+In the [dashboard](https://mesub.io/dashboard#developers), open **Developers**,
+then **Connected agents**. Each line is one connection: the application, when
+it connected, when it was last used and when it ends.
+
+- **Revoke** cuts a connection. The agent's very next call is refused.
+- A connection **ends by itself after a day without use**. While it is used,
+  it stays open: your tool renews its one hour token by itself.
+
+Cutting a connection undoes nothing: what the agent changed stays as it is.
+To connect again, start from your tool.
+
+## Risks
+
+**A signing secret lands in your conversation.** When an agent creates a
+webhook, regenerates its secret or reads it, the secret is in the answer, so
+it is in the conversation and wherever your tool keeps it. Move it to your
+server's environment, and regenerate it if the conversation is shared.
+
+**What the agent reads is written by other people.** A plan's name, what a
+webhook endpoint answered, the identifier of a customer: all of it is text
+somebody else chose, and it can be written to look like an instruction. The
+server tells every agent to treat it as data. An agent can still be steered by
+it. That is why the tools that move money or break an integration, such as
+retrying a charge, deleting a webhook or regenerating its secret, are marked
+so that your tool **asks you first**. Keep that question on, and read it.
+
+**You review every prepared plan.** The agent fills it in, you sign it. Read
+the price, the token, the period, the end and above all the **receiving
+wallets** in the dashboard before you do: each one is shown in full and marked
+when it is not on your account. You can still edit the plan there first.
+
+## Things to ask
+
+- "Why does this customer have no access?"
+- "Which renewals are at risk this week?"
+- "Add a webhook for failed payments and give me the secret for my .env"
+- "Prepare a Pro plan at 10 USDC a month"
+
+For what the answers mean, see [the lifecycle](./lifecycle.mdx) and
+[check access](./access.mdx).
