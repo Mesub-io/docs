@@ -45,13 +45,13 @@ const mesub = new Mesub(); // reads MESUB_API_KEY and MESUB_WEBHOOK_SECRET
 app.post(
     '/webhooks/mesub',
     express.raw({ type: 'application/json' }),
-    async (req, res) => {
+    async (req, res, next) => {
         let event;
         try {
             event = await mesub.webhooks.verify(req.body, req.headers);
         } catch (error) {
             if (error instanceof MesubError) return res.status(400).end();
-            throw error;
+            return next(error); // Express 4 does not catch a throw in an async handler
         }
 
         if (await alreadyHandled(event.id)) return res.status(200).end();
