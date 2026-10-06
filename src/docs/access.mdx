@@ -202,10 +202,13 @@ not be answered.
 | Status | `code`            | When                                                                  |
 | ------ | ----------------- | --------------------------------------------------------------------- |
 | 400    | `invalid_request` | Not exactly one of `wallet`, `external_id`, `email`, or one malformed |
-| 401    | `unauthorized`    | No API key, or one Mesub never issued                                 |
+| 401    | `unauthorized`    | An API key Mesub never issued, or one rotated since                   |
 | 404    | `plan_not_found`  | No plan of yours under that slug                                      |
 | 429    | `rate_limited`    | More than 1,000 access calls a minute on one API key                  |
 | 5xx    | `unavailable`     | Mesub failed, or did not answer in time                               |
+
+With no API key at all nothing is sent: `new Mesub()` throws a `TypeError`
+when the server starts.
 
 Every error body has the same shape:
 
@@ -241,8 +244,8 @@ always thrown.
 
 ## When Mesub does not answer
 
-The SDK caches each answer for its `revalidate_after`. If Mesub then fails or
-is too slow:
+The SDK caches each answer for its `revalidate_after`. If Mesub then fails,
+is too slow, or answers that the rate limit is reached:
 
 - `hasAccess` and the guards serve the **last answer they knew** for that
   customer and plan, for up to 24 hours. A paying customer is not locked out
@@ -251,5 +254,5 @@ is too slow:
   answers 503 with `Retry-After: 30`.
 - `access` throws instead, since it is meant for a screen.
 
-A guard never holds a request more than 2 seconds for this check
+A guard never waits on Mesub more than 2 seconds for this check
 (`guardTimeout`).

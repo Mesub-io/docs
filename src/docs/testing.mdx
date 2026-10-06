@@ -22,7 +22,9 @@ const fake = new FakeMesub();
 const mesub = fake.client(); // a real Mesub client, wired to the fake
 ```
 
-Call `fake.reset()` between tests.
+Call `fake.reset()` between tests, and take a new `fake.client()` in each one:
+`reset()` empties the fake, not the answers a client already cached, which it
+would serve again during a simulated outage.
 
 ## Access
 
