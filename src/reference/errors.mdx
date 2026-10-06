@@ -63,11 +63,28 @@ Each route's page lists the codes that route answers. This page lists them all.
 | `plan_not_on_chain`        | 409    | The plan was never published                          |
 | `plan_deleted`             | 409    | The plan is gone                                      |
 | `plan_sunset`              | 409    | The plan takes no new subscribers                     |
-| `plan_ended`               | 409    | The plan is past its end date                         |
+| `plan_ended`               | 409    | The plan is past its end date: see below              |
 | `plan_rebuilt`             | 409    | Another plan now stands at its address                |
 | `plan_mismatch`            | 409    | The plan on chain is not the one Mesub recorded       |
 | `receiver_account_missing` | 409    | The wallet that receives has no account for the token |
 | `mint_not_on_chain`        | 400    | The token does not exist on chain                     |
+
+`plan_ended` is what [Create a subscription](./subscriptions/create.mdx)
+answers once a plan's end date has passed. In the dashboard, the same code
+refuses closing that plan to new subscribers, changing its names, and retrying
+one of its payments by hand: nothing can be charged on it any more.
+
+Three more are answered in the dashboard only, when you create a plan with an
+end date:
+
+| `code`              | Status | When                                                                  |
+| ------------------- | ------ | --------------------------------------------------------------------- |
+| `end_date_too_soon` | 400    | The end date is less than one billing period, plus five minutes, away |
+| `end_date_too_far`  | 400    | The end date is more than 100 years away                              |
+| `end_date_stale`    | 409    | The plan's end date no longer holds as you sign its creation          |
+
+None of the three is retryable: change the date. An end date is counted in
+Unix seconds, and `end_date_too_far` is what a date sent in milliseconds gets.
 
 ## Subscribing
 

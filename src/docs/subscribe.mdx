@@ -11,6 +11,9 @@ prompt: |
   Three steps as Steps: create, sign in the browser, submit. What create
   returns in a collapsed block, how long submit takes and what to do when its
   outcome is unknown, the refusals, and reading a subscription back.
+  The terms of a plan with an end date, copied from
+  @https://github.com/Mesub-io/backend (src/subscriptions/terms.ts and its
+  spec): the last charge in full, and the single charge.
 ---
 
 The [React widget](./react.mdx) does this for you. Without it, subscribing is
@@ -45,7 +48,7 @@ Pass `external_id` when your app has a login: it is how
     "transaction": "gAIBBg0Xq3ZkT9yLmR4vP7wJ8sN2aHcVbE5uYtKfDgQxWz1oMiCj6rA0lSnU...",
     "last_valid_block_height": "301245678",
     "terms": {
-        "message": "Mesub: the terms of the subscription...\nAmount: 9.99 USDC every month\n...",
+        "message": "Mesub: the terms of the subscription...\nAmount: 9.99 USDC every 30 days\n...",
         "expires_at": "2026-01-01T00:05:00.000Z"
     },
     "costs": {
@@ -75,7 +78,8 @@ the customer already has an authority for that token.
 <Step title="Sign, in the browser">
 
 `terms.message` is plain text, one fact per line: the amount, the period,
-who is paid, how to cancel. Show it and the costs to the customer, then ask the wallet for two
+who is paid, how to cancel, and [when the plan ends](#a-plan-with-an-end-date)
+if it does. Show it and the costs to the customer, then ask the wallet for two
 signatures: the terms first, as a message, then the transaction, **without
 sending it**.
 
@@ -121,6 +125,50 @@ chain.
 
 </Step>
 </Steps>
+
+## A plan with an end date
+
+Nobody has access past a plan's end date, and the last period is charged in
+full even when the plan ends inside it. Mesub writes both in the terms, so the
+customer reads them before signing. These are the lines of `terms.message`
+that say what is charged, for a plan of 20 USDC every 30 days.
+
+With no end date:
+
+```text
+Amount: 20 USDC every 30 days
+First charge: 20 USDC now, in the transaction you sign next
+Then: 20 USDC every 30 days, until you cancel
+```
+
+With an end date, two more lines:
+
+```text
+Amount: 20 USDC every 30 days
+First charge: 20 USDC now, in the transaction you sign next
+Then: 20 USDC every 30 days, until you cancel, or the plan ends on 2027-01-01
+Last charge: 20 USDC, in full, for the last period that starts before the plan ends
+Access: stops when the plan ends on 2027-01-01, even if the last period paid for is not over
+```
+
+When the plan ends before a second charge can be made, the first one is the
+only one:
+
+```text
+Amount: 20 USDC, a single charge
+Single charge: 20 USDC now, in full, in the transaction you sign next
+Access: until the plan ends on 2026-10-02, even if the period paid for is not over
+No further charge: the plan ends on 2026-10-02
+```
+
+The date is the plan's end, as a day in UTC. Show the message as it is: a page
+that words these lines differently tells the customer something other than
+what they sign.
+
+Terms that name a second charge are refused at `submit` with `terms_changed`
+if the plan's end has come too close for it meanwhile. Create again: the new
+terms say it is a single charge. Once the plan has ended, `create` is refused
+with `plan_ended`.
 
 ## How long submit takes
 
@@ -168,7 +216,9 @@ Each one is thrown as a `MesubError`. `apiCode` says which:
 | `create` | `already_subscribed`     | This wallet already holds this plan    |
 | `create` | `insufficient_balance`   | The wallet cannot pay the first period |
 | `create` | `plan_not_found`         | Fix the slug                           |
+| `create` | `plan_ended`             | The plan is past its end date          |
 | `submit` | `terms_expired`          | Create again and sign the fresh terms  |
+| `submit` | `terms_changed`          | The plan changed since. Create again   |
 | `submit` | `transaction_expired`    | Create again                           |
 | `submit` | `subscription_not_found` | The id is not one of your project's    |
 

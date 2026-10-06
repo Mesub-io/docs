@@ -66,6 +66,32 @@ which is what lets Mesub charge on schedule without your signature. If you take 
 the plan, charges are blocked until it is back, and your subscribers are not
 held to be late for it.
 
+### An end date
+
+A plan runs until you close it, unless you give it an end date when you create
+it: the last day it charges, in UTC. It is written on chain as `end_ts`.
+
+| Rule            | What it is                                     |
+| --------------- | ---------------------------------------------- |
+| At the earliest | One billing period from now, plus five minutes |
+| At the latest   | 100 years from now                             |
+| Once created    | The date cannot be removed or pushed later     |
+
+A date too close is refused with `end_date_too_soon`, and one too far with
+`end_date_too_far`. A plan left unsigned until its date is too close is
+refused with `end_date_stale`: change the date, then sign.
+
+For your subscribers, the end date is where everything stops:
+
+- Nobody has access past it, whatever period they paid for.
+- The last period is charged in full, even when the plan ends inside it.
+- Nothing is charged after it, and every subscription still running ends with
+  `plan_ended`.
+- Nobody can subscribe from then on.
+
+The terms a customer signs name the date and say the first two. See
+[when the plan has an end date](./lifecycle.mdx#when-the-plan-has-an-end-date).
+
 ### The subscription
 
 Subscribing creates the customer's `SubscriptionAuthority` for that token if

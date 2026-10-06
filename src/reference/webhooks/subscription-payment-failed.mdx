@@ -82,6 +82,8 @@ A charge missed.
 
 <More>
 
+`detail` says what comes next. On a plan with an end date, the plan can end before the next retry: `detail.next_retry_at` is then null and `detail.retries_left` is 0, and the subscription ends at the plan's end with `subscription.ended`.
+
 Mesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.
 
 </More>

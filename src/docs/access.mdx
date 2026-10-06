@@ -161,15 +161,19 @@ const answer = await mesub.access({ external_id: user.id }, 'pro');
 
 | Field              | What it says                                                                                                                  |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `access`           | The only field a guard needs                                                                                                  |
+| `access`           | The only field a guard needs. False from [the plan's end date](./lifecycle.mdx#when-the-plan-has-an-end-date) on              |
 | `status`           | Where the subscription stands: `none`, `pending`, `active`, `unpaid`, `cancelled`, `stopped`, `ended`, `failed`, `superseded` |
 | `payment_status`   | `paid`, `late` or `none`                                                                                                      |
 | `late_reason`      | Why an `unpaid` one is late: see [late payments](./lifecycle.mdx#late-payments). Null otherwise                               |
-| `access_until`     | When access ends unless a charge renews it. Null while `access` is false                                                      |
-| `next_charge_at`   | The next charge. Null when a retry is pending instead                                                                         |
-| `next_retry_at`    | The next retry of a missed charge                                                                                             |
+| `access_until`     | When access ends unless a charge renews it, never later than the plan's end date. Null while `access` is false                |
+| `next_charge_at`   | The next charge. Null when a retry is pending instead, or when the plan ends before it                                        |
+| `next_retry_at`    | The next retry of a missed charge. Null when the plan ends before it                                                          |
 | `wallet`           | The wallet that pays. Null when the customer has nothing on that plan                                                         |
 | `revalidate_after` | Seconds this answer stays true. The SDK caches it for that long                                                               |
+
+Read `access` to decide, never `status`. On a plan with an end date, nobody
+has access past that date, and for a few minutes after it `status` can still
+read `active` or `unpaid` with `access: false`.
 
 Mesub may add a status later, so keep a default branch. Asked with
 `{ attempts: true }`, the answer also carries the last charges.

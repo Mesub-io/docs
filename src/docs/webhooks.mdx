@@ -10,6 +10,9 @@ prompt: |
   src/webhooks/webhook-samples.ts, src/pull/pull-events.ts).
   Set up the endpoint, the handler in Express, Next.js and NestJS, testing it (webhook.site, then a test event), the
   table of events, full event bodies in collapsed blocks, delivery behavior.
+  What a plan's end date changes, from src/pull/renewal-check.sweep.ts and
+  src/pull/pull.processor.ts: no renewal_upcoming for a charge that cannot
+  happen, payment_failed with no retry, ended with plan_ended.
 ---
 
 `hasAccess` is enough to gate a route. Webhooks are for reacting when something
@@ -303,13 +306,13 @@ what the coming charge would meet:
 }
 ```
 
-| Field           | What it holds                                                               |
-| --------------- | --------------------------------------------------------------------------- |
-| `can_pay`       | Whether the charge would go through as the wallet stood when it was read    |
-| `renewal_issue` | `balance`, `authority`, or null when it can pay                             |
-| `amount`        | What will be charged, in the token's smallest unit                          |
-| `mint`          | The token                                                                   |
-| `due_at`        | When the charge is due                                                      |
+| Field           | What it holds                                                            |
+| --------------- | ------------------------------------------------------------------------ |
+| `can_pay`       | Whether the charge would go through as the wallet stood when it was read |
+| `renewal_issue` | `balance`, `authority`, or null when it can pay                          |
+| `amount`        | What will be charged, in the token's smallest unit                       |
+| `mint`          | The token                                                                |
+| `due_at`        | When the charge is due                                                   |
 
 `balance` means the wallet holds less than the amount, or has no account for
 the token: the customer adds funds. `authority` means Mesub can no longer move
@@ -324,6 +327,30 @@ or emptied afterwards changes the outcome, and the charge itself answers with
 An endpoint receives it only if that event is selected for it in the
 dashboard: an endpoint created before it existed does not get it by itself. Mesub also mails the customer when the charge cannot pay and the
 subscription carries an email.
+
+It is never sent for a charge that cannot happen. A subscription in the last
+period of a plan with an end date has no renewal: no event, and no mail.
+
+## At a plan's end
+
+A plan can have an [end date](./lifecycle.mdx#when-the-plan-has-an-end-date),
+and three events read differently around it.
+
+| Event                           | What changes                                                           |
+| ------------------------------- | ---------------------------------------------------------------------- |
+| `subscription.renewal_upcoming` | Not sent in the last period: the plan ends before the next charge      |
+| `subscription.payment_failed`   | Can carry `next_retry_at: null` and `retries_left: 0` in `data.detail` |
+| `subscription.ended`            | Sent at the plan's end, with `data.end_reason` at `plan_ended`         |
+
+A charge that misses when the plan ends before the next retry has no retry to
+announce: `next_retry_at` is null, `retries_left` is 0 and `retry_mode` is
+null. The subscription stays `unpaid` until the plan's end, then ends. On
+Free, `retry_deadline` is the plan's end when that comes before the deadline.
+
+`subscription.ended` arrives within a few minutes of the plan's end, for a
+subscription that was still `active` or `unpaid`. Access has stopped at the
+end itself: an event delivered in between can carry `status: "active"` with
+`access: false`.
 
 ## Delivery behavior
 

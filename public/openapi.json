@@ -49,7 +49,7 @@
         ],
         "summary": "Check access",
         "operationId": "checkAccess",
-        "description": "Whether a customer may use a plan, and what explains the answer. Always 200 for a customer, subscribed or not: a customer who never subscribed answers `access: false` with `status: \"none\"`. The 404 is about the slug, never about them.\n\nLeave `plan` out to get every plan of the project the customer has anything on.",
+        "description": "Whether a customer may use a plan, and what explains the answer. Always 200 for a customer, subscribed or not: a customer who never subscribed answers `access: false` with `status: \"none\"`. The 404 is about the slug, never about them.\n\nLeave `plan` out to get every plan of the project the customer has anything on.\n\nOn a plan with an end date, nobody has access past that date: `access` is false from the plan's end on and `access_until` is never later, whatever period was paid for. The subscription turns `ended` within minutes of it, so `status` can still read `active` or `unpaid` for that long with `access` false. Gate on `access`.",
         "x-mesub": {
           "href": "reference/access/check",
           "title": "Check a customer's access",
@@ -455,7 +455,7 @@
         ],
         "summary": "Retrieve a plan",
         "operationId": "retrievePlan",
-        "description": "One plan: its name, its price in the smallest unit and as a person counts it, its period, its token, its status, its end date, and whether it takes new subscribers now.",
+        "description": "One plan: its name, its price in the smallest unit and as a person counts it, its period, its token, its status, its end date, and whether it takes new subscribers now.\n\nA plan past its end date takes no new subscriber: `available` is false, and [Create a subscription](/reference/subscriptions/create) answers `plan_ended`.",
         "x-mesub": {
           "href": "reference/plans/retrieve",
           "limit": "1,000 calls a minute per API key"
@@ -628,7 +628,7 @@
         ],
         "summary": "Create a subscription",
         "operationId": "createSubscription",
-        "description": "Reserves a subscription to one of your plans for the wallet named, and builds what that wallet signs: the terms, as a message, then the transaction, without sending it. Hand both to [Submit](/reference/subscriptions/submit).\n\nCalled again for the same plan, wallet and customer while nothing has landed, it answers the same subscription with a fresh transaction. The customer is the `external_id`, else the `email`, else nobody. Another customer naming the same wallet gets a subscription of its own: only the one the wallet signs for lands.\n\nA wallet whose subscription to this plan stopped comes back over its existing authorisation: a new subscription, with `costs.rent` at zero.",
+        "description": "Reserves a subscription to one of your plans for the wallet named, and builds what that wallet signs: the terms, as a message, then the transaction, without sending it. Hand both to [Submit](/reference/subscriptions/submit).\n\nCalled again for the same plan, wallet and customer while nothing has landed, it answers the same subscription with a fresh transaction. The customer is the `external_id`, else the `email`, else nobody. Another customer naming the same wallet gets a subscription of its own: only the one the wallet signs for lands.\n\nA wallet whose subscription to this plan stopped comes back over its existing authorisation: a new subscription, with `costs.rent` at zero.\n\nOn a plan with an end date, `terms.message` says that the last charge is in full and that access stops when the plan ends. When the plan ends before a second charge can be made, it says the charge is a single one.",
         "x-mesub": {
           "href": "reference/subscriptions/create",
           "limit": "60 calls a minute per API key",
@@ -1521,7 +1521,7 @@
               },
               {
                 "code": "terms_changed",
-                "when": "Newer terms were handed out, or the plan changed since they were signed. Create again.",
+                "when": "Newer terms were handed out, or the plan changed since they were signed, its end date come too close for the second charge they name included. Create again.",
                 "retryable": false
               },
               {
@@ -1661,7 +1661,7 @@
         ],
         "summary": "Retrieve a subscription",
         "operationId": "retrieveSubscription",
-        "description": "One subscription: its status, whether it grants access and until when, its wallet, email and `external_id`, the period it last paid for, and what comes next. `access`, `payment_status` and `access_until` are what [Check access](/reference/access/check) answers for it.\n\nA `superseded` id, left out of the list, still answers here, so an id you stored keeps working.",
+        "description": "One subscription: its status, whether it grants access and until when, its wallet, email and `external_id`, the period it last paid for, and what comes next. `access`, `payment_status` and `access_until` are what [Check access](/reference/access/check) answers for it.\n\nA `superseded` id, left out of the list, still answers here, so an id you stored keeps working.\n\nOn a plan with an end date, `access` is false from that date on and `access_until` is never later than it, whatever period was paid for. `next_charge_at` and `next_retry_at` are null once the plan ends before the charge or the retry.",
         "x-mesub": {
           "href": "reference/subscriptions/retrieve",
           "limit": "1,000 calls a minute per API key",
@@ -3485,7 +3485,7 @@
         ],
         "summary": "subscription.renewal_upcoming",
         "operationId": "webhook_subscription_renewal_upcoming",
-        "description": "A renewal is near, and whether it can pay.\n\nSent once per period, when the subscription enters the last quarter of it and three days before the charge at most, whether the charge can pay or not. Mesub reads the customer's wallet at that moment: `detail` is that reading, not a promise, and the charge itself answers with `subscription.renewed` or `subscription.payment_failed`. An endpoint receives it only if this event is selected for it.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "A renewal is near, and whether it can pay.\n\nSent once per period, when the subscription enters the last quarter of it and three days before the charge at most, whether the charge can pay or not. Mesub reads the customer's wallet at that moment: `detail` is that reading, not a promise, and the charge itself answers with `subscription.renewed` or `subscription.payment_failed`. An endpoint receives it only if this event is selected for it.\n\nNot sent for a charge that cannot happen: on a plan with an end date, a subscription in its last period has no renewal, and gets no event.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-renewal-upcoming",
           "guide": {
@@ -3830,7 +3830,7 @@
         ],
         "summary": "subscription.payment_failed",
         "operationId": "webhook_subscription_payment_failed",
-        "description": "A charge missed.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "A charge missed.\n\n`detail` says what comes next. On a plan with an end date, the plan can end before the next retry: `detail.next_retry_at` is then null and `detail.retries_left` is 0, and the subscription ends at the plan's end with `subscription.ended`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-payment-failed",
           "guide": {
@@ -3952,7 +3952,7 @@
                                   "null"
                                 ],
                                 "format": "date-time",
-                                "description": "When Mesub retries on its own."
+                                "description": "When Mesub retries on its own. Null on Free, when no retry is left, and when the plan ends before the retry."
                               },
                               "retry_deadline": {
                                 "type": [
@@ -3960,11 +3960,11 @@
                                   "null"
                                 ],
                                 "format": "date-time",
-                                "description": "On Free only: when retries by hand close."
+                                "description": "On Free only: when retries by hand close, or the plan's end date when that comes first."
                               },
                               "retries_left": {
                                 "type": "integer",
-                                "description": "How many retries the missed period still gets."
+                                "description": "How many retries the missed period still gets. 0 when none is left, and when the plan ends before the next one."
                               },
                               "retry_mode": {
                                 "type": [
@@ -4452,7 +4452,7 @@
         ],
         "summary": "subscription.ended",
         "operationId": "webhook_subscription_ended",
-        "description": "It is over. `data.end_reason` says why. A cancellation reaching its end sends no event of its own.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "It is over. `data.end_reason` says why. A cancellation reaching its end sends no event of its own.\n\nOn a plan with an end date, a subscription still running or late is ended at the plan's end, within minutes of it, whatever period it paid for: this event then carries `end_reason: \"plan_ended\"`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-ended",
           "guide": {
@@ -4993,7 +4993,7 @@
           },
           "access": {
             "type": "boolean",
-            "description": "The only field a guard needs."
+            "description": "The only field a guard needs. False from the plan's end date on, whatever period was paid for."
           },
           "status": {
             "type": "string",
@@ -5008,7 +5008,7 @@
               "failed",
               "superseded"
             ],
-            "description": "Where the subscription stands. `none` for a customer who never subscribed to this plan. Mesub may add a status later: keep a default branch."
+            "description": "Where the subscription stands. `none` for a customer who never subscribed to this plan. Mesub may add a status later: keep a default branch. For a few minutes after a plan's end date it can still read `active` or `unpaid` with `access` false, never `ended` with `access` true: gate on `access`."
           },
           "paused": {
             "type": "boolean",
@@ -5090,7 +5090,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "When access ends unless a charge renews it. Null while `access` is false."
+            "description": "When access ends unless a charge renews it. Never later than the plan's end date, where access stops for everybody. Null while `access` is false."
           },
           "next_charge_at": {
             "type": [
@@ -5098,7 +5098,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "The next charge. Null when a retry is pending instead."
+            "description": "The next charge. Null when a retry is pending instead, and when the plan's end date leaves no charge to make: a subscription in its last period has none."
           },
           "next_retry_at": {
             "type": [
@@ -5106,7 +5106,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "The next retry of a missed charge."
+            "description": "The next retry of a missed charge. Null when the plan ends before it."
           },
           "retry_deadline": {
             "type": [
@@ -5114,7 +5114,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "On Free only: when retries by hand close for the missed period."
+            "description": "On Free only: when retries by hand close for the missed period, or the plan's end date when that comes first."
           },
           "attempts": {
             "type": "array",
@@ -5252,7 +5252,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "When the plan stops charging. Set on every sunset plan. Null when it has no end."
+            "description": "The plan's end date: when it stops charging, and when access stops for every subscriber, whatever period they paid for. Set on every sunset plan. Null when it has no end."
           }
         }
       },
@@ -5299,7 +5299,7 @@
               "expired",
               "superseded"
             ],
-            "description": "Where it stands. Unlike `GET /v1/access`, may be `expired`: a checkout nobody signed. `cancelled` while the cancellation runs, `ended` once its end passed."
+            "description": "Where it stands. Unlike `GET /v1/access`, may be `expired`: a checkout nobody signed. `cancelled` while the cancellation runs, `ended` once its end passed. For a few minutes after a plan's end date it can still read `active` or `unpaid` with `access` false, never `ended` with `access` true."
           },
           "paused": {
             "type": "boolean",
@@ -5336,7 +5336,7 @@
           },
           "access": {
             "type": "boolean",
-            "description": "Whether this subscription grants access now, as `GET /v1/access` answers it."
+            "description": "Whether this subscription grants access now, as `GET /v1/access` answers it. False from the plan's end date on, whatever period was paid for."
           },
           "payment_status": {
             "type": "string",
@@ -5394,7 +5394,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "The next charge on a running subscription. Null when a retry is pending instead."
+            "description": "The next charge on a running subscription. Null when a retry is pending instead, and when the plan's end date leaves no charge to make: a subscription in its last period has none."
           },
           "next_retry_at": {
             "type": [
@@ -5402,7 +5402,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "The next retry on a late one."
+            "description": "The next retry on a late one. Null when the plan ends before it."
           },
           "retry_deadline": {
             "type": [
@@ -5410,14 +5410,14 @@
               "null"
             ],
             "format": "date-time",
-            "description": "On Free only: when retries by hand close for the missed period."
+            "description": "On Free only: when retries by hand close for the missed period, or the plan's end date when that comes first."
           },
           "next_retry_number": {
             "type": [
               "integer",
               "null"
             ],
-            "description": "Which retry comes at `next_retry_at`: 1 is the first after the missed charge. Null unless Mesub retries on its own."
+            "description": "Which retry comes at `next_retry_at`: 1 is the first after the missed charge. Null unless Mesub retries on its own, and when `next_retry_at` is null."
           },
           "retries_allowed": {
             "type": [
@@ -5432,7 +5432,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "When access ends unless a charge renews it. Null while `access` is false."
+            "description": "When access ends unless a charge renews it. Never later than the plan's end date, where access stops for everybody. Null while `access` is false."
           },
           "created_at": {
             "type": "string",

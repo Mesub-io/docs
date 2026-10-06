@@ -110,4 +110,6 @@ One subscription: its status, whether it grants access and until when, its walle
 
 A `superseded` id, left out of the list, still answers here, so an id you stored keeps working.
 
+On a plan with an end date, `access` is false from that date on and `access_until` is never later than it, whatever period was paid for. `next_charge_at` and `next_retry_at` are null once the plan ends before the charge or the retry.
+
 </Endpoint>
