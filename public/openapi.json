@@ -3485,7 +3485,7 @@
         ],
         "summary": "subscription.renewal_upcoming",
         "operationId": "webhook_subscription_renewal_upcoming",
-        "description": "A renewal is near, and whether it can pay.\n\nSent once per period, when the subscription enters the last quarter of it, whether the charge can pay or not. Mesub reads the customer's wallet at that moment: `detail` is that reading, not a promise, and the charge itself answers with `subscription.renewed` or `subscription.payment_failed`. An endpoint receives it only if this event is selected for it.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "A renewal is near, and whether it can pay.\n\nSent once per period, when the subscription enters the last quarter of it and three days before the charge at most, whether the charge can pay or not. Mesub reads the customer's wallet at that moment: `detail` is that reading, not a promise, and the charge itself answers with `subscription.renewed` or `subscription.payment_failed`. An endpoint receives it only if this event is selected for it.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-renewal-upcoming",
           "guide": {
