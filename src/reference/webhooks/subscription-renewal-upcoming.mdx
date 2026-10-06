@@ -80,6 +80,8 @@ A renewal is near, and whether it can pay.
 
 Sent once per period, when the subscription enters the last quarter of it and three days before the charge at most, whether the charge can pay or not. Mesub reads the customer's wallet at that moment: `detail` is that reading, not a promise, and the charge itself answers with `subscription.renewed` or `subscription.payment_failed`. An endpoint receives it only if this event is selected for it.
 
+Not sent for a charge that cannot happen: on a plan with an end date, a subscription in its last period has no renewal, and gets no event.
+
 Mesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.
 
 </More>

@@ -171,4 +171,6 @@ Whether a customer may use a plan, and what explains the answer. Always 200 for 
 
 Leave `plan` out to get every plan of the project the customer has anything on.
 
+On a plan with an end date, nobody has access past that date: `access` is false from the plan's end on and `access_until` is never later, whatever period was paid for. The subscription turns `ended` within minutes of it, so `status` can still read `active` or `unpaid` for that long with `access` false. Gate on `access`.
+
 </Endpoint>

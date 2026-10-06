@@ -111,4 +111,6 @@ const data = await response.json();
 
 One plan: its name, its price in the smallest unit and as a person counts it, its period, its token, its status, its end date, and whether it takes new subscribers now.
 
+A plan past its end date takes no new subscriber: `available` is false, and [Create a subscription](../subscriptions/create.mdx) answers `plan_ended`.
+
 </Endpoint>

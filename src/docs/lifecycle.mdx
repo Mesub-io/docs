@@ -12,6 +12,9 @@ prompt: |
   The diagram of @../components/lifecycle.tsx, a table of statuses with access
   and payment_status, late payments on paid tiers and on Free, cancelling and
   resuming, why a subscription ends, parked seats, and a customer coming back.
+  A plan's end date from src/plans/plan-end.ts, src/access/access.controller.ts
+  and src/subscriptions/terms.ts: access stops there for everybody, the last
+  period is charged in full, and what the dates read in the last period.
 ---
 
 import { Lifecycle } from '../components/lifecycle'
@@ -40,7 +43,8 @@ nothing more, but the wallet's approval stays open on Solana until the customer
 cancels then closes it, and until then they can [come back](#coming-back).
 
 Gate on `access`, not on `status`: a `cancelled` subscription still grants
-access for a while, and an `unpaid` one may or may not.
+access for a while, an `unpaid` one may or may not, and an `active` one has
+none once [its plan has ended](#when-the-plan-has-an-end-date).
 
 A checkout nobody signed turns `expired`. It never appears in `/v1/access`, only
 when you read a subscription by its id, and in the `subscription.expired`
@@ -113,6 +117,43 @@ subscription is `active` again with its next charge back on schedule.
 
 After `access_until`, it turns `ended` with `end_reason: "cancelled"`. The
 customer can then **close** it to get the rent of its account back.
+
+## When the plan has an end date
+
+A plan can carry an end date, set when you
+[create it](./how-it-works.mdx#an-end-date). `ends_at` on
+[the plan](../reference/plans/retrieve.mdx) says when, and is null on a plan
+with no end.
+
+**Access stops at the plan's end for everybody.** `access` is false from that
+moment on, for a subscription that is `active`, `unpaid`, `cancelled` or
+parked alike, and `access_until` is never later than the plan's end.
+
+The last period is charged in full, even when the plan ends inside it. Mesub
+does not prorate it, and paying it does not carry access past the plan's end.
+The terms the customer signs when subscribing
+[say both](./subscribe.mdx#a-plan-with-an-end-date).
+
+Once the plan ends before the next charge, nothing more is charged, and the
+dates say so:
+
+| Field            | What it reads near the plan's end                               |
+| ---------------- | --------------------------------------------------------------- |
+| `access_until`   | The plan's end, when the paid period or the retries run past it |
+| `next_charge_at` | null: a subscription in its last period has no next charge      |
+| `next_retry_at`  | null when the plan ends before the retry                        |
+| `retry_deadline` | On Free, the plan's end when it comes before the deadline       |
+
+At the plan's end, a subscription that is `active` or `unpaid` turns `ended`
+with `end_reason: "plan_ended"`, and `subscription.ended` is sent. One the
+customer had cancelled ends with `cancelled`, as it would have.
+
+Mesub ends it within a few minutes of the plan's end. For that long `status`
+can still read `active` or `unpaid` while `access` is already false. It never
+reads `ended` with `access` true. A guard reads `access`, never `status`.
+
+From its end on, a plan takes no new subscriber either: creating a
+subscription to it is refused with `plan_ended`.
 
 ## Why a subscription ends
 

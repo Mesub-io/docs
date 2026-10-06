@@ -72,6 +72,8 @@ It is over. `data.end_reason` says why. A cancellation reaching its end sends no
 
 <More>
 
+On a plan with an end date, a subscription still running or late is ended at the plan's end, within minutes of it, whatever period it paid for: this event then carries `end_reason: "plan_ended"`.
+
 Mesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.
 
 </More>
