@@ -289,8 +289,8 @@ the event itself. `created_at` is when the event happened.
 ## Before a renewal
 
 `subscription.renewal_upcoming` is sent once per period, when a subscription
-enters the last quarter of it: about a week before the charge on a monthly
-plan. Mesub reads the customer's wallet at that moment, and `data.detail` says
+enters the last quarter of it, and three days before the charge at most:
+three days ahead on a monthly plan, six hours on a daily one. Mesub reads the customer's wallet at that moment, and `data.detail` says
 what the coming charge would meet:
 
 ```json
