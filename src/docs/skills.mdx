@@ -13,11 +13,11 @@ prompt: |
   run once in an empty project, the skills as a table with the guide each one
   follows, a few example requests, what the skills never do, the skills next to
   the MCP server, the source and where to report a problem. No agent product
-  named. The planned mesub-mcp skill in one line, not as available.
+  named. The mesub-mcp skill is the one that acts on a live project, not on code.
 ---
 
 A skill is a folder of instructions that an AI coding agent reads when a task
-calls for it. The Mesub kit holds six of them. With the kit installed, an agent
+calls for it. The Mesub kit holds seven of them. With the kit installed, an agent
 asked to add subscriptions to your app follows Mesub's own steps and rules
 instead of guessing:
 
@@ -87,10 +87,10 @@ matches.
 | `mesub-webhooks`             | Your server receives Mesub's [events](./webhooks.mdx): the signature, duplicates, retries                                                                 |
 | `mesub-testing`              | [Tests](./testing.mdx) must cover your integration without calling Mesub or touching the chain                                                            |
 | `mesub-errors`               | A call, a route or a payment fails, and the cause must be found from an [error code](../reference/errors.mdx) or a reason                                 |
+| `mesub-mcp`                  | It is connected to the [MCP server](./mcp.mdx) and acts on your live project: read it, find why a payment failed, manage webhooks, prepare a plan         |
 
 `mesub-quickstart` also carries the directory of the kit: start there if you
-install only one. A seventh skill, `mesub-mcp`, will come with the
-[MCP server](./mcp.mdx).
+install only one.
 
 ## How to ask
 
