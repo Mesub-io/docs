@@ -115,14 +115,13 @@ Every skill tells the agent not to:
   browser.
 - Take the customer from the request: a query, a body, a header. It comes from
   the session your app verified.
-- Change the network the wallet signs for without asking you.
 - Install a lookalike when a package is missing.
 - Say the integration is tested end to end. A subscription needs a person with
   a wallet, so the agent reports what it checked and what is left for you to
   click.
 
 The scripts a skill ships only read your project: no write, no install, no
-network, and they never print a key.
+outbound call, and they never print a key.
 
 These are instructions, not a lock. An agent can still get one wrong, which is
 one more reason to read the diff.
