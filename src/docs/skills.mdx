@@ -2,11 +2,143 @@
 $schema: https://holocron.so/frontmatter.json
 title: "Agent skills for Mesub"
 sidebarTitle: Agent skills
-description: "Skills that teach an AI coding agent how to integrate Mesub in your codebase, whichever agent you use. Not available yet."
+description: "A kit of skills that teach an AI coding agent to write your Mesub integration in your codebase, whichever agent you use: install it, what each skill covers, how to ask, and what it never does."
 icon: "lucide:sparkles"
-tag: SOON
 prompt: |
-  A short page saying this is not available yet and what it will do.
+  Document the skills kit from @https://github.com/Mesub-io/skills (README:
+  Skills, Install, What an install copies; catalog.yaml for the skills and
+  their status; AGENTS.md: One kit, every agent, A skill works alone, Content
+  rules; each skill's SKILL.md for when it is used and its rules).
+  What a skill is and why it helps, installing and updating with the commands
+  run once in an empty project, the skills as a table with the guide each one
+  follows, a few example requests, what the skills never do, the skills next to
+  the MCP server, the source and where to report a problem. No agent product
+  named. The mesub-mcp skill is the one that acts on a live project, not on code.
 ---
 
-**Soon.** This is not available yet.
+A skill is a folder of instructions that an AI coding agent reads when a task
+calls for it. The Mesub kit holds seven of them. With the kit installed, an agent
+asked to add subscriptions to your app follows Mesub's own steps and rules
+instead of guessing:
+
+- your [API key](./api-key.mdx) stays on your server;
+- [access](./access.mdx) is checked on your server, not by hiding a button;
+- who is asking comes from your own login, never from the request.
+
+The kit is one set of folders in the open
+[Agent Skills](https://agentskills.io/specification) format. It is the same for
+every agent that reads that format.
+
+The skills are **experimental**: they work today and can change without notice,
+so read what your agent writes as you would any pull request.
+
+## Install
+
+From the root of your project, with the [skills CLI](https://skills.sh):
+
+```bash
+# See what the kit holds, without installing
+npx skills add Mesub-io/skills --list
+
+# Pick skills and agents interactively
+npx skills add Mesub-io/skills
+
+# Every skill of the kit, no prompt
+npx skills add Mesub-io/skills --skill '*' --yes
+
+# One skill, no prompt
+npx skills add Mesub-io/skills --skill mesub-quickstart --yes
+```
+
+Each skill lands in `.agents/skills/<skill>/` of your project, and the CLI
+links it for an agent that reads another folder. Add `-g` to install in your
+user folder instead. It also writes `skills-lock.json`, which records what was
+installed. Commit both if your team should share them.
+
+Each skill works alone, so you can take one without the others. An install
+copies the skill's folder and nothing else.
+
+Without the CLI, a skill is a folder to copy into the place your agent reads
+skills from:
+
+```bash
+git clone --depth 1 https://github.com/Mesub-io/skills.git mesub-skills
+cp -R mesub-skills/skills/<skill> <your agent's skills folder>/
+```
+
+To update, run `npx skills update`. It fetches the skills again from the
+repository.
+
+The skills wire `@mesub/node` and `@mesub/react`, which are **not on npm yet**.
+An agent that has the kit checks what is installed first, and when a package
+is missing it stops and tells you: it does not install a package with a
+similar name or rewrite the calls by hand.
+
+## The skills
+
+There is nothing to call: your agent picks a skill up by itself when the task
+matches.
+
+| Skill                        | The agent uses it when                                                                                                                                    |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mesub-quickstart`           | Your project has no Mesub code yet: from nothing to a [first subscriber](./quickstart.mdx), on Express, Next.js or NestJS                                 |
+| `mesub-gate-access`          | A route or a page is for the subscribers of a plan: [checking access](./access.mdx) and answering a refusal correctly                                     |
+| `mesub-subscribe-and-manage` | Users subscribe, cancel, resume or close, with the [React widget](./react.mdx) or from your server ([subscribe](./subscribe.mdx), [manage](./manage.mdx)) |
+| `mesub-webhooks`             | Your server receives Mesub's [events](./webhooks.mdx): the signature, duplicates, retries                                                                 |
+| `mesub-testing`              | [Tests](./testing.mdx) must cover your integration without calling Mesub or touching the chain                                                            |
+| `mesub-errors`               | A call, a route or a payment fails, and the cause must be found from an [error code](../reference/errors.mdx) or a reason                                 |
+| `mesub-mcp`                  | It is connected to the [MCP server](./mcp.mdx) and acts on your live project: read it, find why a payment failed, manage webhooks, prepare a plan         |
+
+`mesub-quickstart` also carries the directory of the kit: start there if you
+install only one.
+
+## How to ask
+
+In plain words. You do not have to name a skill, or Mesub's vocabulary:
+
+- "Add Mesub to this app and gate the dashboard on the pro plan"
+- "Add a cancel button to the account page"
+- "Handle the failed payment webhook"
+- "Write tests for the access check"
+- "Subscribing throws a 409, find out why"
+
+The agent will ask you for what it cannot know: the plan's slug, and to put
+`MESUB_API_KEY` in your server's environment yourself.
+
+## What the skills never do
+
+Every skill tells the agent not to:
+
+- Ask for your **API key** in the conversation, or read its value. It checks
+  that the name is set, nothing more.
+- Write the key in code, in a log, or in a variable your bundler ships to the
+  browser.
+- Take the customer from the request: a query, a body, a header. It comes from
+  the session your app verified.
+- Install a lookalike when a package is missing.
+- Say the integration is tested end to end. A subscription needs a person with
+  a wallet, so the agent reports what it checked and what is left for you to
+  click.
+
+The scripts a skill ships only read your project: no write, no install, no
+outbound call, and they never print a key.
+
+These are instructions, not a lock. An agent can still get one wrong, which is
+one more reason to read the diff.
+
+## Skills and the MCP server
+
+The skills teach an agent to **write** your integration, in your codebase. The
+[MCP server](./mcp.mdx) lets an agent **act** on your project: look at a
+subscription, retry a charge. One does not need the other.
+
+## Source and problems
+
+The kit is public, under Apache-2.0:
+[github.com/Mesub-io/skills](https://github.com/Mesub-io/skills). Each skill is
+plain text, so you can read what your agent will be told before you install
+it.
+
+If a skill made your agent write something wrong, or missed a case,
+[open an issue](https://github.com/Mesub-io/skills/issues) with what you asked
+and what it wrote. Leave your API key out of it.
