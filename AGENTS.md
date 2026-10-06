@@ -32,6 +32,7 @@ src/components/api/      the endpoint page and its try-it panel, drawn from the 
                          (samples.tsx: the sample cards of the right column;
                          more.tsx: "Read more" under an introduction)
 src/components/          the diagrams: sequence.tsx, lifecycle.tsx
+src/components/mcp.tsx   the MCP server's address, written once, and the snippets drawn from it
 style.css                the styles of src/components/api, all under .mapi-
 public/                  logo, icon, robots.txt
 ```
