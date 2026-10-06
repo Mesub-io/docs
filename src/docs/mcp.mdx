@@ -105,7 +105,7 @@ project**, connect again and choose it.
 | -------------- | ------------------------------------------------------------------------------------- |
 | `prepare_plan` | Fill in a plan for you. It does not exist until you sign it yourself in the dashboard |
 
-A prepared plan always pays **your own wallet**, and it never has an end date.
+Before preparing, your agent asks you two things: whether to **lock the receiving wallets** (up to four, and which one is paid for now) and whether the plan **ends on a date**. A locked list can never change once you sign. With no list, the plan pays your own wallet.
 
 The tools describe their own parameters to the agent, so there is nothing to
 learn here: ask in plain words.
@@ -117,8 +117,7 @@ Whatever the agent is asked, by you or by anything it reads:
 - See or change your **API key**.
 - Change the project's tier.
 - Delete a project or a plan.
-- Close a plan, or give it an end date.
-- Change where the money goes.
+- Close a plan, or change the end or the receiving wallets of a plan you already signed.
 - Resend an old webhook delivery.
 - Cancel or change a customer's subscription. Only their wallet can.
 
@@ -160,7 +159,9 @@ retrying a charge, deleting a webhook or regenerating its secret, are marked
 so that your tool **asks you first**. Keep that question on, and read it.
 
 **You review every prepared plan.** The agent fills it in, you sign it. Read
-the price, the token and the period in the dashboard before you do.
+the price, the token, the period, the end and above all the **receiving
+wallets** in the dashboard before you do: each one is shown in full and marked
+when it is not on your account. You can still edit the plan there first.
 
 ## Things to ask
 
