@@ -66,12 +66,37 @@ const data = await response.json();
     "end_reason": null,
     "late_reason": null,
     "payment_status": "paid",
+    "blocked_since": null,
+    "blocked_reason": null,
     "subscribed_since": "2026-01-01T00:00:05.000Z",
     "first_subscribed_at": "2026-01-01T00:00:05.000Z",
     "current_period_end": "2026-01-31T00:00:00.000Z",
     "cancelled_at": null,
     "access_until": "2026-01-31T00:00:00.000Z",
     "next_charge_at": "2026-01-31T00:00:00.000Z",
+    "next_retry_at": null,
+    "retry_deadline": null,
+    "revalidate_after": 300
+}
+```
+```json title="200 Blocked" lines=false
+{
+    "wallet": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
+    "plan": "pro",
+    "access": true,
+    "status": "active",
+    "paused": false,
+    "end_reason": null,
+    "late_reason": null,
+    "payment_status": "paid",
+    "blocked_since": "2026-01-31T00:02:00.000Z",
+    "blocked_reason": "puller_not_allowed",
+    "subscribed_since": "2026-01-01T00:00:05.000Z",
+    "first_subscribed_at": "2026-01-01T00:00:05.000Z",
+    "current_period_end": "2026-01-31T00:00:00.000Z",
+    "cancelled_at": null,
+    "access_until": "2026-02-03T00:00:00.000Z",
+    "next_charge_at": "2026-01-31T00:12:00.000Z",
     "next_retry_at": null,
     "retry_deadline": null,
     "revalidate_after": 300
@@ -87,6 +112,8 @@ const data = await response.json();
     "end_reason": null,
     "late_reason": null,
     "payment_status": "none",
+    "blocked_since": null,
+    "blocked_reason": null,
     "subscribed_since": null,
     "first_subscribed_at": null,
     "current_period_end": null,
@@ -110,6 +137,8 @@ const data = await response.json();
             "end_reason": null,
             "late_reason": null,
             "payment_status": "paid",
+            "blocked_since": null,
+            "blocked_reason": null,
             "subscribed_since": "2026-01-01T00:00:05.000Z",
             "first_subscribed_at": "2026-01-01T00:00:05.000Z",
             "current_period_end": "2026-01-31T00:00:00.000Z",
@@ -172,5 +201,7 @@ Whether a customer may use a plan, and what explains the answer. Always 200 for 
 Leave `plan` out to get every plan of the project the customer has anything on.
 
 On a plan with an end date, nobody has access past that date: `access` is false from the plan's end on and `access_until` is never later, whatever period was paid for. The subscription turns `ended` within minutes of it, so `status` can still read `active` or `unpaid` for that long with `access` false. Gate on `access`.
+
+A charge may be held for a reason that is not the customer's: the answer then carries `blocked_since` and `blocked_reason`, both null otherwise. `status` and `payment_status` stay as they were, and Mesub keeps trying. `access` is never true past `access_until` on a blocked subscription. [Lifecycle](../../docs/lifecycle.mdx#blocked-charges) says what each reason asks of you.
 
 </Endpoint>

@@ -75,6 +75,8 @@ const data = await response.json();
         "late_reason": null,
         "access": true,
         "payment_status": "paid",
+        "blocked_since": null,
+        "blocked_reason": null,
         "plan": "pro",
         "wallet": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
         "email": "ada@example.com",
@@ -102,6 +104,8 @@ const data = await response.json();
         "late_reason": null,
         "access": false,
         "payment_status": "none",
+        "blocked_since": null,
+        "blocked_reason": null,
         "plan": "pro",
         "wallet": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
         "email": "ada@example.com",
@@ -195,5 +199,7 @@ const data = await response.json();
 Relays what the wallet signed: the transaction and the terms. Mesub checks both signatures, co-signs, sends the transaction and waits for the chain, so this call is slow by design: up to 90 seconds.
 
 Safe to send again unchanged. Mesub recognises what it already co-signed and answers from the chain, so a customer is never charged twice.
+
+A transaction submitted after its 150 blocks, about half a minute, is refused with `transaction_expired`: nothing was sent, and the same submit sent again cannot land. Ask for [a fresh transaction](./transaction.mdx), have the wallet sign it, and sign the terms again if their message changed.
 
 </Endpoint>

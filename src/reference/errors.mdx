@@ -44,6 +44,7 @@ Each route's page lists the codes that route answers. This page lists them all.
 | `code`                | Status | When                                          |
 | --------------------- | ------ | --------------------------------------------- |
 | `invalid_request`     | 400    | A parameter is missing or malformed           |
+| `unsupported_version` | 400    | `Mesub-Version` names a version not served    |
 | `missing_api_key`     | 401    | No API key was sent                           |
 | `invalid_api_key`     | 401    | The key is not one Mesub issued               |
 | `forbidden`           | 403    | The request is understood and refused         |
@@ -114,10 +115,14 @@ Unix seconds, and `end_date_too_far` is what a date sent in milliseconds gets.
 | `terms_changed`           | 409    | The terms no longer match the plan                  |
 | `not_our_transaction`     | 400    | The transaction is not the one Mesub built          |
 | `transaction_not_built`   | 409    | Nothing was built for this subscription yet         |
-| `transaction_expired`     | 409    | The transaction can no longer land. Create again    |
+| `transaction_expired`     | 409    | The transaction expired before it was sent          |
 | `transaction_refused`     | 409    | The chain refused the transaction                   |
 | `not_awaiting_signature`  | 409    | The subscription is past the signing step           |
 | `subscription_changed`    | 409    | It changed while the request ran. Retryable         |
+
+After `transaction_expired`, nothing was sent and the same submit cannot land.
+Ask for [a fresh transaction](./subscriptions/transaction.mdx), have the wallet
+sign it, and sign the terms again if `terms.message` changed.
 
 ## Managing
 

@@ -79,6 +79,7 @@
                 "pages": [
                   "reference/subscriptions/object",
                   "reference/subscriptions/create",
+                  "reference/subscriptions/transaction",
                   "reference/subscriptions/submit",
                   "reference/subscriptions/list",
                   "reference/subscriptions/retrieve",
