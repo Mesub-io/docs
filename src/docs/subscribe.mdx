@@ -19,6 +19,10 @@ prompt: |
   The terms of a plan with an end date, copied from
   @https://github.com/Mesub-io/backend (src/subscriptions/terms.ts and its
   spec): the last charge in full, and the single charge.
+  Showing a plan's token and its dollar value from
+  @https://github.com/Mesub-io/docs/issues/49 (the contract of `token` and
+  `amount_usd`) and @https://github.com/Mesub-io/backend
+  (src/prices/price.processor.ts for when an attempt is priced).
 ---
 
 The [React widget](./react.mdx) does this for you. Without it, your server
@@ -163,6 +167,79 @@ nothing was sent. Go back to the third step for a new one.
 
 </Step>
 </Steps>
+
+## Show the plan and its token
+
+A pricing page of your own reads the plan on your server and shows what the
+customer will pay, and in which token.
+
+```ts
+const plan = await mesub.plans.retrieve('pro'); // or mesub.plans.list()
+```
+
+| Field            | What it says                                             |
+| ---------------- | -------------------------------------------------------- |
+| `amount_display` | The price per period, as a person counts it: `9.99`      |
+| `amount_usd`     | That price in US dollars, or null when it has no price   |
+| `symbol`         | Set only for a token Mesub vouches for, null otherwise   |
+| `token.symbol`   | The token's symbol, as Mesub found it, or null           |
+| `token.name`     | The token's name, or null                                |
+| `token.logo_url` | The token's logo, or null                                |
+| `token.verified` | Whether the token is one a customer can take at its word |
+| `mint`           | The token's address, which is the token                  |
+
+Mesub fills `token` itself, from the plan's exact mint: nothing in it is typed
+by you or sent by the browser. `verified` is true for the tokens Mesub vouches
+for, USDC, USDT and PYUSD, and for one Jupiter marks as verified.
+
+**Show an unverified token as unverified, and keep its mint in view.** A
+symbol is free text on chain: anyone can create a token and call it USDC, and
+a fake under a known name is a common scam. Mesub never answers an unverified
+token under the symbol or the name of a stablecoin it vouches for: that field
+is null. Any other symbol comes as the token wrote it, so the page says which
+kind it is:
+
+```ts
+import type { Plan } from '@mesub/node';
+
+function tokenLabel(plan: Plan): string {
+    const { symbol, verified } = plan.token;
+    const mint = `${plan.mint.slice(0, 4)}...${plan.mint.slice(-4)}`;
+
+    if (!symbol) return mint;
+    return verified ? symbol : `${symbol}, unverified (${mint})`;
+}
+```
+
+`amount_usd` is a decimal string, `"9.99"`. On a plan it is an estimate: the
+plan's amount at the latest price Mesub knows for the token, so it moves with
+the market for anything but a stablecoin. Show it as about that much, never as
+the price: the customer is charged `amount` of the token, whatever it is worth
+that day. It is null when Mesub has no price. What each charge was worth is on
+[the attempt](./manage.mdx#read-an-attempt).
+
+<Expandable title="See these fields on a plan in another token">
+
+```json
+{
+    "slug": "supporter",
+    "name": "Supporter",
+    "amount": "3000000000",
+    "amount_display": "30000",
+    "amount_usd": "0.45",
+    "decimals": 5,
+    "symbol": null,
+    "mint": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+    "token": {
+        "symbol": "Bonk",
+        "name": "Bonk",
+        "logo_url": "https://arweave.net/hQiPZOsRZXGXBJd_82PhVdlM...",
+        "verified": true
+    }
+}
+```
+
+</Expandable>
 
 ## A plan with an end date
 
