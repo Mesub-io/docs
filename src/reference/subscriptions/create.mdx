@@ -161,6 +161,8 @@ const data = await response.json();
 
 Reserves a subscription to one of your plans for the wallet named, and builds what that wallet signs: the terms, as a message, then the transaction, without sending it. Hand both to [Submit](./submit.mdx).
 
+The transaction lives 150 blocks, about half a minute. The terms live five minutes. Have the terms signed first, then ask for [a fresh transaction](./transaction.mdx) when the wallet is ready to sign it.
+
 Called again for the same plan, wallet and customer while nothing has landed, it answers the same subscription with a fresh transaction. The customer is the `external_id`, else the `email`, else nobody. Another customer naming the same wallet gets a subscription of its own: only the one the wallet signs for lands.
 
 A wallet whose subscription to this plan stopped comes back over its existing authorisation: a new subscription, with `costs.rent` at zero.

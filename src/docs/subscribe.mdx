@@ -8,18 +8,27 @@ prompt: |
   Document subscribing without the widget from
   @https://github.com/Mesub-io/node-sdk (README: Subscribe from your server,
   Errors; src/subscriptions.ts for the shape of what create answers).
-  Three steps as Steps: create, sign in the browser, submit. What create
+  Five steps as Steps: create, sign the terms, ask for the transaction, sign
+  it, submit. What create
   returns in a collapsed block, how long submit takes and what to do when its
   outcome is unknown, the refusals, and reading a subscription back.
+  The order of the steps, terms first then a fresh transaction, from
+  @https://github.com/Mesub-io/backend
+  (src/subscriptions/server-subscriptions.controller.ts: the comments of
+  POST /v1/subscriptions/:id/transaction and of the submit route).
   The terms of a plan with an end date, copied from
   @https://github.com/Mesub-io/backend (src/subscriptions/terms.ts and its
   spec): the last charge in full, and the single charge.
 ---
 
-The [React widget](./react.mdx) does this for you. Without it, subscribing is
-three calls: your server creates the subscription, the customer's wallet signs
-twice in the browser, and your server submits what was signed. The API key
-never leaves your server.
+The [React widget](./react.mdx) does this for you. Without it, your server
+makes three calls and the customer's wallet signs twice in the browser: the
+terms first, then the transaction. The API key never leaves your server.
+
+The order matters. The terms live five minutes, and a transaction lives 150
+blocks, about half a minute. So the customer reads and signs the terms first,
+and your server asks for the transaction only when the wallet is ready to sign
+it.
 
 <Steps>
 <Step title="Create, on your server">
@@ -35,7 +44,8 @@ const { subscription, transaction, terms, costs } =
 ```
 
 Mesub reserves the subscription and builds what the wallet signs. Keep
-`subscription.id`, and send `transaction`, `terms` and `costs` to your page.
+`subscription.id`, and send `terms` and `costs` to your page. The `transaction`
+answered here is already running out: the one to sign comes at the third step.
 
 Pass `external_id` when your app has a login: it is how
 [`hasAccess`](./access.mdx) finds this customer later, whichever wallet pays.
@@ -75,17 +85,15 @@ when the subscription is closed; `fee` is spent. `rent.authority` is null when
 the customer already has an authority for that token.
 
 </Step>
-<Step title="Sign, in the browser">
+<Step title="Sign the terms, in the browser">
 
 `terms.message` is plain text, one fact per line: the amount, the period,
 who is paid, how to cancel, and [when the plan ends](#a-plan-with-an-end-date)
-if it does. Show it and the costs to the customer, then ask the wallet for two
-signatures: the terms first, as a message, then the transaction, **without
-sending it**.
+if it does. Show it and the costs to the customer, then ask the wallet to sign
+it as a message.
 
 ```ts
 import bs58 from 'bs58';
-import { VersionedTransaction } from '@solana/web3.js';
 
 // wallet: the connected wallet, for instance useWallet() of
 // @solana/wallet-adapter-react.
@@ -93,6 +101,35 @@ const signature = await wallet.signMessage(
     new TextEncoder().encode(terms.message),
 );
 const terms_signature = bs58.encode(signature);
+```
+
+The terms run out at `terms.expires_at`, five minutes after Mesub handed them
+out. Keep `terms.message` beside the signature, then ask your server for the
+transaction.
+
+</Step>
+<Step title="Ask for the transaction, on your server">
+
+```ts
+const { transaction, terms } =
+    await mesub.subscriptions.transaction(subscriptionId);
+```
+
+It answers what `create` answers, with a transaction whose 150 blocks start
+now. Send `transaction` and `terms` to your page.
+
+Compare `terms.message` with the message the wallet signed. The same text
+means the same terms: the signature you hold is still good. Another text means
+new terms: have the wallet sign that message before the transaction. The terms
+come back unchanged while they have more than two minutes left.
+
+</Step>
+<Step title="Sign the transaction, in the browser">
+
+Ask the wallet to sign the transaction at once, **without sending it**.
+
+```ts
+import { VersionedTransaction } from '@solana/web3.js';
 
 const bytes = Uint8Array.from(atob(transaction), (c) => c.charCodeAt(0));
 const signed = await wallet.signTransaction(
@@ -101,8 +138,8 @@ const signed = await wallet.signTransaction(
 const signedTransaction = btoa(String.fromCharCode(...signed.serialize()));
 ```
 
-Both must be signed before `terms.expires_at`, five minutes after `create`.
-Send `terms_signature` and `signedTransaction` back to your server.
+Send `terms_signature` and `signedTransaction` back to your server. If you
+asked for the transaction more than once, sign the one of the last call.
 
 </Step>
 <Step title="Submit, on your server">
@@ -121,7 +158,8 @@ if (subscription.access) {
 ```
 
 Mesub checks both signatures, co-signs, sends the transaction and waits for the
-chain.
+chain. A transaction signed too late is refused with `transaction_expired`:
+nothing was sent. Go back to the third step for a new one.
 
 </Step>
 </Steps>
@@ -219,8 +257,12 @@ Each one is thrown as a `MesubError`. `apiCode` says which:
 | `create` | `plan_ended`             | The plan is past its end date          |
 | `submit` | `terms_expired`          | Create again and sign the fresh terms  |
 | `submit` | `terms_changed`          | The plan changed since. Create again   |
-| `submit` | `transaction_expired`    | Create again                           |
+| `submit` | `transaction_expired`    | Ask for a new transaction and sign it  |
 | `submit` | `subscription_not_found` | The id is not one of your project's    |
+
+`subscriptions.transaction` is refused like `create` when the plan or the
+wallet no longer allows the subscription, and with `not_awaiting_signature`
+when the subscription is no longer `pending`. Create again if it `expired`.
 
 Calling `create` again for the same plan, wallet and customer, while nothing
 has landed, answers the same subscription with a fresh transaction. The
@@ -242,6 +284,7 @@ for await (const sub of mesub.subscriptions.listAll({ external_id: user.id })) {
 
 The raw routes are in the reference:
 [create](../reference/subscriptions/create.mdx),
+[transaction](../reference/subscriptions/transaction.mdx),
 [submit](../reference/subscriptions/submit.mdx),
 [retrieve](../reference/subscriptions/retrieve.mdx) and
 [list](../reference/subscriptions/list.mdx).

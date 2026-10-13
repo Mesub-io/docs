@@ -8,7 +8,8 @@ prompt: |
   Document checking access from @https://github.com/Mesub-io/node-sdk (README:
   Gate a route, Who to ask about, When Mesub does not answer) and
   @https://github.com/Mesub-io/backend (src/access/access.controller.ts,
-  src/access/access.service.ts).
+  src/access/access.service.ts, src/pull/blocked.ts for blocked_since and
+  blocked_reason).
   hasAccess, the three guards as tabs, the raw HTTP call, who to ask about, the
   answer with a full example in a collapsed block, the guards' refusals, the
   API's errors and MesubError, and the outage behavior. Leave the detail of each status to the lifecycle page.
@@ -145,6 +146,8 @@ const answer = await mesub.access({ external_id: user.id }, 'pro');
     "end_reason": null,
     "late_reason": null,
     "payment_status": "paid",
+    "blocked_since": null,
+    "blocked_reason": null,
     "subscribed_since": "2026-01-01T00:00:05.000Z",
     "first_subscribed_at": "2026-01-01T00:00:05.000Z",
     "current_period_end": "2026-01-31T00:00:00.000Z",
@@ -165,6 +168,8 @@ const answer = await mesub.access({ external_id: user.id }, 'pro');
 | `status`           | Where the subscription stands: `none`, `pending`, `active`, `unpaid`, `cancelled`, `stopped`, `ended`, `failed`, `superseded` |
 | `payment_status`   | `paid`, `late` or `none`                                                                                                      |
 | `late_reason`      | Why an `unpaid` one is late: see [late payments](./lifecycle.mdx#late-payments). Null otherwise                               |
+| `blocked_since`    | Since when its charges are held for a reason that is not the customer's. Null otherwise                                       |
+| `blocked_reason`   | Why they are held: see [blocked charges](./lifecycle.mdx#blocked-charges). Null otherwise                                     |
 | `access_until`     | When access ends unless a charge renews it, never later than the plan's end date. Null while `access` is false                |
 | `next_charge_at`   | The next charge. Null when a retry is pending instead, or when the plan ends before it                                        |
 | `next_retry_at`    | The next retry of a missed charge. Null when the plan ends before it                                                          |
@@ -174,6 +179,22 @@ const answer = await mesub.access({ external_id: user.id }, 'pro');
 Read `access` to decide, never `status`. On a plan with an end date, nobody
 has access past that date, and for a few minutes after it `status` can still
 read `active` or `unpaid` with `access: false`.
+
+When charges are [blocked](./lifecycle.mdx#blocked-charges), the status does
+not change and the answer says since when, why, and when access ends. Here
+Mesub's puller was taken off a monthly plan that keeps the default retries:
+
+```json
+{
+    "access": true,
+    "status": "active",
+    "payment_status": "paid",
+    "blocked_since": "2026-01-31T00:02:00.000Z",
+    "blocked_reason": "puller_not_allowed",
+    "current_period_end": "2026-01-31T00:00:00.000Z",
+    "access_until": "2026-02-03T00:00:00.000Z"
+}
+```
 
 Mesub may add a status later, so keep a default branch. Asked with
 `{ attempts: true }`, the answer also carries the last charges.

@@ -37,6 +37,32 @@ project id in any path. [Authentication](./authentication.mdx) has the detail.
 - A field the route does not know is refused with a 400, not ignored.
 - Every error has [the same body](./errors.mdx), with a `code` to branch on.
 
+## API version
+
+The contract of `/v1` is versioned by date. Name the version you wrote your
+code against in the `Mesub-Version` header:
+
+```bash
+curl "https://api.mesub.io/v1/project" \
+  -H "Authorization: Bearer $MESUB_API_KEY" \
+  -H "Mesub-Version: 2026-10-02"
+```
+
+`2026-10-02` is the only version served today, and no answer depends on the
+version yet. `@mesub/node` sends the header on every call.
+
+| You send                           | Mesub answers                      |
+| ---------------------------------- | ---------------------------------- |
+| A version Mesub serves             | As that version                    |
+| No header                          | As the first version, `2026-10-02` |
+| Anything else, an empty header too | 400 `unsupported_version`          |
+
+The message of an `unsupported_version` lists the versions served. The API key
+is checked first: a missing or wrong key answers 401 whatever the header says.
+
+Every answer, errors included, says the version it was served as in its own
+`Mesub-Version` header.
+
 ## Try a request
 
 Each route's page has a **Try it** button. It opens a panel where you paste an
@@ -68,19 +94,20 @@ drawn from.
 
 ### Subscriptions
 
-| Route                                                                      | What it does                          | `subscriptions.` |
-| -------------------------------------------------------------------------- | ------------------------------------- | ---------------- |
-| [`POST /v1/subscriptions`](./subscriptions/create.mdx)                     | Reserves one, builds what is signed   | `create`         |
-| [`POST /v1/subscriptions/:id/submit`](./subscriptions/submit.mdx)          | Sends what the wallet signed          | `submit`         |
-| [`GET /v1/subscriptions`](./subscriptions/list.mdx)                        | A customer's subscriptions, paginated | `list`           |
-| [`GET /v1/subscriptions/:id`](./subscriptions/retrieve.mdx)                | One subscription                      | `retrieve`       |
-| [`GET /v1/subscriptions/:id/attempts`](./subscriptions/attempts.mdx)       | Its charges, with the total paid      | `attempts`       |
-| [`POST /v1/subscriptions/:id/cancel`](./manage/cancel.mdx)                 | Builds the cancellation               | `cancel`         |
-| [`POST /v1/subscriptions/:id/cancel/confirm`](./manage/confirm-cancel.mdx) | Confirms it                           | `confirmCancel`  |
-| [`POST /v1/subscriptions/:id/resume`](./manage/resume.mdx)                 | Builds the undo of a cancellation     | `resume`         |
-| [`POST /v1/subscriptions/:id/resume/confirm`](./manage/confirm-resume.mdx) | Confirms it                           | `confirmResume`  |
-| [`POST /v1/subscriptions/:id/close`](./manage/close.mdx)                   | Builds the closing of an ended one    | `close`          |
-| [`POST /v1/subscriptions/:id/close/confirm`](./manage/confirm-close.mdx)   | Confirms it                           | `confirmClose`   |
+| Route                                                                       | What it does                          | `subscriptions.` |
+| --------------------------------------------------------------------------- | ------------------------------------- | ---------------- |
+| [`POST /v1/subscriptions`](./subscriptions/create.mdx)                      | Reserves one, builds what is signed   | `create`         |
+| [`POST /v1/subscriptions/:id/transaction`](./subscriptions/transaction.mdx) | Builds a fresh transaction to sign    | `transaction`    |
+| [`POST /v1/subscriptions/:id/submit`](./subscriptions/submit.mdx)           | Sends what the wallet signed          | `submit`         |
+| [`GET /v1/subscriptions`](./subscriptions/list.mdx)                         | A customer's subscriptions, paginated | `list`           |
+| [`GET /v1/subscriptions/:id`](./subscriptions/retrieve.mdx)                 | One subscription                      | `retrieve`       |
+| [`GET /v1/subscriptions/:id/attempts`](./subscriptions/attempts.mdx)        | Its charges, with the total paid      | `attempts`       |
+| [`POST /v1/subscriptions/:id/cancel`](./manage/cancel.mdx)                  | Builds the cancellation               | `cancel`         |
+| [`POST /v1/subscriptions/:id/cancel/confirm`](./manage/confirm-cancel.mdx)  | Confirms it                           | `confirmCancel`  |
+| [`POST /v1/subscriptions/:id/resume`](./manage/resume.mdx)                  | Builds the undo of a cancellation     | `resume`         |
+| [`POST /v1/subscriptions/:id/resume/confirm`](./manage/confirm-resume.mdx)  | Confirms it                           | `confirmResume`  |
+| [`POST /v1/subscriptions/:id/close`](./manage/close.mdx)                    | Builds the closing of an ended one    | `close`          |
+| [`POST /v1/subscriptions/:id/close/confirm`](./manage/confirm-close.mdx)    | Confirms it                           | `confirmClose`   |
 
 See [Subscribe from your server](../docs/subscribe.mdx) and
 [Manage from your server](../docs/manage.mdx) for how these calls chain.

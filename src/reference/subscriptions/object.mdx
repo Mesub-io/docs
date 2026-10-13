@@ -29,6 +29,8 @@ import { SchemaFields } from '../../components/api/endpoint'
     "late_reason": null,
     "access": true,
     "payment_status": "paid",
+    "blocked_since": null,
+    "blocked_reason": null,
     "plan": "pro",
     "wallet": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
     "email": "ada@example.com",
@@ -56,7 +58,9 @@ and every [webhook](../webhooks/overview.mdx) carries it under `data`.
 
 `access`, `payment_status` and `access_until` are what
 [`GET /v1/access`](../access/check.mdx) answers for the same subscription, so
-you know whether it grants access without asking again.
+you know whether it grants access without asking again. So are
+`blocked_since` and `blocked_reason`, null unless its charges are
+[blocked](../../docs/lifecycle.mdx#blocked-charges).
 [Lifecycle](../../docs/lifecycle.mdx) says what each status means.
 
 ## Fields
