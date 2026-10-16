@@ -125,6 +125,8 @@
                   "reference/webhooks/subscription-resumed",
                   "reference/webhooks/subscription-ended",
                   "reference/webhooks/subscription-expired",
+                  "reference/webhooks/subscription-paused",
+                  "reference/webhooks/subscription-unpaused",
                   "reference/webhooks/subscription-access-granted",
                   "reference/webhooks/subscription-access-revoked",
                   "reference/webhooks/test"

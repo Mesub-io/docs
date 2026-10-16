@@ -2,7 +2,7 @@
 $schema: https://holocron.so/frontmatter.json
 title: "subscription.ended"
 sidebarTitle: "subscription.ended"
-description: "It is over. data.end_reason says why. A cancellation reaching its end sends no event of its own."
+description: "It is over. data.end_reason says why."
 hideTitle: true
 gridGap: 36
 prompt: |
@@ -78,9 +78,11 @@ if (event.type === 'subscription.ended') {
 
 <Endpoint id="webhook_subscription_ended">
 
-It is over. `data.end_reason` says why. A cancellation reaching its end sends no event of its own.
+It is over. `data.end_reason` says why.
 
 <More>
+
+A cancellation that reached its end (its expiry: the end of the period it paid for) sends this event with `end_reason: "cancelled"`, once per cancellation, once a read of the chain after the expiry shows the cancellation still in place: usually within half an hour of the expiry. `detail.changed_at` is the expiry, to the millisecond, and the moment `data` describes, `status: ended`. The `subscription.access_revoked` of that expiry is sent at the expiry itself, from Mesub's records, so it comes first; a resume signed in the wallet before the expiry and seen late by Mesub can still follow that `access_revoked` (then `subscription.resumed` and `subscription.access_granted`, and no `subscription.ended`). The subscription can still be closed afterwards, which sends this event again with `end_reason: "closed"` (or `"cancelled"` when Mesub finds it closed outside Mesub).
 
 On a plan with an end date, a subscription still running or late is ended at the plan's end, within minutes of it, whatever period it paid for: this event then carries `end_reason: "plan_ended"`.
 

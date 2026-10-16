@@ -2,7 +2,7 @@
 $schema: https://holocron.so/frontmatter.json
 title: "subscription.created"
 sidebarTitle: "subscription.created"
-description: "The first payment landed."
+description: "The first payment landed. detail.first_payment says what it paid."
 hideTitle: true
 gridGap: 36
 prompt: |
@@ -55,7 +55,13 @@ import { More } from '../../components/api/more'
         "created_at": "2026-01-01T00:00:00.000Z",
         "confirmed_at": "2026-01-01T00:00:05.000Z"
     },
-    "detail": {}
+    "detail": {
+        "first_payment": {
+            "amount": "9990000",
+            "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+            "signature": "5wHu1qwD4kLDLoREEPBpKvGvhbxWFxFFfr5nQq7dxAsRRDXvHRqpNvfsCvC1qzjWQhqmPtBb8LnZjKmvpehJqSWk"
+        }
+    }
 }
 ```
 ```ts title="@mesub/node" lines=false
@@ -78,7 +84,7 @@ if (event.type === 'subscription.created') {
 
 <Endpoint id="webhook_subscription_created">
 
-The first payment landed.
+The first payment landed. `detail.first_payment` says what it paid.
 
 <More>
 
