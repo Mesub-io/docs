@@ -2,3 +2,7 @@ allowBuilds:
   esbuild: true
   opencode-ai: false
   workerd: false
+# spiceflow, under @holocron.so/vite, takes zod as a peer: the build is known
+# to pass on this one (#51).
+overrides:
+  zod: 4.6.5
