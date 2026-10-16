@@ -52,10 +52,10 @@ subscribers, so it never goes in a browser, a mobile app or a repository.
 
 Limits are per API key, per route, per minute.
 
-| Calls                                                                | Limit          |
-| -------------------------------------------------------------------- | -------------- |
-| Reads: `/v1/access`, `/v1/plans`, `/v1/subscriptions`, `/v1/project` | 1,000 a minute |
-| Writes: create, transaction, submit, cancel, resume, close, confirms | 60 a minute    |
+| Calls                                                                              | Limit          |
+| ---------------------------------------------------------------------------------- | -------------- |
+| Reads: `/v1/access`, `/v1/plans`, `/v1/subscriptions`, `/v1/project`, `/v1/events` | 1,000 a minute |
+| Writes: create, transaction, submit, retry, cancel, resume, close, their confirms  | 60 a minute    |
 
 Requests with no key, or with a wrong one, are counted by IP address instead:
 120 a minute.
