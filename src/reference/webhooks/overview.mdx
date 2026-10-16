@@ -6,7 +6,9 @@ description: "What Mesub posts to your endpoints: the three headers of a deliver
 prompt: |
   Reference of webhook deliveries from @https://github.com/Mesub-io/backend
   (openapi/v1.json, webhooks section, and the signature during a secret
-  rotation from the 494-secret-overlap branch).
+  rotation from the 494-secret-overlap branch). The access events from
+  backend PR #507 and issue #425: sent only on an effective access flip, and
+  off until Mesub turns them on.
   The request Mesub sends, its headers and signature, the event object, the
   list of events linking to each one's page, and what counts as received.
   Leave the handler code to the guide.
@@ -115,12 +117,44 @@ a resend too: `{ type, created_at, data }`, with `detail` inside `data`, no
 | [`subscription.resumed`](./subscription-resumed.mdx)                   | A cancellation was undone                               |
 | [`subscription.ended`](./subscription-ended.mdx)                       | It is over; `data.end_reason` says why                  |
 | [`subscription.expired`](./subscription-expired.mdx)                   | A checkout was started and never signed                 |
+| [`subscription.access_granted`](./subscription-access-granted.mdx)     | Access started, and was off just before                 |
+| [`subscription.access_revoked`](./subscription-access-revoked.mdx)     | Access ended, and was on just before                    |
 | [`test`](./test.mdx)                                                   | You sent one from the dashboard                         |
 
 Mesub may add a type later: keep a default branch.
 
-Missed some deliveries? `GET /v1/events` serves the same bodies over the last
-30 days, newest first: catch up there.
+Missed some deliveries? [`GET /v1/events`](../events/list.mdx) serves the same
+bodies over the last 30 days, newest first: catch up there.
+
+## Access events
+
+`subscription.access_granted` and `subscription.access_revoked` are sent when
+the access a subscription grants actually changes, and only then. Every change
+sends one, whatever made it: a payment, a cancellation reaching its end, a
+plan's end date, a blocked charge reaching `access_until`. A renewal paid on
+time, or a resume while the paid period runs, changes nothing and sends
+neither.
+
+Mesub does not send them yet: they are off until Mesub turns them on. Until
+then, read access with [`GET /v1/access`](../access/check.mdx).
+
+| Field                 | What it says                                                         |
+| --------------------- | -------------------------------------------------------------------- |
+| `data.access`         | `true` on `access_granted`, `false` on `access_revoked`              |
+| `data.access_until`   | When access ends unless a charge renews it. Null without access      |
+| `data.blocked_since`  | Since when charges are held for a cause not the customer's, or null  |
+| `data.blocked_reason` | Why they are held, or null                                           |
+| `detail.changed_at`   | When access changed, to the millisecond: the moment `data` describes |
+
+`created_at` is when Mesub wrote the event, and can come later than
+`detail.changed_at`: a date that passed with nothing else happening is told a
+few seconds after it.
+
+Drive your customer's access from these two events alone; the others say why
+it changed. For each subscription, keep the `sequence` of the last access
+event you applied, skip one with a lower `sequence`, and the last one applied
+says whether the customer has access. An access event without `sequence`
+cannot be placed: ask [`GET /v1/access`](../access/check.mdx) instead.
 
 ## Your answer
 
