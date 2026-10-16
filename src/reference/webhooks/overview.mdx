@@ -2,11 +2,11 @@
 $schema: https://holocron.so/frontmatter.json
 title: "Webhook events of the Mesub API"
 sidebarTitle: Overview
-description: "What Mesub posts to your endpoints: the three headers of a delivery, how it is signed, the shape of every event, and the list of events."
+description: "What Mesub posts to your endpoints: the three headers of a delivery, how it is signed, the event's id and the delivery's, the shape of every event, and the list of events."
 prompt: |
   Reference of webhook deliveries from @https://github.com/Mesub-io/backend
-  (src/webhooks/webhook-events.ts, src/webhooks/webhook-payload.ts,
-  src/webhooks/webhook-signature.ts, src/webhooks/webhook-delivery.constants.ts).
+  (openapi/v1.json, webhooks section, and the signature during a secret
+  rotation from the 494-secret-overlap branch).
   The request Mesub sends, its headers and signature, the event object, the
   list of events linking to each one's page, and what counts as received.
   Leave the handler code to the guide.
@@ -20,17 +20,37 @@ handler, read the [Webhooks guide](../../docs/webhooks.mdx).
 
 Each delivery is a `POST` to your endpoint, with a JSON body and three headers:
 
-| Header              | What it holds                                              |
-| ------------------- | ---------------------------------------------------------- |
-| `webhook-id`        | The event's id, the same on every retry. Deduplicate on it |
-| `webhook-timestamp` | When this attempt was sent, in Unix seconds                |
-| `webhook-signature` | `v1,` then the signature of this delivery, in base64       |
+| Header              | What it holds                                                                 |
+| ------------------- | ----------------------------------------------------------------------------- |
+| `webhook-id`        | The delivery's id: one per event and per endpoint, the same on every retry    |
+| `webhook-timestamp` | When this attempt was sent, in Unix seconds                                   |
+| `webhook-signature` | `v1,` then the signature of this attempt, in base64. Sometimes two, see below |
 
 Deliveries are signed the [Standard Webhooks](https://www.standardwebhooks.com)
-way: an HMAC-SHA256 of `id.timestamp.body`, keyed with the endpoint's signing
-secret, the part after `whsec_` decoded from base64. The signature covers the
-exact bytes sent, so verify the **raw body**. `mesub.webhooks.verify` does it
-for you.
+way: an HMAC-SHA256 of `webhook-id.webhook-timestamp.body`, keyed with the
+endpoint's signing secret, the part after `whsec_` decoded from base64. The
+signature covers the exact bytes sent, so verify the **raw body**.
+
+When you regenerate a secret with an overlap, the old secret keeps signing
+beside the new one until the overlap ends. Every attempt in that window carries
+two signatures, space separated, the new secret's first:
+
+```text
+webhook-signature: v1,<signed with the new secret> v1,<signed with the old secret>
+```
+
+Check each `v1,` signature, and accept the delivery when any one matches.
+`mesub.webhooks.verify` does both for you.
+
+## Two ids
+
+| Id                   | Names        | Deduplicate on it to                             |
+| -------------------- | ------------ | ------------------------------------------------ |
+| `id`, in the body    | The event    | Apply each event once, whichever endpoint got it |
+| `webhook-id`, header | The delivery | Skip a retry of a delivery you already handled   |
+
+One event sent to two endpoints of a project is two deliveries: the same `id`,
+two `webhook-id`s.
 
 ## The event object
 
@@ -38,27 +58,49 @@ Every event has the same shape:
 
 ```json
 {
+    "id": "evt_cmg1x0evt0001",
+    "object": "event",
     "type": "subscription.renewed",
     "created_at": "2026-01-31T00:01:00.000Z",
+    "network": "mainnet-beta",
+    "api_version": "2026-10-02",
+    "sequence": 4,
     "data": {
         "id": "cmg1x0abc0001",
-        "status": "active",
-        "detail": {}
-    }
+        "status": "active"
+    },
+    "detail": {}
 }
 ```
 
 | Field         | What it says                                                                                             |
 | ------------- | -------------------------------------------------------------------------------------------------------- |
+| `id`          | The event's id, the same in every delivery of it                                                         |
+| `object`      | Always `event`                                                                                           |
 | `type`        | The event's name                                                                                         |
-| `created_at`  | When the event happened                                                                                  |
+| `created_at`  | When the event happened: the moment `data` describes                                                     |
+| `network`     | The Solana network: `devnet` or `mainnet-beta`                                                           |
+| `api_version` | The version `data` and `detail` are written in, as `Mesub-Version` names it                              |
+| `sequence`    | Its place among this subscription's events: 1, 2, 3... Absent on some events                             |
 | `data`        | The subscription, as [Retrieve a subscription](../subscriptions/retrieve.mdx) answers it, shortened here |
-| `data.detail` | The event's own fields. Empty on most events                                                             |
+| `detail`      | The event's own fields. Empty on most events                                                             |
 | `test`        | `true` on a delivery sent by hand from the dashboard. Absent otherwise                                   |
 
-`data` is read when the delivery is first attempted, so it can be newer than
-the event itself. The id to deduplicate on is not in the body: it is the
-`webhook-id` header.
+`data` is the subscription as it stood right after the change that raised the
+event, however late the delivery. Events raised by the same change share it:
+a last retry that fails raises `subscription.payment_failed` and
+`subscription.stopped`, both showing `status: stopped`. `detail` says what each
+event is about.
+
+Deliveries can arrive in any order. Apply a subscription's events in the order
+of `sequence`, and skip one lower than the last you applied. An event without
+`sequence` cannot be placed: read the subscription's state now with
+[Retrieve a subscription](../subscriptions/retrieve.mdx) rather than apply its
+`data`.
+
+Bodies written before this shape keep the one they were sent in, on a retry or
+a resend too: `{ type, created_at, data }`, with `detail` inside `data`, no
+`id`, and `data` as it was at the first attempt.
 
 ## Events
 
@@ -76,6 +118,9 @@ the event itself. The id to deduplicate on is not in the body: it is the
 | [`test`](./test.mdx)                                                   | You sent one from the dashboard                         |
 
 Mesub may add a type later: keep a default branch.
+
+Missed some deliveries? `GET /v1/events` serves the same bodies over the last
+30 days, newest first: catch up there.
 
 ## Your answer
 
