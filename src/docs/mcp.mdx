@@ -69,35 +69,35 @@ project**, connect again and choose it.
 
 **Read**
 
-| Tool                      | What it does                                                                |
-| ------------------------- | --------------------------------------------------------------------------- |
-| `get_project`             | The project, its tier, and how much of its limits is used                   |
-| `list_plans`              | Every plan, with its subscribers and what it collected this period          |
-| `get_plan`                | One plan: its subscribers by status, its latest charges, why charges fail   |
-| `list_subscriptions`      | Subscriptions, by plan or by status, or found by wallet                     |
-| `get_subscription`        | One subscription and every charge tried on it                               |
-| `check_access`            | Whether a customer has [access](./access.mdx), and why not when they do not |
-| `list_events`             | What happened on a day: payments, subscribers, changes to the project       |
-| `list_upcoming_charges`   | The charges and retries to come, and the renewals at risk                   |
-| `get_overview`            | Collected, failed and recovered over 7, 30 or 90 days                       |
-| `list_webhooks`           | The [webhook](./webhooks.mdx) endpoints, never their secret                 |
-| `list_webhook_deliveries` | An endpoint's deliveries and what your server answered                      |
-| `get_webhook_secret`      | An endpoint's signing secret                                                |
-| `search_docs`             | Search these docs. It reads nothing of your project                         |
-| `ping`                    | Whether Mesub answers                                                       |
+| Tool                      | What it does                                                                                                                                                           |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `get_project`             | The project, its tier, and how much of its limits is used                                                                                                              |
+| `list_plans`              | Every plan, with its subscribers and what it collected this period. A prepared plan waits there with its link to sign                                                  |
+| `get_plan`                | One plan: its subscribers by status, its latest charges, why charges fail                                                                                              |
+| `list_subscriptions`      | Subscriptions, by plan or by status, or found by wallet or by your own customer id                                                                                     |
+| `get_subscription`        | One subscription and every charge tried on it                                                                                                                          |
+| `check_access`            | Whether a customer has [access](./access.mdx), and why not when they do not                                                                                            |
+| `list_events`             | What happened on a day, over the last 45 days: payments, subscribers, changes to the project. Finds a charge by wallet, your customer id or the start of its signature |
+| `list_upcoming_charges`   | The charges and retries to come, each one Mesub already expects to fail flagged with why                                                                               |
+| `get_overview`            | Collected, failed and recovered over 7, 30 or 90 days                                                                                                                  |
+| `list_webhooks`           | The [webhook](./webhooks.mdx) endpoints, never their secret                                                                                                            |
+| `list_webhook_deliveries` | An endpoint's deliveries and what your server answered                                                                                                                 |
+| `get_webhook_secret`      | An endpoint's signing secret                                                                                                                                           |
+| `search_docs`             | Search these docs. It reads nothing of your project                                                                                                                    |
+| `ping`                    | Whether Mesub answers                                                                                                                                                  |
 
 **Act**
 
-| Tool                        | What it does                                                                                          |
-| --------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `retry_charge`              | Retry a failed charge, when a customer is [late](./lifecycle.mdx#late-payments)                       |
-| `update_retry_policy`       | Change how many times a plan retries, and how far apart                                               |
-| `create_webhook`            | Add an endpoint and return its signing secret                                                         |
-| `update_webhook`            | Change the URL or the events of an endpoint, turn it off or back on                                   |
-| `delete_webhook`            | Delete an endpoint                                                                                    |
-| `regenerate_webhook_secret` | Draw a new signing secret. The old one keeps signing for `overlap_hours`, 0 to 24: at once by default |
-| `send_test_webhook`         | Send a test delivery to an endpoint                                                                   |
-| `update_project`            | Rename the project                                                                                    |
+| Tool                        | What it does                                                                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `retry_charge`              | Retry a failed charge, when a customer is [late](./lifecycle.mdx#late-payments). Mesub refuses one that cannot succeed or a wallet short of funds, spending no retry |
+| `update_retry_policy`       | Change how many times a plan retries, and how far apart                                                                                                              |
+| `create_webhook`            | Add an endpoint and return its signing secret                                                                                                                        |
+| `update_webhook`            | Change the URL or the events of an endpoint, turn it off or back on                                                                                                  |
+| `delete_webhook`            | Delete an endpoint                                                                                                                                                   |
+| `regenerate_webhook_secret` | Draw a new signing secret. The old one keeps signing for `overlap_hours`, 0 to 24: at once by default                                                                |
+| `send_test_webhook`         | Send a test delivery to an endpoint                                                                                                                                  |
+| `update_project`            | Rename the project                                                                                                                                                   |
 
 **Prepare**
 
@@ -119,6 +119,8 @@ Whatever the agent is asked, by you or by anything it reads:
 - Delete a project or a plan.
 - Close a plan, or change the end or the receiving wallets of a plan you already signed.
 - Resend an old webhook delivery.
+- Read a customer's email. It can check access for an email you give it, and
+  never gets one back: a customer is shown by wallet and by your own id.
 - Cancel or change a customer's subscription. Only their wallet can.
 
 These are not tools switched off: the server has no such tool, and Mesub gives
@@ -127,7 +129,7 @@ an agent no way to them.
 ## Limits
 
 Per connection: **120 reads** and **20 changes** a minute, and 5 test
-deliveries a minute. A project holds up to 10 connected agents, and an account
+deliveries a minute, refused ones included. A project holds up to 10 connected agents, and an account
 30 across its projects.
 
 ## See and cut a connection
