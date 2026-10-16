@@ -61,6 +61,7 @@ Pass `external_id` when your app has a login: it is how
     "subscription": { "id": "cmg1x0abc0001", "status": "pending" },
     "transaction": "gAIBBg0Xq3ZkT9yLmR4vP7wJ8sN2aHcVbE5uYtKfDgQxWz1oMiCj6rA0lSnU...",
     "last_valid_block_height": "301245678",
+    "transaction_expires_at": "2026-01-01T00:00:33.000Z",
     "terms": {
         "message": "Mesub: the terms of the subscription...\nAmount: 9.99 USDC every 30 days\n...",
         "expires_at": "2026-01-01T00:05:00.000Z"
@@ -83,6 +84,11 @@ Pass `external_id` when your app has a login: it is how
 ```
 
 </Expandable>
+
+`transaction_expires_at` estimates when `last_valid_block_height` passes, about
+half a minute after the answer: use it for a countdown, or to ask for a fresh
+transaction before it runs out. The height is the truth: a transaction the
+chain refuses as expired is rebuilt, whatever this date said.
 
 `costs` is in lamports, as strings. `rent` is a deposit the customer gets back
 when the subscription is closed; `fee` is spent. `rent.authority` is null when
@@ -149,7 +155,7 @@ asked for the transaction more than once, sign the one of the last call.
 <Step title="Submit, on your server">
 
 ```ts
-const { subscription, reason } = await mesub.subscriptions.submit(
+const { subscription, reason, reason_code } = await mesub.subscriptions.submit(
     subscriptionId,
     { transaction: signedTransaction, terms_signature },
 );
@@ -157,9 +163,13 @@ const { subscription, reason } = await mesub.subscriptions.submit(
 if (subscription.access) {
     // it landed: grant the plan
 } else {
-    // it did not land, and `reason` says why: create again
+    // it did not land: reason_code says why, reason says it to a person
 }
 ```
+
+Branch on `reason_code` (`transaction_expired`, `nothing_landed`, ...), never
+on `reason`: the sentence may be reworded, the code never is. Mesub adds codes,
+so keep a default branch.
 
 Mesub checks both signatures, co-signs, sends the transaction and waits for the
 chain. A transaction signed too late is refused with `transaction_expired`:
