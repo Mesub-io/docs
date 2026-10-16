@@ -120,10 +120,11 @@ subscription that is not blocked.
 | `puller_not_allowed`       | Mesub's puller was taken off the plan on chain                      | Add Mesub back to the plan's pullers, with the wallet that owns the plan |
 | `receiver_not_allowed`     | The receiving wallet is not among the plan's destinations           | Choose a receiving wallet that is among them                             |
 | `receiver_account_missing` | It has no account for the plan's token, and nobody else can be paid | Open an account for that token                                           |
+| `receiver_account_frozen`  | The token account it is paid into is frozen                         | Have it thawed, or choose another receiving wallet                       |
 | `mint_gone`                | The plan's token no longer exists                                   | Create a new plan with another token                                     |
 | `mesub`                    | Any cause on Mesub's side                                           | Nothing                                                                  |
 
-The first four are your plan's own setup, and only you can undo them. `mesub`
+The first five are your plan's own setup, and only you can undo them. `mesub`
 covers every other cause, whatever it is.
 
 Mesub keeps trying: about every ten minutes, then less often, at least once a
@@ -213,7 +214,7 @@ An `ended` subscription carries one `end_reason`:
 | `plan_ended`       | The plan reached its own end date                  |
 | `plan_removed`     | You deleted the plan                               |
 | `plan_replaced`    | Another plan now stands at its address             |
-| `authority_closed` | The wallet closed its authorisation outside Mesub  |
+| `closed_elsewhere` | It was closed on chain, outside Mesub              |
 | `closed`           | The customer closed the subscription through Mesub |
 
 It is null on every other status.
