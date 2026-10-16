@@ -69,10 +69,12 @@ cp -R mesub-skills/skills/<skill> <your agent's skills folder>/
 To update, run `npx skills update`. It fetches the skills again from the
 repository.
 
-The skills wire `@mesub/node` and `@mesub/react`, which are **not on npm yet**.
-An agent that has the kit checks what is installed first, and when a package
-is missing it stops and tells you: it does not install a package with a
-similar name or rewrite the calls by hand.
+The skills wire `@mesub/node`, which is on npm, and `@mesub/react`, which is
+**not on npm yet** and is built from its repository until it is
+([First subscriber](./quickstart.mdx)). An agent that
+has the kit checks what is installed first, and when a package is missing it
+stops and tells you: it does not install a package with a similar name or
+rewrite the calls by hand.
 
 ## The skills
 
