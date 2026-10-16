@@ -88,16 +88,16 @@ project**, connect again and choose it.
 
 **Act**
 
-| Tool                        | What it does                                                                    |
-| --------------------------- | ------------------------------------------------------------------------------- |
-| `retry_charge`              | Retry a failed charge, when a customer is [late](./lifecycle.mdx#late-payments) |
-| `update_retry_policy`       | Change how many times a plan retries, and how far apart                         |
-| `create_webhook`            | Add an endpoint and return its signing secret                                   |
-| `update_webhook`            | Change the URL or the events of an endpoint, turn it off or back on             |
-| `delete_webhook`            | Delete an endpoint                                                              |
-| `regenerate_webhook_secret` | Draw a new signing secret. The old one stops signing at once                    |
-| `send_test_webhook`         | Send a test delivery to an endpoint                                             |
-| `update_project`            | Rename the project                                                              |
+| Tool                        | What it does                                                                                          |
+| --------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `retry_charge`              | Retry a failed charge, when a customer is [late](./lifecycle.mdx#late-payments)                       |
+| `update_retry_policy`       | Change how many times a plan retries, and how far apart                                               |
+| `create_webhook`            | Add an endpoint and return its signing secret                                                         |
+| `update_webhook`            | Change the URL or the events of an endpoint, turn it off or back on                                   |
+| `delete_webhook`            | Delete an endpoint                                                                                    |
+| `regenerate_webhook_secret` | Draw a new signing secret. The old one keeps signing for `overlap_hours`, 0 to 24: at once by default |
+| `send_test_webhook`         | Send a test delivery to an endpoint                                                                   |
+| `update_project`            | Rename the project                                                                                    |
 
 **Prepare**
 
