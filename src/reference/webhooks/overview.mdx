@@ -138,17 +138,26 @@ neither.
 Mesub does not send them yet: they are off until Mesub turns them on. Until
 then, read access with [`GET /v1/access`](../access/check.mdx).
 
-| Field                 | What it says                                                         |
-| --------------------- | -------------------------------------------------------------------- |
-| `data.access`         | `true` on `access_granted`, `false` on `access_revoked`              |
-| `data.access_until`   | When access ends unless a charge renews it. Null without access      |
-| `data.blocked_since`  | Since when charges are held for a cause not the customer's, or null  |
-| `data.blocked_reason` | Why they are held, or null                                           |
-| `detail.changed_at`   | When access changed, to the millisecond: the moment `data` describes |
+| Field                   | What it says                                                         |
+| ----------------------- | -------------------------------------------------------------------- |
+| `data.access`           | `true` on `access_granted`, `false` on `access_revoked`              |
+| `data.access_until`     | When access ends unless a charge renews it. Null without access      |
+| `data.blocked_since`    | Since when charges are held for a cause not the customer's, or null  |
+| `data.blocked_reason`   | Why they are held, or null                                           |
+| `detail.changed_at`     | When access changed, to the millisecond: the moment `data` describes |
+| `detail.blocked_reason` | Why charges were held when access changed, or null                   |
+| `detail.access_until`   | Revoked: the date access ended. Granted: set only on held charges    |
 
 `created_at` is when Mesub wrote the event, and can come later than
 `detail.changed_at`: a date that passed with nothing else happening is told a
 few seconds after it.
+
+`detail.blocked_reason` and `detail.access_until` describe the change itself.
+On `access_revoked`, `detail.access_until` is the date access ended: the end of
+a paid period, of a cancellation, of the plan, or of the access held charges
+keep. It is null when access ended with no date of its own, a stop for example.
+On `access_granted`, it is set only while charges are held. Both fields are
+absent on events written before Mesub added them.
 
 Drive your customer's access from these two events alone; the others say why
 it changed. For each subscription, keep the `sequence` of the last access

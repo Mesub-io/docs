@@ -338,10 +338,12 @@ async function onAccessEvent(event) {
 }
 ```
 
-`data.access` is the answer, `detail.changed_at` the moment it changed. On
-`access_revoked`, `data.blocked_since` and `data.blocked_reason` say whether
-charges were held on the plan's side or Mesub's rather than missed by the
-customer: see [blocked charges](./lifecycle.mdx#blocked-charges).
+`data.access` is the answer, `detail.changed_at` the moment it changed.
+`detail.blocked_reason` says whether charges were held on the plan's side or
+Mesub's when access changed, rather than missed by the customer: see
+[blocked charges](./lifecycle.mdx#blocked-charges). On `access_revoked`,
+`detail.access_until` is the date access ended, null when it ended with no date
+of its own, such as a stop. Both may be absent on older events.
 
 ## Before a renewal
 
