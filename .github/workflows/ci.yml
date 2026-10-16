@@ -1,0 +1,42 @@
+name: CI
+
+# Push only, as in the other Mesub repos: every branch a pull request is opened
+# from is pushed first. It also keeps forks' pull requests off the self-hosted
+# runner, since this repository is public.
+on:
+  push:
+    branches: ["**"]
+
+# One run per branch: a new push cancels the one it supersedes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # The VPS's runner, as for the backend and the dashboard (frontend #211).
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # pnpm before setup-node, or the pnpm cache is not found. No version
+      # here: package.json declares packageManager.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Writes the reference pages from the spec, then builds and prerenders;
+      # fails on a broken internal link.
+      - name: Build
+        run: pnpm build
