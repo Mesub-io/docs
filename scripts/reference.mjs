@@ -6,12 +6,21 @@
 // `pnpm build`, so a page never trails the spec. Never edit a generated page:
 // change the spec.
 
+import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const spec = JSON.parse(readFileSync(path.join(root, 'public/openapi.json'), 'utf8'))
+const text = readFileSync(path.join(root, 'public/openapi.json'), 'utf8')
+const spec = JSON.parse(text)
+
+// The copy must be the one `pnpm spec` recorded: an edit here would not come from the backend.
+const source = JSON.parse(readFileSync(path.join(root, 'public/openapi.source.json'), 'utf8'))
+if (createHash('sha256').update(text).digest('hex') !== source.sha256) {
+  console.error('reference: public/openapi.json differs from what `pnpm spec` recorded. Copy it again with `pnpm spec`.')
+  process.exit(1)
+}
 const server = spec.servers[0].url
 
 const fence = (lang, title, code) => ['```' + lang + ` title="${title}" lines=false`, code, '```']
