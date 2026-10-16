@@ -68,14 +68,17 @@ export interface EndpointModel {
   tryIt?: { inputs: Input[]; confirm?: string }
 }
 
+/** A `$ref` followed to what it names: a schema, a parameter or a header under `components`. */
 function deref(node: Json | undefined): Json {
   if (!node) return {}
   if (typeof node.$ref === 'string') {
-    const name = node.$ref.split('/').pop() as string
-    return deref(spec.components.schemas[name])
+    const [, , kind, name] = node.$ref.split('/')
+    return deref(spec.components[kind]?.[name])
   }
   return node
 }
+
+const parametersOf = (operation: Json): Json[] => (operation.parameters ?? []).map(deref)
 
 /** `allOf` folded into one object: the only composition the spec uses for objects. */
 function flat(node: Json | undefined): Json {
@@ -155,7 +158,7 @@ function fieldsOf(node: Json, depth = 0): Field[] {
 }
 
 function paramsOf(operation: Json, where: string): Field[] {
-  return (operation.parameters ?? [])
+  return parametersOf(operation)
     .filter((param: Json) => param.in === where)
     .map((param: Json) => field(param.name, param.schema ?? {}, param.required === true, 0, param))
 }
@@ -176,15 +179,18 @@ function responsesOf(operation: Json): ResponseModel[] {
       description: response.description ?? '',
       shapes,
       codes: response['x-codes'] ?? [],
-      headers: Object.entries(response.headers ?? {}).map(([name, header]) =>
-        field(name, (header as Json).schema ?? {}, false, 0, header as Json),
-      ),
+      headers: Object.entries(response.headers ?? {}).map(([name, value]) => {
+        const header = deref(value as Json)
+        return field(name, header.schema ?? {}, header.required === true, 0, header)
+      }),
     }
   })
 }
 
 function inputsOf(operation: Json): Input[] {
-  const inputs: Input[] = (operation.parameters ?? []).map((param: Json) => {
+  // Headers are left to the panel: Mesub-Version is optional, the key is asked apart.
+  const params = parametersOf(operation).filter((param: Json) => param.in !== 'header')
+  const inputs: Input[] = params.map((param: Json) => {
     const schema = flat(param.schema ?? {})
     const example = param.example ?? param['x-example']
     return {
