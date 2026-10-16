@@ -53,6 +53,8 @@ Hand the fake's client to the guard, and let the test say who is signed in:
 import request from 'supertest';
 import { requirePlan } from '@mesub/node/express';
 
+const fake = new FakeMesub({ revalidateAfter: 0 }); // each change shows on the next call
+const mesub = fake.client();
 const customer = () => ({ external_id: 'user_42' });
 app.get('/api/analytics', requirePlan('pro', { client: mesub, customer }), handler);
 
@@ -74,8 +76,11 @@ This is how to check what [your routes do when Mesub does not
 answer](./access.mdx#when-mesub-does-not-answer): a customer seen before keeps
 their last answer, one never seen gets a 503.
 
-The fake's answers are stale at once, so a change shows on the next call. Pass
-`revalidate_after` to an answer to test the cache.
+As on Mesub, a client keeps a yes up to five minutes and a no 10 seconds (the
+`revalidate_after` Mesub sends), so a change made after a client asked shows to
+a new `fake.client()`. `new FakeMesub({ revalidateAfter: 0 })` shows every
+change on the next call. A `revalidate_after` set on one answer wins, to test
+the cache.
 
 ## A webhook
 
