@@ -32,6 +32,20 @@ MESUB_WEBHOOK_SECRET=whsec_...
 
 An endpoint must be a public HTTPS URL. A project can have up to 16.
 
+### Rotate the secret
+
+Regenerate the secret on the endpoint's page in the dashboard, with an
+overlap of up to 24 hours. The old secret keeps signing beside the new one
+until the overlap ends: each delivery in that window carries two signatures in
+`webhook-signature`, the new secret's first, and `verify` accepts it when any
+one matches. So nothing changes on your side until you deploy the new secret
+as `MESUB_WEBHOOK_SECRET`, and nothing fails if you deploy it before the
+overlap ends.
+
+With no overlap, the old secret stops at once: every delivery fails
+verification until the new one is deployed. Use no overlap when the old secret
+leaked. Rotating again during an overlap ends the oldest secret.
+
 ## Create a handler
 
 Mesub signs each delivery the [Standard Webhooks](https://www.standardwebhooks.com)
@@ -55,7 +69,11 @@ app.post(
         try {
             event = await mesub.webhooks.verify(req.body, req.headers);
         } catch (error) {
-            if (error instanceof MesubError) return res.status(400).end();
+            // Not Mesub's, or not now: refuse it.
+            if (error instanceof MesubError && error.code === 'invalid_webhook') {
+                return res.status(400).end();
+            }
+            // Signed by Mesub, but this release cannot read it: answer 500.
             return next(error); // Express 4 does not catch a throw in an async handler
         }
 
@@ -83,8 +101,10 @@ export async function POST(request: Request) {
     try {
         event = await verifyWebhook(await request.text(), request.headers);
     } catch (error) {
-        if (error instanceof MesubError) return new Response(null, { status: 400 });
-        throw error;
+        if (error instanceof MesubError && error.code === 'invalid_webhook') {
+            return new Response(null, { status: 400 });
+        }
+        throw error; // answered 500
     }
 
     if (await alreadyHandled(event.id)) return new Response(null, { status: 200 });
@@ -124,8 +144,10 @@ export class MesubWebhooksController {
         try {
             event = await verifyWebhook(req.rawBody!, req.headers);
         } catch (error) {
-            if (error instanceof MesubError) throw new BadRequestException();
-            throw error;
+            if (error instanceof MesubError && error.code === 'invalid_webhook') {
+                throw new BadRequestException();
+            }
+            throw error; // answered 500
         }
 
         if (await alreadyHandled(event.id)) return;
@@ -141,6 +163,12 @@ export class MesubWebhooksController {
 ```
 
 </CodeGroup>
+
+Answer 400 only for `invalid_webhook`, a delivery that fails verification.
+Any other `MesubError` is a body Mesub signed that your release of
+`@mesub/node` cannot read: log it and answer a 5xx. Mesub then retries the
+same body for three days, so the event still gets through once you update; a
+2xx would lose it.
 
 Answer with a 2xx within 10 seconds, before any slow work of your own. Anything
 else, a redirect included, counts as a failure.
@@ -179,29 +207,34 @@ A handler running on your machine needs a public URL. A tunnel such as
 
 ## Events
 
-| Event                           | Sent when                                               |
-| ------------------------------- | ------------------------------------------------------- |
-| `subscription.created`          | The first payment landed                                |
-| `subscription.renewal_upcoming` | A renewal is near, and whether it can pay               |
-| `subscription.renewed`          | A period was paid                                       |
-| `subscription.payment_failed`   | A charge missed                                         |
-| `subscription.stopped`          | Mesub stopped charging after missed payments            |
-| `subscription.cancelled`        | The customer cancelled; access runs to the period's end |
-| `subscription.resumed`          | A cancellation was undone                               |
-| `subscription.ended`            | It is over; `data.end_reason` says why                  |
-| `subscription.expired`          | A checkout was started and never signed                 |
-| `subscription.paused`           | A seat was parked over the tier's limit. Not sent yet   |
-| `subscription.unpaused`         | A parked seat is back. Not sent yet                     |
-| `subscription.access_granted`   | Access started, and was off just before. Not sent yet   |
-| `subscription.access_revoked`   | Access ended, and was on just before. Not sent yet      |
-| `test`                          | You sent one from the dashboard                         |
+| Event                           | Sent when                                                                     |
+| ------------------------------- | ----------------------------------------------------------------------------- |
+| `subscription.created`          | The first payment landed                                                      |
+| `subscription.renewal_upcoming` | A renewal is near, and whether it can pay                                     |
+| `subscription.renewed`          | A period was paid                                                             |
+| `subscription.payment_failed`   | A charge missed                                                               |
+| `subscription.stopped`          | Mesub stopped charging after missed payments                                  |
+| `subscription.cancelled`        | The customer cancelled; access runs to the period's end                       |
+| `subscription.resumed`          | A cancellation was undone                                                     |
+| `subscription.ended`            | It is over; `data.end_reason` says why. At a cancellation's end, not sent yet |
+| `subscription.expired`          | A checkout was started and never signed                                       |
+| `subscription.paused`           | A seat was parked over the tier's limit. Not sent yet                         |
+| `subscription.unpaused`         | A parked seat is back. Not sent yet                                           |
+| `subscription.access_granted`   | Access started, and was off just before. Not sent yet                         |
+| `subscription.access_revoked`   | Access ended, and was on just before. Not sent yet                            |
+| `test`                          | You sent one from the dashboard                                               |
+
+"Not sent yet" means Mesub writes none of these today, whatever the
+reference page of the event says: they come on together, later. A
+cancellation's end still reads `ended` on the subscription, and closing it
+sends `subscription.ended` today.
 
 Mesub may add a type later: keep a default branch. The reference has
 [one page per event](../reference/webhooks/overview.mdx), with its payload.
 
 ## The event object
 
-Every event has the same shape: its `id`, its `type`, when it happened
+Every event has the same shape: its `id`, its `type`, when Mesub wrote it
 (`created_at`), its `sequence` among the subscription's events, `data`, the
 subscription as `subscriptions.retrieve` answers it, and `detail`, which is the
 event's own. `event.id` is the same in every delivery of the event: apply each
@@ -241,7 +274,7 @@ as `event.delivery_id`.
         "retry_deadline": null,
         "next_retry_number": 1,
         "retries_allowed": 3,
-        "access_until": "2026-02-03T00:01:00.000Z",
+        "access_until": "2026-02-03T00:05:00.000Z",
         "closable": false,
         "closable_from": null,
         "created_at": "2026-01-01T00:00:00.000Z",
@@ -315,7 +348,9 @@ as `event.delivery_id`.
 </Expandable>
 
 `data` is the subscription as it stood right after the change that raised the
-event, however late the delivery. `created_at` is when the event happened.
+event, however late the delivery. `created_at` is when Mesub wrote the event.
+An access event, or a cancellation that reached its end, can be written a few
+seconds after the fact: `detail.changed_at` is the moment itself.
 
 ## Drive access from the access events
 
@@ -433,11 +468,11 @@ period of a plan with an end date has no renewal: no event, and no mail.
 A plan can have an [end date](./lifecycle.mdx#when-the-plan-has-an-end-date),
 and three events read differently around it.
 
-| Event                           | What changes                                                           |
-| ------------------------------- | ---------------------------------------------------------------------- |
-| `subscription.renewal_upcoming` | Not sent in the last period: the plan ends before the next charge      |
-| `subscription.payment_failed`   | Can carry `next_retry_at: null` and `retries_left: 0` in `detail`      |
-| `subscription.ended`            | Sent at the plan's end, with `data.end_reason` at `plan_ended`         |
+| Event                           | What changes                                                      |
+| ------------------------------- | ----------------------------------------------------------------- |
+| `subscription.renewal_upcoming` | Not sent in the last period: the plan ends before the next charge |
+| `subscription.payment_failed`   | Can carry `next_retry_at: null` and `retries_left: 0` in `detail` |
+| `subscription.ended`            | Sent at the plan's end, with `data.end_reason` at `plan_ended`    |
 
 A charge that misses when the plan ends before the next retry has no retry to
 announce: `next_retry_at` is null, `retries_left` is 0 and `retry_mode` is

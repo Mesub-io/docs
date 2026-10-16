@@ -29,17 +29,17 @@ every webhook carry.
 
 ## Statuses
 
-| `status`     | `access`            | `payment_status` | What it means                                                              |
-| ------------ | ------------------- | ---------------- | -------------------------------------------------------------------------- |
-| `none`       | false               | `none`           | This customer never subscribed to this plan. Not an error                  |
-| `pending`    | false               | `none`           | Reserved, waiting for the wallet's transaction to land                     |
-| `active`     | true                | `paid`           | Paid up. The next charge is at `next_charge_at`                            |
-| `unpaid`     | true, false on Free | `late`           | A charge missed. A retry is coming                                         |
-| `cancelled`  | true until the end  | `paid`           | The customer cancelled. The period already paid runs to `access_until`     |
-| `stopped`    | false               | `none`           | The retries ran out. Nothing more is charged                               |
-| `ended`      | false               | `none`           | Over. `end_reason` says why                                                |
-| `failed`     | false               | `none`           | What landed on chain is not what Mesub reserved, so it is not billed. Rare |
-| `superseded` | false               | `none`           | Replaced by a newer subscription of the same wallet to the same plan       |
+| `status`     | `access`            | `payment_status` | What it means                                                                 |
+| ------------ | ------------------- | ---------------- | ----------------------------------------------------------------------------- |
+| `none`       | false               | `none`           | This customer never subscribed to this plan. Not an error                     |
+| `pending`    | false               | `none`           | Reserved, waiting for the wallet's transaction to land                        |
+| `active`     | true                | `paid`           | Paid up. The next charge is at `next_charge_at`                               |
+| `unpaid`     | true, false on Free | `late`           | A charge missed. A retry is coming                                            |
+| `cancelled`  | true until the end  | `paid`           | The customer cancelled. The period already paid runs to `access_until`        |
+| `stopped`    | false               | `none`           | Charging stopped, most often when the retries ran out. `stop_reason` says why |
+| `ended`      | false               | `none`           | Over. `end_reason` says why                                                   |
+| `failed`     | false               | `none`           | What landed on chain is not what Mesub reserved, so it is not billed. Rare    |
+| `superseded` | false               | `none`           | Replaced by a newer subscription of the same wallet to the same plan          |
 
 `ended`, `failed` and `superseded` are final. `stopped` is not: Mesub charges
 nothing more, but the wallet's approval stays open on Solana until the customer
@@ -49,17 +49,19 @@ Gate on `access`, not on `status`: a `cancelled` subscription still grants
 access for a while, an `unpaid` one may or may not, and an `active` one has
 none once [its plan has ended](#when-the-plan-has-an-end-date).
 
-A checkout nobody signed turns `expired`. It never appears in `/v1/access`, only
-when you read a subscription by its id, and in the `subscription.expired`
-webhook.
+A checkout nobody signed turns `expired`. It never appears in `/v1/access`. It
+does in `GET /v1/subscriptions`, when you read a subscription by its id, and
+in the `subscription.expired` webhook. Only a `superseded` one is left out of
+the list.
 
 ## Late payments
 
 When a charge misses, most often because the wallet holds less than the price,
 the subscription turns `unpaid` and `payment_status` reads `late`.
 
-`late_reason` says why, as the last failed charge found it. It is null on
-every other status, and when Mesub cannot name the cause.
+`late_reason` says why, as the last failed charge found it. A `stopped`
+subscription keeps it too, for the payment it stopped on. It is null on every
+other status, and when Mesub cannot name the cause.
 
 | `late_reason`          | What happened                                 | What fixes it    |
 | ---------------------- | --------------------------------------------- | ---------------- |
@@ -99,8 +101,32 @@ one period.
 ### On Free
 
 There are no automatic retries, and an `unpaid` subscription grants **no
-access**. You can retry by hand from the dashboard, up to 3 times, until
-`retry_deadline`. Past that date the subscription turns `stopped`.
+access**. You can retry by hand, up to 3 times, until `retry_deadline`: from
+the dashboard, or from your own page with
+[a retry](./manage.mdx#pay-a-late-payment-now). Past that date the
+subscription turns `stopped`.
+
+### Paying now
+
+On any tier, a late payment can be paid at once rather than at its next
+retry, for a customer who just topped up: from the dashboard, or from your
+server with `subscriptions.retry`, which the widget shows as **Pay now**.
+[Pay a late payment now](./manage.mdx#pay-a-late-payment-now) has the detail.
+
+### Why a subscription stops
+
+A `stopped` subscription carries `stop_reason`. It is null on every other
+status, and on one that stopped before Mesub recorded why.
+
+| `stop_reason`           | What happened                                                      | What the customer can do                        |
+| ----------------------- | ------------------------------------------------------------------ | ----------------------------------------------- |
+| `out_of_retries`        | Every retry of the missed payment failed                           | [Come back](#coming-back), or cancel then close |
+| `retry_deadline_passed` | On Free, the last day to pay the missed payment passed             | Come back, or cancel then close                 |
+| `authority_closed`      | The wallet closed its authorisation for good. Nobody can charge it | Close it at once (`closable` is true)           |
+
+One stopped with `authority_closed` cannot come back: the customer closes it,
+then subscribes anew.
+
 
 ## Blocked charges
 
@@ -229,8 +255,8 @@ already paid. Moving back up a tier puts them back on schedule.
 ## Coming back
 
 A customer whose subscription stopped or ended can subscribe again to the same
-plan, with the same wallet. The new subscription takes over, and the old one
-turns `superseded`. A stopped subscription holds no seat, so coming back needs
+plan, with the same wallet. The new subscription takes over. A `stopped` one
+turns `superseded`; an `ended` one stays as it was. A stopped subscription holds no seat, so coming back needs
 a free one, like any new subscriber: on a full project it is refused with
 `seat_cap_reached`.
 

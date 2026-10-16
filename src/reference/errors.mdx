@@ -36,6 +36,11 @@ Branch on `code`, never on `message`. A code is never moved to another status
 or reused, and is renamed only in a new `Mesub-Version`, but new ones are
 added: keep a default branch.
 
+One exception was made before the first integrator, within `2026-10-02`:
+`plan_deleted` became `plan_removed`, and `plan_rebuilt` became
+`plan_replaced`. The old names are no longer answered. Code written against
+them must branch on the new ones.
+
 When `retryable` is true, the same request sent again unchanged may succeed
 later; a `Retry-After` header says when, in seconds. It never means "retry at
 once". Every route is safe to call twice.

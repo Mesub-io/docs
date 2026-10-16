@@ -75,18 +75,18 @@ Every event has the same shape:
 }
 ```
 
-| Field         | What it says                                                                                             |
-| ------------- | -------------------------------------------------------------------------------------------------------- |
-| `id`          | The event's id, the same in every delivery of it                                                         |
-| `object`      | Always `event`                                                                                           |
-| `type`        | The event's name                                                                                         |
-| `created_at`  | When the event happened: the moment `data` describes                                                     |
-| `network`     | The Solana network: `devnet` or `mainnet-beta`                                                           |
-| `api_version` | The version `data` and `detail` are written in, as `Mesub-Version` names it                              |
-| `sequence`    | Its place among this subscription's events: 1, 2, 3... Absent on some events                             |
-| `data`        | The subscription, as [Retrieve a subscription](../subscriptions/retrieve.mdx) answers it, shortened here |
-| `detail`      | The event's own fields. Empty on most events                                                             |
-| `test`        | `true` on a delivery sent by hand from the dashboard. Absent otherwise                                   |
+| Field         | What it says                                                                                               |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
+| `id`          | The event's id, the same in every delivery of it                                                           |
+| `object`      | Always `event`                                                                                             |
+| `type`        | The event's name                                                                                           |
+| `created_at`  | When Mesub wrote the event. On an access event, or a cancellation's end, `detail.changed_at` is the moment |
+| `network`     | The Solana network: `devnet` or `mainnet-beta`                                                             |
+| `api_version` | The version `data` and `detail` are written in, as `Mesub-Version` names it                                |
+| `sequence`    | Its place among this subscription's events: 1, 2, 3... Absent on some events                               |
+| `data`        | The subscription, as [Retrieve a subscription](../subscriptions/retrieve.mdx) answers it, shortened here   |
+| `detail`      | The event's own fields. Empty on most events                                                               |
+| `test`        | `true` on a delivery sent by hand from the dashboard. Absent otherwise                                     |
 
 `data` is the subscription as it stood right after the change that raised the
 event, however late the delivery. Events raised by the same change share it:

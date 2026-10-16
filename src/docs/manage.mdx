@@ -31,6 +31,13 @@ key alone changes nothing: only the wallet that pays a subscription can sign.
 | Take a cancellation back before its end     | `resume(id)` | `confirmResume(id, { signature })` | `active`                        |
 | Close one that is over, and return its rent | `close(id)`  | `confirmClose(id, { signature })`  | `ended`, `end_reason: "closed"` |
 
+Close takes a subscription that was cancelled or stopped and whose end has
+passed, one that ended with its plan, and at once one stopped with
+`stop_reason` `authority_closed`. `closable` and `closable_from`, on the
+subscription and on the access answer, say whether it can close now, and from
+when. One that ended with its plan keeps its `end_reason`, `plan_ended` for
+instance, once closed.
+
 ## The three steps
 
 They are the same for the three actions. Here with `cancel`:
@@ -69,15 +76,19 @@ Send `signature` back to your server.
 <Step title="Confirm, on your server">
 
 ```ts
-const { subscription, reason } =
+const { subscription, reason, reason_code } =
     await mesub.subscriptions.confirmCancel(subscriptionId, { signature });
 
-if (reason === undefined) {
+if (reason_code === undefined) {
     // cancelled: subscription.access_until says when access ends
 } else {
-    // nothing changed, and reason says why: build a new one to try again
+    // nothing changed: build a new one to try again
 }
 ```
+
+Branch on `reason_code` (`transaction_expired`, `cancellation_not_landed`,
+...), never on `reason`, a sentence for a person that may be reworded. Keep a
+default branch: Mesub adds codes.
 
 Mesub waits for the chain, up to 90 seconds, and answers the subscription as
 it now stands.
@@ -110,21 +121,67 @@ and the terms the customer signed
 
 Each is thrown as a `MesubError`. `apiCode` says which:
 
-| `apiCode`                    | When                                                |
-| ---------------------------- | --------------------------------------------------- |
-| `subscription_not_found`     | No subscription of your project under that id       |
-| `subscription_not_active`    | `cancel`: it is not `active`, `unpaid` or `stopped` |
-| `subscription_cancelled`     | `cancel`: it was cancelled already                  |
-| `subscription_not_cancelled` | `resume` or `close`: nothing cancelled it           |
-| `subscription_ended`         | `resume`: the paid period is over. Subscribe again  |
-| `plan_removed`               | `resume`: its plan is gone                          |
-| `close_too_early`            | `close`: its end has not passed yet                 |
-| `subscription_not_on_chain`  | It is closed already                                |
-| `nothing_to_confirm`         | A confirm before any transaction was built          |
+| `apiCode`                    | When                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| `subscription_not_found`     | No subscription of your project under that id                                |
+| `subscription_not_active`    | `cancel`: it is not `active`, `unpaid` or `stopped`                          |
+| `subscription_cancelled`     | `cancel`: it was cancelled already                                           |
+| `subscription_not_cancelled` | `resume`: nothing cancelled it. `close`: it is neither cancelled nor stopped |
+| `subscription_ended`         | `resume`: the paid period is over. Subscribe again                           |
+| `plan_removed`               | `resume`: its plan is gone                                                   |
+| `plan_replaced`              | `resume`: another plan stands at its address                                 |
+| `close_too_early`            | `close`: its end has not passed yet                                          |
+| `subscription_not_on_chain`  | It is closed already                                                         |
+| `nothing_to_confirm`         | A confirm before any transaction was built                                   |
 
 These six calls are limited to 60 a minute per API key. Each has its page in
 the reference, from [cancel](../reference/manage/cancel.mdx) to
 [confirm a close](../reference/manage/confirm-close.mdx).
+
+## Pay a late payment now
+
+A customer who topped up their wallet does not have to wait for the next
+retry. `retry` charges the missed period now, with nothing to sign: the wallet
+approved the plan when it subscribed.
+
+```ts
+const subscription = await mesub.subscriptions.retry(subscriptionId);
+// still unpaid: the charge runs in the background
+```
+
+The answer is the subscription, still `unpaid`. The outcome comes as the
+`subscription.renewed` or `subscription.payment_failed` webhook, and on the
+subscription. The [React widget](./react.mdx) shows it as **Pay now**, through
+`POST /subscriptions/:id/retry` of the routes, on a late subscription that
+can pay (`payable`), and `useSubscriptions` gives `payNow(id)` for a list of
+your own. [`POST /v1/subscriptions/:id/retry`](../reference/subscriptions/retry.mdx)
+is the call without the SDK.
+
+It is refused before anything is queued when it cannot succeed, as the chain
+reads now, so no retry is spent for nothing:
+
+| `apiCode`               | When                                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------------------- |
+| `insufficient_balance`  | The wallet holds less than the period costs. Top up first                                 |
+| `retry_cannot_succeed`  | The wallet no longer approves it, its token account is frozen, or its authority is closed |
+| `retry_too_soon`        | The wait since the last try is not over. `retryAfter` says when                           |
+| `subscription_not_late` | It is not `unpaid`                                                                        |
+| `subscription_paused`   | Its seat is parked                                                                        |
+| `retries_spent`         | On Free, the three retries of the period are spent                                        |
+| `retry_deadline_passed` | On Free, `retry_deadline` has passed                                                      |
+| `plan_ended`            | Its plan has ended                                                                        |
+| `subscription_changed`  | Two retries met, or a charge moved it on. Retryable: read it back first                   |
+| `pull_running`          | On Free, a charge runs now. Retryable                                                     |
+
+How often:
+
+| Tier          | Retries by hand                                                                                                         |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Free          | Three per missed period, whoever makes them, at least 10 minutes apart, none in the last 2 minutes of the missed period |
+| Dev, Business | Beside the plan's own retries, uncounted. The first at once, then 20 minutes, 40, 80, doubling                          |
+
+The same retry is in the dashboard. `retry` is sent once, never retried by
+the SDK, and limited to 60 a minute per API key.
 
 ## List its payments
 
@@ -210,7 +267,10 @@ sent.
 Only a `paid` attempt carries a `signature`, since only it moved money. A
 `rejected` one moved nothing: Mesub reads the wallet's balance before it sends,
 and a transfer the program refuses changes nothing. A `blocked` one mostly
-stopped before sending, and Mesub comes back to it ten minutes later. When a
+stopped before sending, and Mesub comes back to it ten minutes later. A block
+of your plan's own setup that has outlived the customer's access is tried less
+often: each wait as long as the block has lasted, up to a day, or a quarter
+of the period on a shorter plan. When a
 transfer did go out and Mesub could not see it land, it asks the chain before
 charging again, and records a `paid` attempt if it landed.
 
@@ -218,8 +278,9 @@ charging again, and records a `paid` attempt if it landed.
 the subscription `unpaid`. Each retry rejected after it is one retry spent, and
 when the last is spent the subscription turns `stopped`. A `blocked` or
 `skipped` attempt never uses a retry, however many there are. Neither does a
-retry you fire by hand from the dashboard on Dev or Business: it is recorded
-like any other, and the plan's retries stay as they were.
+retry fired by hand on Dev or Business, from the dashboard or with
+[`retry`](#pay-a-late-payment-now): it is recorded like any other, and the
+plan's retries stay as they were.
 
 ### Reasons
 
@@ -233,14 +294,22 @@ What the customer did, or their wallet:
 | `insufficient_balance`     | `rejected` | The wallet holds less than the period owes, or has no token account     |
 | `token_account_reassigned` | `rejected` | The wallet's token account now belongs to someone else                  |
 | `token_account_frozen`     | `rejected` | The wallet's token account is frozen                                    |
-| `program_<code>`           | `rejected` | The program refused the transfer. `<code>` is its error number          |
+| `authority_closed`         | `rejected` | The wallet is short, and its authorisation is closed for good           |
+| `program_1`                | `rejected` | The wallet holds less than the period owes, or approved less            |
+| `program_4`                | `rejected` | The wallet no longer lets Mesub charge it: the approval was revoked     |
+| `program_103`, `136`       | `rejected` | The wallet closed its authorisation, or made a new one since            |
+| `program_508`              | `rejected` | Cancelled on chain, and its expiry has passed                           |
 | `cancelled`                | `skipped`  | Cancelled on chain, and the period already paid is over                 |
 | `closed_elsewhere`         | `skipped`  | The subscription no longer exists on chain. It ends, `closed_elsewhere` |
 
-Three codes have a name: `program_4`, the wallet no longer lets Mesub charge
-it, and `program_103` or `program_136`, the wallet closed its authorisation.
-They are what `late_reason` reads, with `insufficient_balance`: see
-[late payments](./lifecycle.mdx#late-payments).
+`program_103` and `program_136` count against the customer only once Mesub
+reads the authorisation and finds it closed. Then the subscription stops at
+once, `stop_reason` `authority_closed`, whatever the tier and the retries
+left. Until a read agrees, the attempt is `blocked`, and tried again.
+
+`late_reason` reads four of these: `insufficient_balance`, `program_4`
+(`approval_revoked`), and `program_103`, `program_136` or `authority_closed`
+(`authority_closed`): see [late payments](./lifecycle.mdx#late-payments).
 
 What you did to the plan:
 
@@ -271,9 +340,10 @@ What Mesub or the network did:
 | `solana_<code>`       | `blocked` | Any other error of the chain, with its number                          |
 | `transport`           | `blocked` | The network did not answer, or not in time                             |
 
-`program_<code>` is the one reason that comes under two outcomes: `blocked`
-for the six codes these tables name, `rejected` for every other. This list
-can grow, and `<code>` is any number the chain answers, so keep a default
+`program_<code>` comes under two outcomes: `rejected` for `1`, `4`, `103`,
+`136` and `508`, the codes that are the customer's doing, and `blocked` for
+every other code, those these tables name and any number nobody placed. This
+list can grow, and `<code>` is any number the chain answers, so keep a default
 branch on both `reason` and `outcome`.
 
 ### The other fields

@@ -93,12 +93,22 @@ export function App({ children }) {
 }
 ```
 
-| Prop        | What it is                                                        |
-| ----------- | ----------------------------------------------------------------- |
-| `endpoint`  | Where you mounted the routes. A path on your site, or a full URL  |
-| `theme`     | `light`, `dark` or `auto`                                         |
-| `fetch`     | Your own `(url, init) => Promise<Response>`, to add headers       |
-| `manageUrl` | Where "Cancel any time" leads once subscribed. `null` for no link |
+| Prop        | What it is                                                                   |
+| ----------- | ---------------------------------------------------------------------------- |
+| `endpoint`  | Where you mounted the routes. A path on your site, or a full URL             |
+| `chain`     | The network the wallet signs for and sends on. `solana:devnet` when left out |
+| `theme`     | `light`, `dark` or `auto`                                                    |
+| `fetch`     | Your own `(url, init) => Promise<Response>`, to add headers                  |
+| `manageUrl` | Where "Cancel any time" leads once subscribed. `null` for no link            |
+
+`chain` must match the `network` of your plans. For plans on mainnet
+(`mainnet-beta`), set it, or the wallet signs for devnet:
+
+```tsx
+<MesubProvider endpoint="/api/mesub" chain="solana:mainnet">
+    {children}
+</MesubProvider>
+```
 
 Requests are sent with `credentials: 'include'`, so your session cookie
 travels. If your login is a bearer token, add it in `fetch`.
@@ -168,6 +178,14 @@ Each one is a transaction the wallet signs and sends itself. Only the wallet
 that pays a subscription can sign for it. Closing returns the deposit to that
 wallet.
 
+A late one (`unpaid`) also shows **Pay now** when paying can succeed: the
+customer pays the missed period at once, with nothing to sign, through
+`POST /subscriptions/:id/retry` of the routes
+([`subscriptions.retry`](./manage.mdx#pay-a-late-payment-now)). It is not
+offered on a parked seat, on a wallet that no longer approves the
+subscription, past its date to pay by, nor while its charges are
+[blocked](./lifecycle.mdx#blocked-charges).
+
 To list every subscription of the customer in a page of yours:
 
 ```tsx
@@ -198,7 +216,9 @@ function Mine() {
 ```
 
 `state` is `loading`, `ready`, `signed-out` or `error`. Each subscription
-carries `action`: `cancel`, `resume`, `close` or null.
+carries `action`: `cancel`, `resume`, `close` or null, and `payable`: whether
+**Pay now** can succeed. `payNow(id)` pays that late payment now and resolves
+`{ ok, message }`, the words to show; it never throws.
 
 ## Theming
 
