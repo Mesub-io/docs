@@ -54,7 +54,8 @@
       },
       {
         // Every page below "Overview" is written by scripts/reference.mjs from
-        // public/openapi.json. A new route goes in the spec, then here.
+        // public/openapi.json, copied from the backend by `pnpm spec`. A new route
+        // goes in the backend's spec, then here.
         "tab": "API reference",
         "icon": "lucide:braces",
         "groups": [
@@ -83,7 +84,8 @@
                   "reference/subscriptions/submit",
                   "reference/subscriptions/list",
                   "reference/subscriptions/retrieve",
-                  "reference/subscriptions/attempts"
+                  "reference/subscriptions/attempts",
+                  "reference/subscriptions/retry"
                 ]
               },
               {
@@ -96,6 +98,10 @@
                   "reference/manage/close",
                   "reference/manage/confirm-close"
                 ]
+              },
+              {
+                "group": "Events",
+                "pages": ["reference/events/list", "reference/events/retrieve"]
               },
               {
                 "group": "Project",
@@ -119,6 +125,10 @@
                   "reference/webhooks/subscription-resumed",
                   "reference/webhooks/subscription-ended",
                   "reference/webhooks/subscription-expired",
+                  "reference/webhooks/subscription-paused",
+                  "reference/webhooks/subscription-unpaused",
+                  "reference/webhooks/subscription-access-granted",
+                  "reference/webhooks/subscription-access-revoked",
                   "reference/webhooks/test"
                 ]
               }

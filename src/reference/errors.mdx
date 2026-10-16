@@ -18,7 +18,8 @@ Every error has the same body:
     "message": "You are already subscribed to this plan.",
     "error": "Conflict",
     "code": "already_subscribed",
-    "retryable": false
+    "retryable": false,
+    "request_id": "req_4f8KzQ2nVb7XcR1mT9wLp3sD"
 }
 ```
 
@@ -29,9 +30,11 @@ Every error has the same body:
 | `error`      | The status's name                                                                      |
 | `code`       | What your code reads                                                                   |
 | `retryable`  | Whether the same request, sent again unchanged, may succeed later                      |
+| `request_id` | The request's id, as the `Mesub-Request-Id` header says it. Quote it to Mesub support  |
 
-Branch on `code`, never on `message`. A code is never renamed or reused, but
-new ones are added: keep a default branch.
+Branch on `code`, never on `message`. A code is never moved to another status
+or reused, and is renamed only in a new `Mesub-Version`, but new ones are
+added: keep a default branch.
 
 When `retryable` is true, the same request sent again unchanged may succeed
 later; a `Retry-After` header says when, in seconds. It never means "retry at
@@ -62,12 +65,13 @@ Each route's page lists the codes that route answers. This page lists them all.
 | -------------------------- | ------ | ----------------------------------------------------- |
 | `plan_not_found`           | 404    | No plan of yours under that slug                      |
 | `plan_not_on_chain`        | 409    | The plan was never published                          |
-| `plan_deleted`             | 409    | The plan is gone                                      |
+| `plan_removed`             | 409    | The plan is gone from the chain                       |
 | `plan_sunset`              | 409    | The plan takes no new subscribers                     |
 | `plan_ended`               | 409    | The plan is past its end date: see below              |
-| `plan_rebuilt`             | 409    | Another plan now stands at its address                |
+| `plan_replaced`            | 409    | Another plan now stands at its address                |
 | `plan_mismatch`            | 409    | The plan on chain is not the one Mesub recorded       |
 | `receiver_account_missing` | 409    | The wallet that receives has no account for the token |
+| `receiver_account_frozen`  | 409    | The account the plan pays into is frozen              |
 | `mint_not_on_chain`        | 400    | The token does not exist on chain                     |
 
 `plan_ended` is what [Create a subscription](./subscriptions/create.mdx)
@@ -135,4 +139,24 @@ sign it, and sign the terms again if `terms.message` changed.
 | `close_too_early`            | 409    | Close: its end has not passed yet                 |
 | `subscription_not_on_chain`  | 409    | It is closed already                              |
 | `nothing_to_confirm`         | 400    | A confirm before any transaction was built        |
-| `retry_deadline_passed`      | 409    | A retry by hand after the deadline, on Free       |
+
+## Retrying a payment
+
+What [Retry a payment](./subscriptions/retry.mdx) answers besides the codes
+above:
+
+| `code`                  | Status | When                                                    |
+| ----------------------- | ------ | ------------------------------------------------------- |
+| `subscription_not_late` | 409    | It is not `unpaid`: only a late payment is retried      |
+| `subscription_paused`   | 409    | A parked seat: nothing charges it until a seat frees up |
+| `retry_too_soon`        | 409    | The wait since the last retry is not over. Retryable    |
+| `pull_running`          | 409    | A charge of it is running now. Retryable                |
+| `retry_cannot_succeed`  | 409    | It would fail whatever the wallet holds: `late_reason`  |
+| `retries_spent`         | 409    | On Free, the missed period's three retries are spent    |
+| `retry_deadline_passed` | 409    | On Free, the missed period ends too soon, or has ended  |
+
+## Events
+
+| `code`            | Status | When                                                  |
+| ----------------- | ------ | ----------------------------------------------------- |
+| `event_not_found` | 404    | No event of your project under that id, in the window |

@@ -26,7 +26,9 @@ src/docs/*.mdx           the guides, one file per page, served at /docs/<name>
 src/reference/*.mdx      the reference's hand-written pages: introduction,
                          authentication, errors, webhooks/overview
 src/reference/*/*.mdx    one page per route and per webhook event: GENERATED
-public/openapi.json      the description of the public API, served at /openapi.json
+public/openapi.json      the description of the public API, served at /openapi.json:
+                         a copy of the backend's openapi/v1.json, never edited here
+scripts/spec.mjs         copies the backend's spec into public/openapi.json
 scripts/reference.mjs    writes the generated pages from the spec
 src/components/api/      the endpoint page and its try-it panel, drawn from the spec
                          (samples.tsx: the sample cards of the right column;
@@ -50,19 +52,20 @@ public/                  logo, icon, robots.txt
 
 ## Add or change a route in the reference
 
-The reference is drawn from `public/openapi.json`, and the spec is written from
-the backend's code: the controllers' doc comments, the DTOs, the served shapes,
-`src/common/error-codes.ts`. The code wins over anything written here.
+The reference is drawn from `public/openapi.json`, a copy of the backend's
+`openapi/v1.json`, which the backend's tests hold to its code. The code wins
+over anything written here.
 
-1. Edit `public/openapi.json`. An operation carries `x-mesub`: `href` (where
+1. Change the spec in the backend, then copy it here with `pnpm spec`. It reads
+   `../backend/openapi/v1.json` by default; give another path as an argument
+   or in `MESUB_OPENAPI`. An operation carries `x-mesub`: `href` (where
    its page lives), `limit`, `guide`, and `confirm` on a route that changes
    something, which the try-it panel asks before sending. An error response
    lists its codes in `x-codes`. Links in a description are site paths:
    `/reference/subscriptions/submit`.
 2. Run `pnpm reference`. Never edit a generated page.
 3. For a new operation, list its page in `docs.jsonc`.
-4. Check the spec: `npx -y @redocly/cli lint public/openapi.json`. Every example
-   must conform to its schema.
+4. The spec is checked in the backend; here, `pnpm build` checks the pages.
 
 The try-it panel sends to `https://api.mesub.io`. Set `VITE_MESUB_API_URL` when
 starting or building to point it elsewhere:

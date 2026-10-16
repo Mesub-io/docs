@@ -117,7 +117,7 @@ Each is thrown as a `MesubError`. `apiCode` says which:
 | `subscription_cancelled`     | `cancel`: it was cancelled already                  |
 | `subscription_not_cancelled` | `resume` or `close`: nothing cancelled it           |
 | `subscription_ended`         | `resume`: the paid period is over. Subscribe again  |
-| `plan_deleted`               | `resume`: its plan is gone                          |
+| `plan_removed`               | `resume`: its plan is gone                          |
 | `close_too_early`            | `close`: its end has not passed yet                 |
 | `subscription_not_on_chain`  | It is closed already                                |
 | `nothing_to_confirm`         | A confirm before any transaction was built          |
@@ -162,7 +162,7 @@ not over the page.
             "id": "cmg9x1b7a0003",
             "attempted_at": "2026-01-31T00:02:03.000Z",
             "outcome": "rejected",
-            "reason": "insufficient-balance",
+            "reason": "insufficient_balance",
             "amount": "9990000",
             "amount_usd": "9.99",
             "signature": null,
@@ -230,46 +230,48 @@ What the customer did, or their wallet:
 
 | `reason`                   | `outcome`  | What it says                                                            |
 | -------------------------- | ---------- | ----------------------------------------------------------------------- |
-| `insufficient-balance`     | `rejected` | The wallet holds less than the period owes, or has no token account     |
-| `token-account-reassigned` | `rejected` | The wallet's token account now belongs to someone else                  |
-| `program:<code>`           | `rejected` | The program refused the transfer. `<code>` is its error number          |
-| `subscription-cancelled`   | `skipped`  | Cancelled on chain, and the period already paid is over                 |
-| `delegation-gone`          | `skipped`  | The subscription no longer exists on chain. It ends, `authority_closed` |
+| `insufficient_balance`     | `rejected` | The wallet holds less than the period owes, or has no token account     |
+| `token_account_reassigned` | `rejected` | The wallet's token account now belongs to someone else                  |
+| `token_account_frozen`     | `rejected` | The wallet's token account is frozen                                    |
+| `program_<code>`           | `rejected` | The program refused the transfer. `<code>` is its error number          |
+| `cancelled`                | `skipped`  | Cancelled on chain, and the period already paid is over                 |
+| `closed_elsewhere`         | `skipped`  | The subscription no longer exists on chain. It ends, `closed_elsewhere` |
 
-Three codes have a name: `program:4`, the wallet no longer lets Mesub charge
-it, and `program:103` or `program:136`, the wallet closed its authorisation.
-They are what `late_reason` reads, with `insufficient-balance`: see
+Three codes have a name: `program_4`, the wallet no longer lets Mesub charge
+it, and `program_103` or `program_136`, the wallet closed its authorisation.
+They are what `late_reason` reads, with `insufficient_balance`: see
 [late payments](./lifecycle.mdx#late-payments).
 
 What you did to the plan:
 
 | `reason`                                  | `outcome` | What it says                                                       |
 | ----------------------------------------- | --------- | ------------------------------------------------------------------ |
-| `plan-gone`                               | `skipped` | The plan was deleted. The subscription ends, `plan_removed`        |
-| `plan-replaced`                           | `skipped` | Another plan stands at its address. It ends, `plan_replaced`       |
-| `plan-ended`                              | `skipped` | The plan's end date has passed. It ends, `plan_ended`              |
-| `receiver-not-allowed`                    | `blocked` | The plan's receiver is not among the destinations it allows        |
-| `receiver-account-missing`                | `blocked` | Neither the receiver nor your wallet has an account for that token |
-| `puller-not-allowed`                      | `blocked` | Mesub's puller was taken off the plan                              |
-| `program:130`, `501`, `506`, `516`, `519` | `blocked` | One of the changes above, made while the charge was on its way     |
+| `plan_removed`                            | `skipped` | The plan was deleted. The subscription ends, `plan_removed`        |
+| `plan_replaced`                           | `skipped` | Another plan stands at its address. It ends, `plan_replaced`       |
+| `plan_ended`                              | `skipped` | The plan's end date has passed. It ends, `plan_ended`              |
+| `receiver_not_allowed`                    | `blocked` | The plan's receiver is not among the destinations it allows        |
+| `receiver_account_missing`                | `blocked` | Neither the receiver nor your wallet has an account for that token |
+| `receiver_account_frozen`                 | `blocked` | The token account the plan pays is frozen                          |
+| `puller_not_allowed`                      | `blocked` | Mesub's puller was taken off the plan                              |
+| `program_130`, `501`, `506`, `516`, `519` | `blocked` | One of the changes above, made while the charge was on its way     |
 
 What Mesub or the network did:
 
 | `reason`              | `outcome` | What it says                                                           |
 | --------------------- | --------- | ---------------------------------------------------------------------- |
-| `period-already-paid` | `skipped` | The chain holds the period as paid. Not a failure: `amount` is `0`     |
-| `period-missed`       | `skipped` | A whole period went by before Mesub charged it. It is never collected  |
-| `terms-missing`       | `blocked` | No terms were signed through Mesub. Never charged, and not tried again |
-| `puller-missing`      | `blocked` | Mesub's own record of the plan is incomplete                           |
-| `mint-gone`           | `blocked` | The token could not be read                                            |
-| `gone-unconfirmed`    | `blocked` | The plan or the subscription read as gone once. Mesub reads it again   |
-| `send-unconfirmed`    | `blocked` | A transfer is being sent, or its send was cut short                    |
-| `landing-unknown`     | `blocked` | An earlier transfer may have landed. Mesub waits for the chain to say  |
-| `program:400`         | `blocked` | The program says the period is charged already: its clock is behind    |
-| `solana:<code>`       | `blocked` | Any other error of the chain, with its number                          |
+| `period_already_paid` | `skipped` | The chain holds the period as paid. Not a failure: `amount` is `0`     |
+| `period_missed`       | `skipped` | A whole period went by before Mesub charged it. It is never collected  |
+| `terms_missing`       | `blocked` | No terms were signed through Mesub. Never charged, and not tried again |
+| `puller_missing`      | `blocked` | Mesub's own record of the plan is incomplete                           |
+| `mint_gone`           | `blocked` | The token could not be read                                            |
+| `gone_unconfirmed`    | `blocked` | The plan or the subscription read as gone once. Mesub reads it again   |
+| `send_unconfirmed`    | `blocked` | A transfer is being sent, or its send was cut short                    |
+| `landing_unknown`     | `blocked` | An earlier transfer may have landed. Mesub waits for the chain to say  |
+| `program_400`         | `blocked` | The program says the period is charged already: its clock is behind    |
+| `solana_<code>`       | `blocked` | Any other error of the chain, with its number                          |
 | `transport`           | `blocked` | The network did not answer, or not in time                             |
 
-`program:<code>` is the one reason that comes under two outcomes: `blocked`
+`program_<code>` is the one reason that comes under two outcomes: `blocked`
 for the six codes these tables name, `rejected` for every other. This list
 can grow, and `<code>` is any number the chain answers, so keep a default
 branch on both `reason` and `outcome`.
@@ -296,9 +298,9 @@ under them. On Free every retry is fired by hand: those are the plan's, and
 carry both.
 
 `period_start` is null on the reasons Mesub meets before it reads the period:
-`subscription-cancelled`, `delegation-gone`, the three `plan-` ones,
-`terms-missing`, `gone-unconfirmed` and `landing-unknown`, and on a
-`transport` or `solana:<code>` that failed on the very first read. On those,
+`cancelled`, `closed_elsewhere`, the three `plan_` ones,
+`terms_missing`, `gone_unconfirmed` and `landing_unknown`, and on a
+`transport` or `solana_<code>` that failed on the very first read. On those,
 `amount` is the plan's price, where everywhere else it is what the period
 still owed. On a `paid` attempt it is what moved.
 
