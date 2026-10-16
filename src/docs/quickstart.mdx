@@ -47,6 +47,15 @@ Then install the SDK:
 npm install @mesub/node
 ```
 
+`@mesub/node` is not on npm yet. Until it is, build it from its repository
+and install the archive:
+
+```bash
+git clone https://github.com/Mesub-io/node-sdk
+cd node-sdk && pnpm install && pnpm build && pnpm pack # writes mesub-node-0.1.0.tgz
+cd ../your-app && npm install ../node-sdk/mesub-node-0.1.0.tgz
+```
+
 </Step>
 <Step title="Mount the routes and gate a route">
 
@@ -158,6 +167,10 @@ Express has one too, `requirePlan`.
 ```bash
 npm install @mesub/react
 ```
+
+Not on npm yet either: build it the same way from
+[Mesub-io/react-sdk](https://github.com/Mesub-io/react-sdk) (`mesub-react-0.1.0.tgz`).
+`@mesub/react` 0.1.x works with the routes of `@mesub/node` 0.1.x.
 
 Wrap your app once, pointing at where you mounted the routes:
 
