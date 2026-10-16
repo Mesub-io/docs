@@ -173,6 +173,9 @@ reads now, so no retry is spent for nothing:
 | `subscription_changed`  | Two retries met, or a charge moved it on. Retryable: read it back first                   |
 | `pull_running`          | On Free, a charge runs now. Retryable                                                     |
 
+A 503 changed nothing: `unavailable` when the charge could not be queued, or
+`network_unavailable`. `retryAfter` says when to ask again.
+
 How often:
 
 | Tier          | Retries by hand                                                                                                         |

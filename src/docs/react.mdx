@@ -23,7 +23,8 @@ when it needs a signature, and never disconnects one.
 ## Set it up
 
 Mount the routes on your server, after your own login. The widget calls them
-and nothing else.
+and nothing else. `@mesub/react` 0.1.x works with the routes of `@mesub/node`
+0.1.x: upgrade both to the same minor together.
 
 <CodeGroup>
 
@@ -168,11 +169,11 @@ It opens the customer's subscription to that plan: how it stands, the next
 charge, the latest payments with their receipts, and the one thing it allows
 now. Leave `plan` out to open their live subscription whatever its plan.
 
-| The subscription is                           | It allows |
-| --------------------------------------------- | --------- |
-| running (`active`, `unpaid`, `stopped`)       | Cancel    |
-| `cancelled`, with access still running        | Resume    |
-| over (`ended`, or cancelled and past its end) | Close     |
+| The subscription is                                                    | It allows |
+| ---------------------------------------------------------------------- | --------- |
+| running (`active`, `unpaid`, `stopped`)                                | Cancel    |
+| `cancelled`, with access still running                                 | Resume    |
+| `closable: true` (ended, cancelled and past its end, stopped for good) | Close     |
 
 Each one is a transaction the wallet signs and sends itself. Only the wallet
 that pays a subscription can sign for it. Closing returns the deposit to that
@@ -184,7 +185,8 @@ customer pays the missed period at once, with nothing to sign, through
 ([`subscriptions.retry`](./manage.mdx#pay-a-late-payment-now)). It is not
 offered on a parked seat, on a wallet that no longer approves the
 subscription, past its date to pay by, nor while its charges are
-[blocked](./lifecycle.mdx#blocked-charges).
+[blocked](./lifecycle.mdx#blocked-charges). What came of it is said under the
+button: the payment on its way, or why not.
 
 To list every subscription of the customer in a page of yours:
 
@@ -218,7 +220,8 @@ function Mine() {
 `state` is `loading`, `ready`, `signed-out` or `error`. Each subscription
 carries `action`: `cancel`, `resume`, `close` or null, and `payable`: whether
 **Pay now** can succeed. `payNow(id)` pays that late payment now and resolves
-`{ ok, message }`, the words to show; it never throws.
+`{ ok, message }`, the words to show, with `retryAfter` in seconds when Mesub
+was busy; it never throws.
 
 ## Theming
 
@@ -243,12 +246,14 @@ sheet.
 
 Each case has its own screen, and says whether anything was charged.
 
-| What happens                                   | What the widget does                                              |
-| ---------------------------------------------- | ----------------------------------------------------------------- |
-| Nobody is signed in on your site               | Says to sign in first. Nothing to sign                            |
-| No wallet is installed                         | Links to Phantom and Solflare                                     |
-| The wallet refuses                             | Nothing is submitted. Try again starts over                       |
-| The terms expired before they were signed      | Asks your server again and shows the review with fresh terms      |
-| The wrong wallet is used to manage             | Says which wallet pays. Nothing is signed                         |
-| Mesub refuses, for instance already subscribed | Shows Mesub's message as written                                  |
-| The network fails after the payment was sent   | "Payment may be pending", and Check again, which never pays twice |
+| What happens                                   | What the widget does                                                                                                        |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Nobody is signed in on your site               | Says to sign in first. Nothing to sign                                                                                      |
+| No wallet is installed                         | Links to Phantom and Solflare                                                                                               |
+| The wallet refuses                             | Nothing is submitted. Try again starts over                                                                                 |
+| The terms expired before they were signed      | Asks your server again and shows the review with fresh terms                                                                |
+| The wrong wallet is used to manage             | Says which wallet pays. Nothing is signed                                                                                   |
+| Mesub refuses, for instance already subscribed | Shows Mesub's message as written                                                                                            |
+| The network fails after the payment was sent   | "Payment may be pending", and Check again, which never pays twice                                                           |
+| Mesub is busy at submit (a 503 with a wait)    | Mesub sent nothing: it waits, then sends the same request once more; still busy, it says how long to wait, with Check again |
+| Mesub is busy at **Pay now**                   | Nothing was charged: the button counts down, about 20 seconds, then can be pressed again                                    |

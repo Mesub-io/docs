@@ -308,6 +308,11 @@ await mesub.subscriptions.submit(id, body, { timeout: 25_000, budget: 40_000 });
 A retry sends the **same request** again. Mesub recognises what it already
 co-signed and answers from the chain, so a customer is never charged twice.
 
+A 503 `unavailable` with a `Retry-After` means too many submits are waiting on
+your project, and Mesub signed and sent nothing. `submit` sends the same
+request again after the wait, and past its retries throws it, `retryable`,
+with `retryAfter`.
+
 ## When the outcome is unknown
 
 If no send got an answer, `submit` throws a `MesubSubmitError`. The wallet may
