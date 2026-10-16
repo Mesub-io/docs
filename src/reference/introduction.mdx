@@ -102,6 +102,7 @@ drawn from.
 | [`GET /v1/subscriptions`](./subscriptions/list.mdx)                         | A customer's subscriptions, paginated | `list`           |
 | [`GET /v1/subscriptions/:id`](./subscriptions/retrieve.mdx)                 | One subscription                      | `retrieve`       |
 | [`GET /v1/subscriptions/:id/attempts`](./subscriptions/attempts.mdx)        | Its charges, with the total paid      | `attempts`       |
+| [`POST /v1/subscriptions/:id/retry`](./subscriptions/retry.mdx)             | Charges a late payment now            | `retry`          |
 | [`POST /v1/subscriptions/:id/cancel`](./manage/cancel.mdx)                  | Builds the cancellation               | `cancel`         |
 | [`POST /v1/subscriptions/:id/cancel/confirm`](./manage/confirm-cancel.mdx)  | Confirms it                           | `confirmCancel`  |
 | [`POST /v1/subscriptions/:id/resume`](./manage/resume.mdx)                  | Builds the undo of a cancellation     | `resume`         |
@@ -112,11 +113,18 @@ drawn from.
 See [Subscribe from your server](../docs/subscribe.mdx) and
 [Manage from your server](../docs/manage.mdx) for how these calls chain.
 
+### Events
+
+| Route                                         | What it answers                                      | SDK               |
+| --------------------------------------------- | ---------------------------------------------------- | ----------------- |
+| [`GET /v1/events`](./events/list.mdx)         | The webhook events of the last 30 days, newest first | `events.list`     |
+| [`GET /v1/events/:id`](./events/retrieve.mdx) | One event                                            | `events.retrieve` |
+
 ## Pagination
 
-Lists take `limit` (1 to 100, 20 by default) and `starting_after`, the id of
-the last item of the previous page, and answer `{ data, has_more }`. Items come
-newest first.
+Lists take `limit` (1 to 100, 20 by default, 25 on events) and
+`starting_after`, the id of the last item of the previous page, and answer
+`{ data, has_more }`. Items come newest first.
 
 ```bash
 curl -G "https://api.mesub.io/v1/subscriptions" \
