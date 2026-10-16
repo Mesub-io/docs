@@ -1,8 +1,7 @@
 name: CI
 
 # Push only, as in the other Mesub repos: every branch a pull request is opened
-# from is pushed first. It also keeps forks' pull requests off the self-hosted
-# runner, since this repository is public.
+# from is pushed first.
 on:
   push:
     branches: ["**"]
@@ -17,8 +16,9 @@ permissions:
 
 jobs:
   build:
-    # The VPS's runner, as for the backend and the dashboard (frontend #211).
-    runs-on: self-hosted
+    # GitHub-hosted, as in the other public repos (SDKs, MCP, skills): their
+    # minutes are free, and the VPS's runner does not take a public repo's jobs.
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
