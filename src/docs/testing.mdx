@@ -186,15 +186,16 @@ through its retries. What only the chain decides (`insufficient_balance`,
 set with `fail()`, so test it on the SDK call alone, or on a route that makes
 that one call.
 
-## Parked seats
+## Over the tier's cap
 
 ```ts
-fake.park(id); // a seat over the tier's cap: paused, no next charge
+fake.park(id); // paused, no next charge
 fake.unpark(id); // charged again at the end of its period
 ```
 
-Access and status stay as they are. With `accessEvents`, `park` and `unpark`
-raise `subscription.paused` and `subscription.unpaused`.
+This is a [parked seat](./lifecycle.mdx#parked-seats). Access and status stay
+as they are. With `accessEvents`, `park` and `unpark` raise
+`subscription.paused` and `subscription.unpaused`.
 
 ## What was called
 
