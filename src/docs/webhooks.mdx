@@ -190,6 +190,8 @@ A handler running on your machine needs a public URL. A tunnel such as
 | `subscription.resumed`          | A cancellation was undone                               |
 | `subscription.ended`            | It is over; `data.end_reason` says why                  |
 | `subscription.expired`          | A checkout was started and never signed                 |
+| `subscription.paused`           | A seat was parked over the tier's limit. Not sent yet   |
+| `subscription.unpaused`         | A parked seat is back. Not sent yet                     |
 | `subscription.access_granted`   | Access started, and was off just before. Not sent yet   |
 | `subscription.access_revoked`   | Access ended, and was on just before. Not sent yet      |
 | `test`                          | You sent one from the dashboard                         |
@@ -344,6 +346,45 @@ Mesub's when access changed, rather than missed by the customer: see
 [blocked charges](./lifecycle.mdx#blocked-charges). On `access_revoked`,
 `detail.access_until` is the date access ended, null when it ended with no date
 of its own, such as a stop. Both may be absent on older events.
+
+## The first payment
+
+`subscription.created` carries `detail.first_payment`, what the subscriber's
+own transaction paid:
+
+```json
+{
+    "first_payment": {
+        "amount": "9990000",
+        "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "signature": "5wHu1qwD4kLDLoREEPBpKvGvhbxWFxFFfr5nQq7dxAsRRDXvHRqpNvfsCvC1qzjWQhqmPtBb8LnZjKmvpehJqSWk"
+    }
+}
+```
+
+It is null when the subscription landed in a period paid only in part, which
+the next charge collects, and absent on events written before Mesub added it.
+
+## Cancellations that end, parked seats
+
+Three transitions get their own event once Mesub turns them on, with the access
+events:
+
+- **A cancellation reaches its expiry.** `subscription.access_revoked` is sent
+  at the expiry itself. `subscription.ended`, with `end_reason: "cancelled"`,
+  follows once Mesub has read the chain, usually within half an hour, with
+  `detail.changed_at` at the expiry. Closing the subscription later sends
+  `subscription.ended` again, with `end_reason: "closed"`: that one is sent
+  today.
+- **A seat is parked** over the project's tier limit: `subscription.paused`.
+  It is not a pause the customer asked for. The status stays as it was,
+  `data.paused` is true, and access runs to the end of the period paid for.
+- **A parked seat is brought back**: `subscription.unpaused`, `data.paused`
+  false. Mesub charges it again.
+
+A parked seat's access change still comes as `access_revoked` or
+`access_granted`, with a higher `sequence`: see
+[parked seats](./lifecycle.mdx#parked-seats).
 
 ## Before a renewal
 

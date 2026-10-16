@@ -108,7 +108,7 @@ a resend too: `{ type, created_at, data }`, with `detail` inside `data`, no
 
 | Event                                                                  | Sent when                                               |
 | ---------------------------------------------------------------------- | ------------------------------------------------------- |
-| [`subscription.created`](./subscription-created.mdx)                   | The first payment landed                                |
+| [`subscription.created`](./subscription-created.mdx)                   | The first payment landed; `detail.first_payment`        |
 | [`subscription.renewal_upcoming`](./subscription-renewal-upcoming.mdx) | A renewal is near, and whether it can pay               |
 | [`subscription.renewed`](./subscription-renewed.mdx)                   | A period was paid                                       |
 | [`subscription.payment_failed`](./subscription-payment-failed.mdx)     | A charge missed                                         |
@@ -117,6 +117,8 @@ a resend too: `{ type, created_at, data }`, with `detail` inside `data`, no
 | [`subscription.resumed`](./subscription-resumed.mdx)                   | A cancellation was undone                               |
 | [`subscription.ended`](./subscription-ended.mdx)                       | It is over; `data.end_reason` says why                  |
 | [`subscription.expired`](./subscription-expired.mdx)                   | A checkout was started and never signed                 |
+| [`subscription.paused`](./subscription-paused.mdx)                     | A seat was parked over the tier's limit                 |
+| [`subscription.unpaused`](./subscription-unpaused.mdx)                 | A parked seat is back                                   |
 | [`subscription.access_granted`](./subscription-access-granted.mdx)     | Access started, and was off just before                 |
 | [`subscription.access_revoked`](./subscription-access-revoked.mdx)     | Access ended, and was on just before                    |
 | [`test`](./test.mdx)                                                   | You sent one from the dashboard                         |
@@ -125,6 +127,30 @@ Mesub may add a type later: keep a default branch.
 
 Missed some deliveries? [`GET /v1/events`](../events/list.mdx) serves the same
 bodies over the last 30 days, newest first: catch up there.
+
+`subscription.created` carries `detail.first_payment`: the `amount`, `mint`
+and `signature` of the first transfer. It is null when the subscription landed
+in a period paid only in part, which the next charge collects, and absent on
+events written before Mesub added it.
+
+## Ends, parked seats
+
+`ended` at a cancellation's expiry, `paused` and `unpaused` are not sent yet:
+like the access events, they are off until Mesub turns them on. `ended` on a
+close is sent today.
+
+| Transition                        | Event                                                                  |
+| --------------------------------- | ---------------------------------------------------------------------- |
+| A cancellation reaches its expiry | `subscription.ended`, `end_reason: "cancelled"`, usually within 30 min |
+| The ended subscription is closed  | `subscription.ended` again, `end_reason: "closed"`                     |
+| A seat is parked over the limit   | `subscription.paused`, `data.paused` true, status unchanged            |
+| A parked seat is brought back     | `subscription.unpaused`, `data.paused` false                           |
+
+At a cancellation's expiry, `subscription.access_revoked` is sent at the expiry
+itself and comes first; `subscription.ended` follows once Mesub reads the
+chain, with `detail.changed_at` at the expiry. A parked seat is not a pause the
+customer asked for: it keeps access to the end of the period it paid for, and
+its `access_revoked` or `access_granted` follows with a higher `sequence`.
 
 ## Access events
 
