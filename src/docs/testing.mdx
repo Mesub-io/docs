@@ -7,8 +7,9 @@ icon: "lucide:flask-conical"
 prompt: |
   Document @mesub/node/testing from @https://github.com/Mesub-io/node-sdk
   (README: Test your integration; src/testing.ts).
-  What FakeMesub is, access in a test, a guard end to end, an outage, a
-  webhook, subscribing and managing, and what the fake does not do.
+  What FakeMesub is, access in a test, a plan that ends, a guard end to end,
+  an outage, a webhook, events, subscribing and managing, Pay now and the
+  tier, parked seats, and what the fake does not do.
 ---
 
 `@mesub/node/testing` is a fake Mesub for your own tests. It answers what the
@@ -24,7 +25,9 @@ const mesub = fake.client(); // a real Mesub client, wired to the fake
 
 Call `fake.reset()` between tests, and take a new `fake.client()` in each one:
 `reset()` empties the fake, not the answers a client already cached, which it
-would serve again during a simulated outage.
+would serve again during a simulated outage. It also starts every id over
+(`sub_fake_1`, `evt_fake_1`, `msg_fake_1`, ...), so a test makes the same ids
+whatever ran before it.
 
 ## Access
 
@@ -44,6 +47,13 @@ you want.
 `plan_not_found`, as a typo would. Name your plans this way to test the
 [widget routes](./react.mdx): they read the plan list, which is empty
 otherwise.
+
+A plan that ends:
+
+```ts
+fake.grantLastPeriod({ external_id: 'user_7' }, 'pro', endsAt); // access until the plan ends
+fake.endPlan('pro'); // the end passed: what is held on it ends with plan_ended
+```
 
 ## A guard, end to end
 
@@ -70,7 +80,11 @@ await request(app).get('/api/analytics').expect(402);
 ```ts
 fake.fail('outage'); // every call answers 503, until fake.fail(null)
 fake.fail({ status: 429, code: 'rate_limited', retryAfter: 2 });
+fake.fail({ status: 503, code: 'unavailable' }); // Retry-After as Mesub: 2 s on submit, 20 s on retry
 ```
+
+`fail()` answers every call, not only the one under test: a route that reads
+a subscription before it acts gets the error on that read.
 
 This is how to check what [your routes do when Mesub does not
 answer](./access.mdx#when-mesub-does-not-answer): a customer seen before keeps
@@ -100,22 +114,87 @@ await request(app)
     .expect(200);
 ```
 
+It carries the subscription the fake holds under `subscription.id` when it
+holds one, and a made-up one otherwise. `fake.webhook('test')` is Mesub's test
+delivery: `test: true`, the id `evt_test`, on its sample subscription
+(`sub_test`, `user_123`). Nothing is added to the fake.
+
 `signWebhook(body, { secret })` signs a body of your own.
+
+## Events
+
+What the fake does raises the event Mesub raises (`subscription.created` on a
+submit, `cancelled`, `resumed` and `ended` on a confirm), served on
+`/v1/events`. `addEvent` records any other, and changes nothing else:
+
+```ts
+fake.addEvent('subscription.payment_failed', { subscription: { id } });
+fake.addEvent('subscription.access_revoked', { subscription: { id }, sequence: 5 });
+```
+
+Every event carries the next `sequence` of its subscription; `sequence: null`
+leaves it out. The access events are off by default, as on Mesub:
+`new FakeMesub({ accessEvents: true })` raises `subscription.access_granted`
+or `subscription.access_revoked` right after a change that flips access, one
+`sequence` later.
 
 ## Subscribing and managing
 
 `subscriptions.create` then `submit` land at once and grant the plan. `cancel`,
 `resume` and `close` answer a made-up transaction, and their confirms land at
 once with any signature. A step the status does not allow is refused with
-Mesub's own code, `close_too_early` for instance.
+Mesub's own code, `close_too_early` for instance. `submit` is refused with
+`plan_ended` once the plan has ended, and with a 400 without a
+`terms_signature`.
 
 ```ts
 fake.addSubscription({ id: 'sub_1', wallet, plan: 'pro', status: 'active' });
 fake.setAttempts('sub_1', [{ outcome: 'paid', amount: '9990000' }]);
 ```
 
-`addSubscription` adds one for `retrieve` and `list`, and `setAttempts` gives
-it charges, answered by `subscriptions.attempts` with their `paid` total.
+`addSubscription` adds one for `retrieve` and `list`, `sub_fake_1` and on when
+you give no `id`, dated as Mesub dates a row of its `status`: an `active` one
+paid for a period ending in 30 days, an `unpaid` one late with a retry
+tomorrow, and so on. It throws for a wallet that is not a Solana address.
+`setAttempts` gives it charges, answered by `subscriptions.attempts` with
+their `paid` total.
+
+## Pay now and the tier
+
+`subscriptions.retry` is refused as Mesub refuses it, from what the fake
+holds: a parked seat (`subscription_paused`), a row not late
+(`subscription_not_late`), a plan past its end (`plan_ended`), and the wait
+between two retries (`retry_too_soon`, with `retryAfter`). The wait depends on
+the project's `tier`, `dev` by default:
+
+| `tier`            | Retries by hand                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------- |
+| `free`            | 10 minutes apart, three per missed period (`retries_spent`), none past `retry_deadline` |
+| `dev`, `business` | The first at once, then 20 minutes, doubling                                            |
+
+```ts
+const fake = new FakeMesub({ tier: 'free', revalidateAfter: 0 });
+const late = fake.addSubscription({ wallet, plan: 'pro', status: 'unpaid' });
+await fake.client().subscriptions.retry(late.id); // 202, still unpaid
+await fake.client().subscriptions.retry(late.id); // retry_too_soon, retryAfter 10 minutes
+```
+
+A retry taken pulls nothing: the row stays `unpaid`. On `free`, a late row
+from `addSubscription` has no access; on the other tiers it keeps access
+through its retries. What only the chain decides (`insufficient_balance`,
+`retry_cannot_succeed`) or a race (`pull_running`, `subscription_changed`) is
+set with `fail()`, so test it on the SDK call alone, or on a route that makes
+that one call.
+
+## Parked seats
+
+```ts
+fake.park(id); // a seat over the tier's cap: paused, no next charge
+fake.unpark(id); // charged again at the end of its period
+```
+
+Access and status stay as they are. With `accessEvents`, `park` and `unpark`
+raise `subscription.paused` and `subscription.unpaused`.
 
 ## What was called
 
@@ -135,3 +214,7 @@ const mesub = new Mesub({
     webhookSecret: fake.webhookSecret,
 });
 ```
+
+The fake takes only `fake.apiKey`: a call without a key is answered 401
+`missing_api_key`, one with another key 401 `invalid_api_key`, as Mesub tells
+them apart.
