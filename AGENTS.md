@@ -28,11 +28,14 @@ src/reference/*.mdx      the reference's hand-written pages: introduction,
 src/reference/*/*.mdx    one page per route and per webhook event: GENERATED
 public/openapi.json      the description of the public API, served at /openapi.json:
                          a copy of the backend's openapi/v1.json, never edited here
+public/openapi.source.json the backend commit, its date and the sha256 of that copy,
+                         written by `pnpm spec`; the reference's introduction shows the commit
 scripts/spec.mjs         copies the backend's spec into public/openapi.json
 scripts/reference.mjs    writes the generated pages from the spec
 src/components/api/      the endpoint page and its try-it panel, drawn from the spec
                          (samples.tsx: the sample cards of the right column;
-                         more.tsx: "Read more" under an introduction)
+                         more.tsx: "Read more" under an introduction;
+                         source.tsx: the backend commit the spec came from)
 src/components/          the diagrams: sequence.tsx, lifecycle.tsx
 src/components/mcp.tsx   the MCP server's address, written once, and the snippets drawn from it
 style.css                the styles of src/components/api, all under .mapi-
@@ -58,7 +61,12 @@ over anything written here.
 
 1. Change the spec in the backend, then copy it here with `pnpm spec`. It reads
    `../backend/openapi/v1.json` by default; give another path as an argument
-   or in `MESUB_OPENAPI`. An operation carries `x-mesub`: `href` (where
+   or in `MESUB_OPENAPI`. It refuses a file outside a git repo, untracked,
+   or with uncommitted changes, so commit the spec in the backend first;
+   `--force` copies such a file anyway and records no commit. It records the
+   backend's `HEAD` commit in `public/openapi.source.json`: commit both files.
+   `pnpm reference` fails if `public/openapi.json` no longer matches the
+   recorded sha256, which is how an edit made here is caught. An operation carries `x-mesub`: `href` (where
    its page lives), `limit`, `guide`, and `confirm` on a route that changes
    something, which the try-it panel asks before sending. An error response
    lists its codes in `x-codes`. Links in a description are site paths:
