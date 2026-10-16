@@ -158,18 +158,12 @@ Express has one too, `requirePlan`.
 </Step>
 <Step title="Put the button on a page">
 
-`@mesub/react` is **not on npm yet**. Until it is published, build it from
-[its repository](https://github.com/Mesub-io/react-sdk) and install the archive:
-
 ```bash
-git clone https://github.com/Mesub-io/react-sdk
-cd react-sdk && pnpm install && pnpm build && pnpm pack # writes mesub-react-0.1.0.tgz
-cd ../your-app && npm install ../react-sdk/mesub-react-0.1.0.tgz
+npm install @mesub/react
 ```
 
-This is temporary: once it is published, the install is
-`npm install @mesub/react`. `@mesub/react` 0.1.x works with the routes of
-`@mesub/node` 0.1.x: keep the two at the same minor.
+It needs `react` and `react-dom` 18 or later. `@mesub/react` 0.1.x works with
+the routes of `@mesub/node` 0.1.x: keep the two at the same minor.
 
 Wrap your app once, pointing at where you mounted the routes:
 
