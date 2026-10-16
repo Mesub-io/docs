@@ -140,11 +140,13 @@ const answer = await mesub.access({ external_id: user.id }, 'pro');
 {
     "wallet": "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin",
     "plan": "pro",
+    "subscription_id": "cmg1x0abc0001",
     "access": true,
     "status": "active",
     "paused": false,
     "end_reason": null,
     "late_reason": null,
+    "stop_reason": null,
     "payment_status": "paid",
     "blocked_since": null,
     "blocked_reason": null,
@@ -153,6 +155,8 @@ const answer = await mesub.access({ external_id: user.id }, 'pro');
     "current_period_end": "2026-01-31T00:00:00.000Z",
     "cancelled_at": null,
     "access_until": "2026-01-31T00:00:00.000Z",
+    "closable": false,
+    "closable_from": null,
     "next_charge_at": "2026-01-31T00:00:00.000Z",
     "next_retry_at": null,
     "retry_deadline": null,
@@ -162,19 +166,23 @@ const answer = await mesub.access({ external_id: user.id }, 'pro');
 
 </Expandable>
 
-| Field              | What it says                                                                                                                  |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `access`           | The only field a guard needs. False from [the plan's end date](./lifecycle.mdx#when-the-plan-has-an-end-date) on              |
-| `status`           | Where the subscription stands: `none`, `pending`, `active`, `unpaid`, `cancelled`, `stopped`, `ended`, `failed`, `superseded` |
-| `payment_status`   | `paid`, `late` or `none`                                                                                                      |
-| `late_reason`      | Why an `unpaid` one is late: see [late payments](./lifecycle.mdx#late-payments). Null otherwise                               |
-| `blocked_since`    | Since when its charges are held for a reason that is not the customer's. Null otherwise                                       |
-| `blocked_reason`   | Why they are held: see [blocked charges](./lifecycle.mdx#blocked-charges). Null otherwise                                     |
-| `access_until`     | When access ends unless a charge renews it, never later than the plan's end date. Null while `access` is false                |
-| `next_charge_at`   | The next charge. Null when a retry is pending instead, or when the plan ends before it                                        |
-| `next_retry_at`    | The next retry of a missed charge. Null when the plan ends before it                                                          |
-| `wallet`           | The wallet that pays. Null when the customer has nothing on that plan                                                         |
-| `revalidate_after` | Seconds this answer stays true. The SDK caches it for that long                                                               |
+| Field              | What it says                                                                                                                                                                       |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `access`           | The only field a guard needs. False from [the plan's end date](./lifecycle.mdx#when-the-plan-has-an-end-date) on                                                                   |
+| `status`           | Where the subscription stands: `none`, `pending`, `active`, `unpaid`, `cancelled`, `stopped`, `ended`, `failed`, `superseded`                                                      |
+| `payment_status`   | `paid`, `late` or `none`                                                                                                                                                           |
+| `subscription_id`  | The subscription the answer is about, to [cancel, resume, close](./manage.mdx) or [retry](./manage.mdx#pay-a-late-payment-now) it without listing first. Null with `status` `none` |
+| `late_reason`      | Why an `unpaid` one is late, or why a `stopped` one stopped paying: see [late payments](./lifecycle.mdx#late-payments). Null otherwise                                             |
+| `stop_reason`      | Why a `stopped` one stopped: see [late payments](./lifecycle.mdx#why-a-subscription-stops). Null otherwise                                                                         |
+| `blocked_since`    | Since when its charges are held for a reason that is not the customer's. Null otherwise                                                                                            |
+| `blocked_reason`   | Why they are held: see [blocked charges](./lifecycle.mdx#blocked-charges). Null otherwise                                                                                          |
+| `access_until`     | When access ends unless a charge renews it, never later than the plan's end date. Null while `access` is false                                                                     |
+| `next_charge_at`   | The next charge. Null when a retry is pending instead, or when the plan ends before it                                                                                             |
+| `next_retry_at`    | The next retry of a missed charge. Null when the plan ends before it                                                                                                               |
+| `closable`         | Whether the customer can [close](./manage.mdx) it now and get its deposit back, as Mesub last read the chain                                                                       |
+| `closable_from`    | When it can be closed, if not now. Null when `closable` is true, or when no date is known yet                                                                                      |
+| `wallet`           | The wallet that pays. Null when the customer has nothing on that plan                                                                                                              |
+| `revalidate_after` | Seconds this answer stays true. The SDK caches it for that long                                                                                                                    |
 
 Read `access` to decide, never `status`. On a plan with an end date, nobody
 has access past that date, and for a few minutes after it `status` can still
@@ -192,7 +200,7 @@ Mesub's puller was taken off a monthly plan that keeps the default retries:
     "blocked_since": "2026-01-31T00:02:00.000Z",
     "blocked_reason": "puller_not_allowed",
     "current_period_end": "2026-01-31T00:00:00.000Z",
-    "access_until": "2026-02-03T00:00:00.000Z"
+    "access_until": "2026-02-03T00:06:00.000Z"
 }
 ```
 
@@ -224,13 +232,15 @@ A customer who is not subscribed is not an error: `GET /v1/access` answers 200
 with `access: false`. An error means the question itself was wrong, or could
 not be answered.
 
-| Status | `code`            | When                                                                  |
-| ------ | ----------------- | --------------------------------------------------------------------- |
-| 400    | `invalid_request` | Not exactly one of `wallet`, `external_id`, `email`, or one malformed |
-| 401    | `unauthorized`    | An API key Mesub never issued, or one rotated since                   |
-| 404    | `plan_not_found`  | No plan of yours under that slug                                      |
-| 429    | `rate_limited`    | More than 1,000 access calls a minute on one API key                  |
-| 5xx    | `unavailable`     | Mesub failed, or did not answer in time                               |
+| Status | `code` in the body                          | When                                                                  |
+| ------ | ------------------------------------------- | --------------------------------------------------------------------- |
+| 400    | `invalid_request`                           | Not exactly one of `wallet`, `external_id`, `email`, or one malformed |
+| 400    | `unsupported_version`                       | `Mesub-Version` names a version Mesub does not serve                  |
+| 401    | `missing_api_key`                           | No API key was sent                                                   |
+| 401    | `invalid_api_key`                           | An API key Mesub never issued, or one rotated since                   |
+| 404    | `plan_not_found`                            | No plan of yours under that slug                                      |
+| 429    | `rate_limited`                              | More than 1,000 access calls a minute on one API key                  |
+| 5xx    | `internal_error` (500), `unavailable` (503) | Mesub failed, or cannot answer right now                              |
 
 With no API key at all nothing is sent: `new Mesub()` throws a `TypeError`
 when the server starts.
@@ -247,7 +257,18 @@ Every error body has the same shape:
 }
 ```
 
-With the SDK, each one is thrown as a `MesubError`. Branch on `code`:
+With the SDK, each one is thrown as a `MesubError`. Its `code` is the SDK's
+own, one per kind of failure, and `apiCode` is the body's `code` above:
+
+| Body `code`                              | `error.code`                                     |
+| ---------------------------------------- | ------------------------------------------------ |
+| `invalid_request`, `unsupported_version` | `invalid_request`                                |
+| `missing_api_key`, `invalid_api_key`     | `unauthorized`                                   |
+| `plan_not_found`                         | `plan_not_found`                                 |
+| `rate_limited`                           | `rate_limited`                                   |
+| `internal_error`, `unavailable`          | `unavailable`, also a timeout or a network error |
+
+Branch on `code`:
 
 ```ts
 import { MesubError } from '@mesub/node';
@@ -276,7 +297,8 @@ is too slow, or answers that the rate limit is reached:
   customer and plan, for up to 24 hours. A paying customer is not locked out
   by an outage.
 - For a customer never seen before, `hasAccess` answers `false` and a guard
-  answers 503 with `Retry-After: 30`.
+  answers 503 with the `Retry-After` Mesub sent, or 30 seconds when it sent
+  none.
 - `access` throws instead, since it is meant for a screen.
 
 A guard never waits on Mesub more than 2 seconds for this check
