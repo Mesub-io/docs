@@ -41,20 +41,14 @@ once: [more on the key](./api-key.mdx). Put it in your server's environment:
 MESUB_API_KEY=SUB_...
 ```
 
-Then install the SDK:
+Then install the SDK with your package manager:
 
 ```bash
 npm install @mesub/node
 ```
 
-`@mesub/node` is not on npm yet. Until it is, build it from its repository
-and install the archive:
-
-```bash
-git clone https://github.com/Mesub-io/node-sdk
-cd node-sdk && pnpm install && pnpm build && pnpm pack # writes mesub-node-0.1.0.tgz
-cd ../your-app && npm install ../node-sdk/mesub-node-0.1.0.tgz
-```
+`pnpm add @mesub/node`, `yarn add @mesub/node` and `bun add @mesub/node` work
+the same. It goes in `dependencies`: your server needs it in production.
 
 </Step>
 <Step title="Mount the routes and gate a route">
@@ -164,13 +158,18 @@ Express has one too, `requirePlan`.
 </Step>
 <Step title="Put the button on a page">
 
+`@mesub/react` is **not on npm yet**. Until it is published, build it from
+[its repository](https://github.com/Mesub-io/react-sdk) and install the archive:
+
 ```bash
-npm install @mesub/react
+git clone https://github.com/Mesub-io/react-sdk
+cd react-sdk && pnpm install && pnpm build && pnpm pack # writes mesub-react-0.1.0.tgz
+cd ../your-app && npm install ../react-sdk/mesub-react-0.1.0.tgz
 ```
 
-Not on npm yet either: build it the same way from
-[Mesub-io/react-sdk](https://github.com/Mesub-io/react-sdk) (`mesub-react-0.1.0.tgz`).
-`@mesub/react` 0.1.x works with the routes of `@mesub/node` 0.1.x.
+This is temporary: once it is published, the install is
+`npm install @mesub/react`. `@mesub/react` 0.1.x works with the routes of
+`@mesub/node` 0.1.x: keep the two at the same minor.
 
 Wrap your app once, pointing at where you mounted the routes:
 
