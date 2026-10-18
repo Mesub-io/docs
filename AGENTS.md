@@ -22,8 +22,9 @@ Both write the reference pages from the spec first (`pnpm reference`).
 Fly, app `mesub-docs`, from the `Dockerfile`, with no public IP: the Cloudflare
 Tunnel brings `docs.mesub.io` to `http://mesub-docs.internal:3000`. `server.mjs`
 starts the built site on `::`, which Holocron's own entry does not (it listens on
-0.0.0.0, and Fly's private network is IPv6 only). Every push to `main` deploys
-it once the build passes (job `deploy`, token in the `production` environment).
+0.0.0.0, and Fly's private network is IPv6 only). A version tag (`v*`) deploys
+it once the build passes and a reviewer approves (job `deploy`, token in the
+`production` environment, which takes tags only); `main` only builds.
 One site serves both environments.
 
 ## Where things are
