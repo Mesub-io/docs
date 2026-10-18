@@ -5,12 +5,15 @@ name: CI
 on:
   push:
     branches: ["**"]
+    # A version tag releases the site (docs.mesub.io), once approved in the
+    # production environment, which takes tags v* only.
+    tags: ["v*"]
 
-# One run per branch: a new push cancels the one it supersedes. Except on main,
-# where a run carries a deploy that must not stop halfway.
+# One run per branch: a new push cancels the one it supersedes. Except on main
+# and on a tag: a tag's run carries a deploy that must not stop halfway.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/') }}
 
 permissions:
   contents: read
@@ -42,14 +45,14 @@ jobs:
       - name: Build
         run: pnpm build
 
-  # main only, once the site builds: docs.mesub.io (#73). A GitHub-hosted
-  # runner, which starts empty every time.
+  # A version tag only, once the site builds: docs.mesub.io (#73). Main builds
+  # and goes no further. A GitHub-hosted runner, which starts empty every time.
   deploy:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     # The environment holds FLY_API_TOKEN, scoped to mesub-docs, and releases
-    # it to main only.
+    # it to a v* tag only, after a reviewer approves and 15 minutes.
     environment:
       name: production
       url: https://docs.mesub.io
