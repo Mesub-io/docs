@@ -241,6 +241,12 @@ event's own. `event.id` is the same in every delivery of the event: apply each
 event once by it. The SDK gives the delivery's own id, the `webhook-id` header,
 as `event.delivery_id`.
 
+Deliveries can arrive in any order, and more than once. Two events of one
+change, such as `subscription.created` and `subscription.access_granted`, can
+reach you a millisecond apart, the later one first. Apply a subscription's
+events in the order of `sequence`, and skip one lower than the last you
+applied: the [reference](../reference/webhooks/overview.mdx) says how.
+
 <Expandable title="See a full subscription.payment_failed event">
 
 ```json
