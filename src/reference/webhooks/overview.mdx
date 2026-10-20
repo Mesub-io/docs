@@ -7,8 +7,8 @@ prompt: |
   Reference of webhook deliveries from @https://github.com/Mesub-io/backend
   (openapi/v1.json, webhooks section, and the signature during a secret
   rotation from the 494-secret-overlap branch). The access events from
-  backend PR #507 and issue #425: sent only on an effective access flip, and
-  off until Mesub turns them on.
+  backend PR #507 and issue #425: sent only on an effective access flip, on
+  in dev and production (ACCESS_EVENTS=on, src/access/access-flips.ts).
   The request Mesub sends, its headers and signature, the event object, the
   list of events linking to each one's page, and what counts as received.
   Leave the handler code to the guide.
@@ -42,7 +42,10 @@ webhook-signature: v1,<signed with the new secret> v1,<signed with the old secre
 ```
 
 Check each `v1,` signature, and accept the delivery when any one matches.
-`mesub.webhooks.verify` does both for you.
+Then check `webhook-timestamp`: refuse a delivery more than 5 minutes from your
+clock, either way, as a replay. Each retry is signed again with a fresh
+timestamp, so a late retry still passes. `mesub.webhooks.verify` does all of
+this for you, with the same 5 minutes (`tolerance`).
 
 ## Two ids
 
@@ -60,7 +63,7 @@ Every event has the same shape:
 
 ```json
 {
-    "id": "evt_cmg1x0evt0001",
+    "id": "cmg1x0evt0001",
     "object": "event",
     "type": "subscription.renewed",
     "created_at": "2026-01-31T00:01:00.000Z",
@@ -77,7 +80,7 @@ Every event has the same shape:
 
 | Field         | What it says                                                                                               |
 | ------------- | ---------------------------------------------------------------------------------------------------------- |
-| `id`          | The event's id, the same in every delivery of it                                                           |
+| `id`          | The event's id, the same in every delivery of it. An opaque string, sometimes a UUID                       |
 | `object`      | Always `event`                                                                                             |
 | `type`        | The event's name                                                                                           |
 | `created_at`  | When Mesub wrote the event. On an access event, or a cancellation's end, `detail.changed_at` is the moment |
@@ -93,6 +96,12 @@ event, however late the delivery. Events raised by the same change share it:
 a last retry that fails raises `subscription.payment_failed` and
 `subscription.stopped`, both showing `status: stopped`. `detail` says what each
 event is about.
+
+A `subscription.renewed` written before 20 October 2026 can break this rule:
+its `data` may show the subscription before that payment, with the previous
+period's `access_until`. `/v1/events` serves such events for 30 days. Take the
+period paid from `detail.period_start` and `detail.period_end`, and read access
+with [`GET /v1/access`](../access/check.mdx), not from that `data`.
 
 Deliveries can arrive in any order. Apply a subscription's events in the order
 of `sequence`, and skip one lower than the last you applied. An event without
@@ -126,7 +135,9 @@ a resend too: `{ type, created_at, data }`, with `detail` inside `data`, no
 Mesub may add a type later: keep a default branch.
 
 Missed some deliveries? [`GET /v1/events`](../events/list.mdx) serves the same
-bodies over the last 30 days, newest first: catch up there.
+bodies over the last 30 days, newest first: catch up there. An event can appear
+there below one you have already read, so don't stop at the first id you know:
+[the list](../events/list.mdx) says how far to page.
 
 `subscription.created` carries `detail.first_payment`: the `amount`, `mint`
 and `signature` of the first transfer. It is null when the subscription landed
@@ -134,10 +145,6 @@ in a period paid only in part, which the next charge collects, and absent on
 events written before Mesub added it.
 
 ## Ends, parked seats
-
-`ended` at a cancellation's expiry, `paused` and `unpaused` are not sent yet:
-like the access events, they are off until Mesub turns them on. `ended` on a
-close is sent today.
 
 | Transition                        | Event                                                                  |
 | --------------------------------- | ---------------------------------------------------------------------- |
@@ -160,9 +167,6 @@ sends one, whatever made it: a payment, a cancellation reaching its end, a
 plan's end date, a blocked charge reaching `access_until`. A renewal paid on
 time, or a resume while the paid period runs, changes nothing and sends
 neither.
-
-Mesub does not send them yet: they are off until Mesub turns them on. Until
-then, read access with [`GET /v1/access`](../access/check.mdx).
 
 | Field                   | What it says                                                         |
 | ----------------------- | -------------------------------------------------------------------- |

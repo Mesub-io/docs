@@ -14,7 +14,8 @@ prompt: |
   src/pull/pull.processor.ts: no renewal_upcoming for a charge that cannot
   happen, payment_failed with no retry, ended with plan_ended.
   The access events and sequence from backend PR #507, #502 and issue #425:
-  sent only on an effective access flip, off until Mesub turns them on.
+  sent only on an effective access flip, on in dev and production
+  (ACCESS_EVENTS=on, src/access/access-flips.ts).
 ---
 
 `hasAccess` is enough to gate a route. Webhooks are for reacting when something
@@ -199,6 +200,10 @@ delivery is signed like a real one and carries `"test": true` at the top of its
 body, with a made-up subscription whose id is `sub_test`, so your handler can
 recognise and ignore it.
 
+Every test delivery has the same event id, `evt_test`. A handler that skips the
+ids it has seen, as the one above does, skips every test after the first.
+Check `event.test` before you look up the id, or don't store the id of a test.
+
 The endpoint must be enabled, and one test is pending at a time: wait for it
 to be delivered before sending the next.
 
@@ -207,27 +212,25 @@ A handler running on your machine needs a public URL. A tunnel such as
 
 ## Events
 
-| Event                           | Sent when                                                                     |
-| ------------------------------- | ----------------------------------------------------------------------------- |
-| `subscription.created`          | The first payment landed                                                      |
-| `subscription.renewal_upcoming` | A renewal is near, and whether it can pay                                     |
-| `subscription.renewed`          | A period was paid                                                             |
-| `subscription.payment_failed`   | A charge missed                                                               |
-| `subscription.stopped`          | Mesub stopped charging after missed payments                                  |
-| `subscription.cancelled`        | The customer cancelled; access runs to the period's end                       |
-| `subscription.resumed`          | A cancellation was undone                                                     |
-| `subscription.ended`            | It is over; `data.end_reason` says why. At a cancellation's end, not sent yet |
-| `subscription.expired`          | A checkout was started and never signed                                       |
-| `subscription.paused`           | A seat was parked over the tier's limit. Not sent yet                         |
-| `subscription.unpaused`         | A parked seat is back. Not sent yet                                           |
-| `subscription.access_granted`   | Access started, and was off just before. Not sent yet                         |
-| `subscription.access_revoked`   | Access ended, and was on just before. Not sent yet                            |
-| `test`                          | You sent one from the dashboard                                               |
+| Event                           | Sent when                                               |
+| ------------------------------- | ------------------------------------------------------- |
+| `subscription.created`          | The first payment landed                                |
+| `subscription.renewal_upcoming` | A renewal is near, and whether it can pay               |
+| `subscription.renewed`          | A period was paid                                       |
+| `subscription.payment_failed`   | A charge missed                                         |
+| `subscription.stopped`          | Mesub stopped charging after missed payments            |
+| `subscription.cancelled`        | The customer cancelled; access runs to the period's end |
+| `subscription.resumed`          | A cancellation was undone                               |
+| `subscription.ended`            | It is over; `data.end_reason` says why                  |
+| `subscription.expired`          | A checkout was started and never signed                 |
+| `subscription.paused`           | A seat was parked over the tier's limit                 |
+| `subscription.unpaused`         | A parked seat is back                                   |
+| `subscription.access_granted`   | Access started, and was off just before                 |
+| `subscription.access_revoked`   | Access ended, and was on just before                    |
+| `test`                          | You sent one from the dashboard                         |
 
-"Not sent yet" means Mesub writes none of these today, whatever the
-reference page of the event says: they come on together, later. A
-cancellation's end still reads `ended` on the subscription, and closing it
-sends `subscription.ended` today.
+Mesub sends all of them, in dev and in production. A reference page that
+still says an event is "not sent yet" is out of date.
 
 Mesub may add a type later: keep a default branch. The reference has
 [one page per event](../reference/webhooks/overview.mdx), with its payload.
@@ -238,7 +241,8 @@ Every event has the same shape: its `id`, its `type`, when Mesub wrote it
 (`created_at`), its `sequence` among the subscription's events, `data`, the
 subscription as `subscriptions.retrieve` answers it, and `detail`, which is the
 event's own. `event.id` is the same in every delivery of the event: apply each
-event once by it. The SDK gives the delivery's own id, the `webhook-id` header,
+event once by it. It is an opaque string, sometimes a UUID: store it as it
+comes, and don't parse it. The SDK gives the delivery's own id, the `webhook-id` header,
 as `event.delivery_id`.
 
 Deliveries can arrive in any order, and more than once. Two events of one
@@ -251,7 +255,7 @@ applied: the [reference](../reference/webhooks/overview.mdx) says how.
 
 ```json
 {
-    "id": "evt_cmg1x0evt0001",
+    "id": "cmg1x0evt0001",
     "object": "event",
     "type": "subscription.payment_failed",
     "created_at": "2026-01-31T00:01:00.000Z",
@@ -306,7 +310,7 @@ applied: the [reference](../reference/webhooks/overview.mdx) says how.
 
 ```json
 {
-    "id": "evt_cmg1x0evt0001",
+    "id": "cmg1x0evt0001",
     "object": "event",
     "type": "subscription.renewed",
     "created_at": "2026-01-31T00:01:00.000Z",
@@ -354,7 +358,12 @@ applied: the [reference](../reference/webhooks/overview.mdx) says how.
 </Expandable>
 
 `data` is the subscription as it stood right after the change that raised the
-event, however late the delivery. `created_at` is when Mesub wrote the event.
+event, however late the delivery. One exception: a `subscription.renewed`
+written before 20 October 2026 can show the subscription as it stood before
+that payment, with the previous period's `access_until`. `/v1/events` keeps
+such events for 30 days. Take the period paid from `detail.period_start` and
+`detail.period_end`, and read access with `hasAccess` rather than from that
+`data`. `created_at` is when Mesub wrote the event.
 An access event, or a cancellation that reached its end, can be written a few
 seconds after the fact: `detail.changed_at` is the moment itself.
 
@@ -362,12 +371,11 @@ seconds after the fact: `detail.changed_at` is the moment itself.
 
 `subscription.access_granted` and `subscription.access_revoked` are sent when a
 subscription's access actually changes, and only then: every change sends one,
-a date passing included, and a renewal paid on time sends neither. They are
-not sent yet: Mesub turns them on later. Until then, gate with `hasAccess`.
+a date passing included, and a renewal paid on time sends neither.
 
-Once they are on, they are the two to drive a customer's access from. Store,
-per subscription, the `sequence` of the last access event you applied, and
-apply one only when its `sequence` is higher:
+They are the two to drive a customer's access from. Store, per subscription,
+the `sequence` of the last access event you applied, and apply one only when
+its `sequence` is higher:
 
 ```ts
 async function onAccessEvent(event) {
@@ -408,15 +416,13 @@ the next charge collects, and absent on events written before Mesub added it.
 
 ## Cancellations that end, parked seats
 
-Three transitions get their own event once Mesub turns them on, with the access
-events:
+Three transitions get their own event, beside the access events:
 
 - **A cancellation reaches its expiry.** `subscription.access_revoked` is sent
   at the expiry itself. `subscription.ended`, with `end_reason: "cancelled"`,
   follows once Mesub has read the chain, usually within half an hour, with
   `detail.changed_at` at the expiry. Closing the subscription later sends
-  `subscription.ended` again, with `end_reason: "closed"`: that one is sent
-  today.
+  `subscription.ended` again, with `end_reason: "closed"`.
 - **A seat is parked** over the project's tier limit: `subscription.paused`.
   It is not a pause the customer asked for. The status stays as it was,
   `data.paused` is true, and access runs to the end of the period paid for.
