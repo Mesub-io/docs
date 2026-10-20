@@ -6401,7 +6401,7 @@
                       "object": "event",
                       "type": "subscription.renewed",
                       "created_at": "2026-01-31T00:01:00.000Z",
-                      "network": "devnet",
+                      "network": "mainnet-beta",
                       "api_version": "2026-10-02",
                       "sequence": 3,
                       "data": {
@@ -6649,7 +6649,7 @@
                   "object": "event",
                   "type": "subscription.renewed",
                   "created_at": "2026-01-31T00:01:00.000Z",
-                  "network": "devnet",
+                  "network": "mainnet-beta",
                   "api_version": "2026-10-02",
                   "sequence": 3,
                   "data": {
@@ -7031,7 +7031,7 @@
                 "object": "event",
                 "type": "subscription.created",
                 "created_at": "2026-01-01T00:00:05.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 1,
                 "data": {
@@ -7218,7 +7218,7 @@
                 "object": "event",
                 "type": "subscription.renewal_upcoming",
                 "created_at": "2026-02-22T12:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 2,
                 "data": {
@@ -7408,7 +7408,7 @@
                 "object": "event",
                 "type": "subscription.renewed",
                 "created_at": "2026-01-31T00:01:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -7624,7 +7624,7 @@
                 "object": "event",
                 "type": "subscription.payment_failed",
                 "created_at": "2026-01-31T00:01:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -7796,7 +7796,7 @@
                 "object": "event",
                 "type": "subscription.stopped",
                 "created_at": "2026-02-04T00:04:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -7954,7 +7954,7 @@
                 "object": "event",
                 "type": "subscription.cancelled",
                 "created_at": "2026-01-15T00:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -8110,7 +8110,7 @@
                 "object": "event",
                 "type": "subscription.resumed",
                 "created_at": "2026-01-20T00:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -8277,7 +8277,7 @@
                 "object": "event",
                 "type": "subscription.ended",
                 "created_at": "2026-01-31T00:01:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -8433,7 +8433,7 @@
                 "object": "event",
                 "type": "subscription.expired",
                 "created_at": "2026-01-01T00:30:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 1,
                 "data": {
@@ -8618,7 +8618,7 @@
                 "object": "event",
                 "type": "subscription.access_granted",
                 "created_at": "2026-01-01T00:00:05.012Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 2,
                 "data": {
@@ -8807,7 +8807,7 @@
                 "object": "event",
                 "type": "subscription.access_revoked",
                 "created_at": "2026-01-31T00:00:04.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 4,
                 "data": {
@@ -8967,7 +8967,7 @@
                 "object": "event",
                 "type": "subscription.paused",
                 "created_at": "2026-01-11T00:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -9123,7 +9123,7 @@
                 "object": "event",
                 "type": "subscription.unpaused",
                 "created_at": "2026-01-13T00:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 4,
                 "data": {
@@ -9280,7 +9280,7 @@
                 "object": "event",
                 "type": "test",
                 "created_at": "2026-01-10T09:30:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 1,
                 "data": {
