@@ -15,6 +15,18 @@ Every call your server makes to Mesub carries the project's **API key**. A
 project has one key at a time, and the key is the project: no call names a
 project id.
 
+Mesub has two environments, each with its own dashboard, projects and keys.
+Production runs on Solana mainnet, dev on devnet:
+
+| Environment | Dashboard                                      | API host                   |
+| ----------- | ---------------------------------------------- | -------------------------- |
+| Production  | [mesub.io](https://mesub.io/dashboard)         | `https://api.mesub.io`     |
+| Dev         | [dev.mesub.io](https://dev.mesub.io/dashboard) | `https://api-dev.mesub.io` |
+
+Create the key in the dashboard of the environment you call. A key made for a
+dev project gets 401 `invalid_api_key` from `api.mesub.io`, and a production
+key gets the same from `api-dev.mesub.io`.
+
 ## Create it
 
 1. Open the [dashboard](https://mesub.io/dashboard#developers) and pick the
@@ -38,7 +50,13 @@ MESUB_API_KEY=SUB_...
 ```ts
 import { Mesub } from '@mesub/node';
 
-const mesub = new Mesub(); // reads MESUB_API_KEY
+const mesub = new Mesub(); // reads MESUB_API_KEY, calls https://api.mesub.io
+```
+
+For a dev key, point the SDK at the dev host:
+
+```ts
+const mesub = new Mesub({ baseUrl: 'https://api-dev.mesub.io' });
 ```
 
 Keep the key on your server. It creates subscriptions and reads your
@@ -53,7 +71,8 @@ curl "https://api.mesub.io/v1/project" \
   -H "Authorization: Bearer $MESUB_API_KEY"
 ```
 
-A `200` with the project's id means the key is good:
+With a dev key, call `https://api-dev.mesub.io/v1/project` instead. A `200`
+with the project's id means the key is good:
 
 ```json
 { "id": "cmufsl77w001ag2s6pp1ngf9p" }
@@ -61,10 +80,10 @@ A `200` with the project's id means the key is good:
 
 In **Developers**, the line under the key then says it was last used just now.
 
-| Status | Code              | Meaning                                          |
-| ------ | ----------------- | ------------------------------------------------ |
-| 401    | `missing_api_key` | No `Authorization: Bearer` header was sent       |
-| 401    | `invalid_api_key` | Not a key Mesub issued, or one rotated since     |
+| Status | Code              | Meaning                                                    |
+| ------ | ----------------- | ---------------------------------------------------------- |
+| 401    | `missing_api_key` | No `Authorization: Bearer` header was sent                 |
+| 401    | `invalid_api_key` | Not a key of this host's environment, or one rotated since |
 
 ## Rotate it
 
