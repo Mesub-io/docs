@@ -86,15 +86,19 @@ it. The end date is a moment, to the second, written on chain as `end_ts` in
 Unix seconds. At that moment access stops for everybody. The last charge is
 the one for the last period that starts before it.
 
+In the dashboard you pick a day and a time to the minute, in UTC, 23:59 unless
+you change it. The plan runs through the end of that minute. Everywhere Mesub
+shows the end, it shows it with its time: `Oct 20, 2026, 23:59 UTC`.
+
 | Rule            | What it is                                     |
 | --------------- | ---------------------------------------------- |
 | At the earliest | One billing period from now, plus five minutes |
 | At the latest   | 100 years from now                             |
-| Once created    | The date cannot be removed or pushed later     |
+| Once created    | The end cannot be removed or pushed later      |
 
 A date too close is refused with `end_date_too_soon`, and one too far with
 `end_date_too_far`. A plan left unsigned until its date is too close is
-refused with `end_date_stale`: change the date, then sign.
+refused with `end_date_stale`: change the end, then sign.
 
 For your subscribers, the end date is where everything stops:
 
@@ -104,7 +108,8 @@ For your subscribers, the end date is where everything stops:
   `plan_ended`.
 - Nobody can subscribe from then on.
 
-The terms a customer signs name the date and say the first two. See
+The terms a customer signs name the end, day and time in UTC, and say the
+first two. See
 [when the plan has an end date](./lifecycle.mdx#when-the-plan-has-an-end-date).
 
 ### The subscription
