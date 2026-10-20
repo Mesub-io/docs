@@ -57,6 +57,7 @@ import { More } from '../../components/api/more'
     },
     "detail": {
         "amount": "9990000",
+        "amount_received": "9990000",
         "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
         "period_start": "2026-01-31T00:00:00.000Z",
         "period_end": "2026-03-02T00:00:00.000Z",
@@ -87,6 +88,8 @@ if (event.type === 'subscription.renewed') {
 A period was paid.
 
 <More>
+
+Sent once per payment. `data` shows the subscription with that period paid: `detail.period_start` and `detail.period_end` name it. When Mesub records a payment late, the event comes late, and its `data` still shows the period paid. On a cancelled or paused subscription, a payment that went through gives access to the end of the period it paid, and the subscription stays cancelled or paused.
 
 Mesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.
 
