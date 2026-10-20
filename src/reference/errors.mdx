@@ -135,15 +135,15 @@ sign it, and sign the terms again if `terms.message` changed.
 
 ## Managing
 
-| `code`                       | Status | When                                              |
-| ---------------------------- | ------ | ------------------------------------------------- |
-| `subscription_not_found`     | 404    | No subscription of your project under that id     |
-| `subscription_not_active`    | 409    | Cancel: it is not `active`, `unpaid` or `stopped` |
-| `subscription_not_cancelled` | 409    | Resume or close: nothing cancelled it             |
-| `subscription_ended`         | 409    | Resume: the paid period is over                   |
-| `close_too_early`            | 409    | Close: its end has not passed yet                 |
-| `subscription_not_on_chain`  | 409    | It is closed already                              |
-| `nothing_to_confirm`         | 400    | A confirm before any transaction was built        |
+| `code`                       | Status | When                                                                |
+| ---------------------------- | ------ | ------------------------------------------------------------------- |
+| `subscription_not_found`     | 404    | No subscription of your project under that id                       |
+| `subscription_not_active`    | 409    | Cancel: it is not `active`, `unpaid` or `stopped`                   |
+| `subscription_not_cancelled` | 409    | Resume or close: nothing cancelled it. Cancel a `stopped` one first |
+| `subscription_ended`         | 409    | Resume: the paid period is over                                     |
+| `close_too_early`            | 409    | Close: its end has not passed yet                                   |
+| `subscription_not_on_chain`  | 409    | It is closed already                                                |
+| `nothing_to_confirm`         | 400    | A confirm before any transaction was built                          |
 
 ## Retrying a payment
 

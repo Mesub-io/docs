@@ -172,8 +172,14 @@ on `reason`: the sentence may be reworded, the code never is. Mesub adds codes,
 so keep a default branch.
 
 Mesub checks both signatures, co-signs, sends the transaction and waits for the
-chain. A transaction signed too late is refused with `transaction_expired`:
-nothing was sent. Go back to the third step for a new one.
+chain. `transaction_expired` can come back two ways, so handle both:
+
+- Thrown, as a 409 `MesubError` with `apiCode` `transaction_expired`: the
+  transaction was signed too late, and nothing was sent.
+- Answered, as `reason_code` `transaction_expired` beside the subscription:
+  it was sent, and expired before it landed.
+
+Either way, go back to the third step for a new transaction.
 
 </Step>
 </Steps>
@@ -382,5 +388,8 @@ The raw routes are in the reference:
 [list](../reference/subscriptions/list.mdx).
 
 `list` names the customer the way [`hasAccess`](./access.mdx#who-to-ask-about)
-does: by `external_id`, `wallet` or `email`. The fields and statuses are the
+does: by `external_id`, `wallet` or `email`, exactly one of them. No call lists
+every subscription of the project: that list is in the
+[dashboard](https://mesub.io/dashboard#subscriptions), under **Subscriptions**,
+and in the [MCP server](./mcp.mdx). The fields and statuses are the
 ones described in [Lifecycle](./lifecycle.mdx).

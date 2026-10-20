@@ -69,7 +69,9 @@ held to be late for it.
 ### An end date
 
 A plan runs until you close it, unless you give it an end date when you create
-it: the last day it charges, in UTC. It is written on chain as `end_ts`.
+it. The end date is a moment, to the second, written on chain as `end_ts` in
+Unix seconds. At that moment access stops for everybody. The last charge is
+the one for the last period that starts before it.
 
 | Rule            | What it is                                     |
 | --------------- | ---------------------------------------------- |

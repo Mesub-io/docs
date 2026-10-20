@@ -103,8 +103,12 @@ one period.
 There are no automatic retries, and an `unpaid` subscription grants **no
 access**. You can retry by hand, up to 3 times, until `retry_deadline`: from
 the dashboard, or from your own page with
-[a retry](./manage.mdx#pay-a-late-payment-now). Past that date the
-subscription turns `stopped`.
+[a retry](./manage.mdx#pay-a-late-payment-now).
+
+`retry_deadline` is two minutes before the missed period ends. Past it, a retry
+is refused with `retry_deadline_passed`. The subscription turns `stopped` a
+few minutes later, once the missed period is over: for instance a deadline at
+15:15 stops it around 15:19, after the period ends at 15:17.
 
 ### Paying now
 

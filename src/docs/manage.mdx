@@ -31,11 +31,13 @@ key alone changes nothing: only the wallet that pays a subscription can sign.
 | Take a cancellation back before its end     | `resume(id)` | `confirmResume(id, { signature })` | `active`                        |
 | Close one that is over, and return its rent | `close(id)`  | `confirmClose(id, { signature })`  | `ended`, `end_reason: "closed"` |
 
-Close takes a subscription that was cancelled or stopped and whose end has
-passed, one that ended with its plan, and at once one stopped with
-`stop_reason` `authority_closed`. `closable` and `closable_from`, on the
-subscription and on the access answer, say whether it can close now, and from
-when. One that ended with its plan keeps its `end_reason`, `plan_ended` for
+Close takes a subscription that was cancelled and whose end has passed, one
+that ended with its plan, and at once one stopped with `stop_reason`
+`authority_closed`. A subscription stopped for any other reason
+(`out_of_retries`, `retry_deadline_passed`) is cancelled first, then closed:
+close alone is refused with `subscription_not_cancelled`. `closable` and
+`closable_from`, on the subscription and on the access answer, say whether it
+can close now, and from when. One that ended with its plan keeps its `end_reason`, `plan_ended` for
 instance, once closed.
 
 ## The three steps
@@ -113,26 +115,26 @@ On a plan with an end date, access never runs past the plan's end, cancelled
 or not. The last period is charged in full even when the plan ends inside it,
 and the terms the customer signed
 [say so](./subscribe.mdx#a-plan-with-an-end-date).
-[Lifecycle](./lifecycle.mdx#when-the-plan-has-an-end-date) has the detail.
 
-[Lifecycle](./lifecycle.mdx#cancelling-and-resuming) has the detail.
+[Lifecycle](./lifecycle.mdx#cancelling-and-resuming) has the detail, and
+[the plan's end date](./lifecycle.mdx#when-the-plan-has-an-end-date) too.
 
 ## Refusals
 
 Each is thrown as a `MesubError`. `apiCode` says which:
 
-| `apiCode`                    | When                                                                         |
-| ---------------------------- | ---------------------------------------------------------------------------- |
-| `subscription_not_found`     | No subscription of your project under that id                                |
-| `subscription_not_active`    | `cancel`: it is not `active`, `unpaid` or `stopped`                          |
-| `subscription_cancelled`     | `cancel`: it was cancelled already                                           |
-| `subscription_not_cancelled` | `resume`: nothing cancelled it. `close`: it is neither cancelled nor stopped |
-| `subscription_ended`         | `resume`: the paid period is over. Subscribe again                           |
-| `plan_removed`               | `resume`: its plan is gone                                                   |
-| `plan_replaced`              | `resume`: another plan stands at its address                                 |
-| `close_too_early`            | `close`: its end has not passed yet                                          |
-| `subscription_not_on_chain`  | It is closed already                                                         |
-| `nothing_to_confirm`         | A confirm before any transaction was built                                   |
+| `apiCode`                    | When                                                                    |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| `subscription_not_found`     | No subscription of your project under that id                           |
+| `subscription_not_active`    | `cancel`: it is not `active`, `unpaid` or `stopped`                     |
+| `subscription_cancelled`     | `cancel`: it was cancelled already                                      |
+| `subscription_not_cancelled` | `resume` or `close`: nothing cancelled it. Cancel a `stopped` one first |
+| `subscription_ended`         | `resume`: the paid period is over. Subscribe again                      |
+| `plan_removed`               | `resume`: its plan is gone                                              |
+| `plan_replaced`              | `resume`: another plan stands at its address                            |
+| `close_too_early`            | `close`: its end has not passed yet                                     |
+| `subscription_not_on_chain`  | It is closed already                                                    |
+| `nothing_to_confirm`         | A confirm before any transaction was built                              |
 
 These six calls are limited to 60 a minute per API key. Each has its page in
 the reference, from [cancel](../reference/manage/cancel.mdx) to
