@@ -44,7 +44,8 @@ subscribers, so it never goes in a browser, a mobile app or a repository.
     "message": "That API key is not valid.",
     "error": "Unauthorized",
     "code": "invalid_api_key",
-    "retryable": false
+    "retryable": false,
+    "request_id": "req_4f8KzQ2nVb7XcR1mT9wLp3sD"
 }
 ```
 
@@ -60,5 +61,10 @@ Limits are per API key, per route, per minute.
 Requests with no key, or with a wrong one, are counted by IP address instead:
 120 a minute.
 
-Past a limit, Mesub answers 429 `rate_limited` with a `Retry-After` header.
+Every answer says where you stand in three headers: `X-RateLimit-Limit`, the
+route's limit, `X-RateLimit-Remaining`, the calls left in the window, and
+`X-RateLimit-Reset`, the seconds until the window starts over.
+
+Past a limit, Mesub answers 429 `rate_limited` with a `Retry-After` header, in
+seconds.
 [Pricing and limits](../docs/pricing.mdx) has every other limit.

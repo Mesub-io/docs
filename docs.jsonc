@@ -140,6 +140,11 @@
   },
   "redirects": [
     // The single API page became the reference tab.
-    { "source": "/docs/api", "destination": "/reference/introduction", "permanent": true }
+    { "source": "/docs/api", "destination": "/reference/introduction", "permanent": true },
+    // The spec links these from the access answer's `subscription_id`; the pages
+    // live under /reference/manage. Remove once the backend's spec links there.
+    { "source": "/reference/subscriptions/cancel", "destination": "/reference/manage/cancel" },
+    { "source": "/reference/subscriptions/resume", "destination": "/reference/manage/resume" },
+    { "source": "/reference/subscriptions/close", "destination": "/reference/manage/close" }
   ]
 }

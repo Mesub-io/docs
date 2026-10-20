@@ -31,11 +31,13 @@ key alone changes nothing: only the wallet that pays a subscription can sign.
 | Take a cancellation back before its end     | `resume(id)` | `confirmResume(id, { signature })` | `active`                        |
 | Close one that is over, and return its rent | `close(id)`  | `confirmClose(id, { signature })`  | `ended`, `end_reason: "closed"` |
 
-Close takes a subscription that was cancelled or stopped and whose end has
-passed, one that ended with its plan, and at once one stopped with
-`stop_reason` `authority_closed`. `closable` and `closable_from`, on the
-subscription and on the access answer, say whether it can close now, and from
-when. One that ended with its plan keeps its `end_reason`, `plan_ended` for
+Close takes a subscription that was cancelled and whose end has passed, one
+that ended with its plan, and at once one stopped with `stop_reason`
+`authority_closed`. A subscription stopped for any other reason
+(`out_of_retries`, `retry_deadline_passed`) is cancelled first, then closed:
+close alone is refused with `subscription_not_cancelled`. `closable` and
+`closable_from`, on the subscription and on the access answer, say whether it
+can close now, and from when. One that ended with its plan keeps its `end_reason`, `plan_ended` for
 instance, once closed.
 
 ## The three steps
@@ -113,26 +115,26 @@ On a plan with an end date, access never runs past the plan's end, cancelled
 or not. The last period is charged in full even when the plan ends inside it,
 and the terms the customer signed
 [say so](./subscribe.mdx#a-plan-with-an-end-date).
-[Lifecycle](./lifecycle.mdx#when-the-plan-has-an-end-date) has the detail.
 
-[Lifecycle](./lifecycle.mdx#cancelling-and-resuming) has the detail.
+[Lifecycle](./lifecycle.mdx#cancelling-and-resuming) has the detail, and
+[the plan's end date](./lifecycle.mdx#when-the-plan-has-an-end-date) too.
 
 ## Refusals
 
 Each is thrown as a `MesubError`. `apiCode` says which:
 
-| `apiCode`                    | When                                                                         |
-| ---------------------------- | ---------------------------------------------------------------------------- |
-| `subscription_not_found`     | No subscription of your project under that id                                |
-| `subscription_not_active`    | `cancel`: it is not `active`, `unpaid` or `stopped`                          |
-| `subscription_cancelled`     | `cancel`: it was cancelled already                                           |
-| `subscription_not_cancelled` | `resume`: nothing cancelled it. `close`: it is neither cancelled nor stopped |
-| `subscription_ended`         | `resume`: the paid period is over. Subscribe again                           |
-| `plan_removed`               | `resume`: its plan is gone                                                   |
-| `plan_replaced`              | `resume`: another plan stands at its address                                 |
-| `close_too_early`            | `close`: its end has not passed yet                                          |
-| `subscription_not_on_chain`  | It is closed already                                                         |
-| `nothing_to_confirm`         | A confirm before any transaction was built                                   |
+| `apiCode`                    | When                                                                    |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| `subscription_not_found`     | No subscription of your project under that id                           |
+| `subscription_not_active`    | `cancel`: it is not `active`, `unpaid` or `stopped`                     |
+| `subscription_cancelled`     | `cancel`: it was cancelled already                                      |
+| `subscription_not_cancelled` | `resume` or `close`: nothing cancelled it. Cancel a `stopped` one first |
+| `subscription_ended`         | `resume`: the paid period is over. Subscribe again                      |
+| `plan_removed`               | `resume`: its plan is gone                                              |
+| `plan_replaced`              | `resume`: another plan stands at its address                            |
+| `close_too_early`            | `close`: its end has not passed yet                                     |
+| `subscription_not_on_chain`  | It is closed already                                                    |
+| `nothing_to_confirm`         | A confirm before any transaction was built                              |
 
 These six calls are limited to 60 a minute per API key. Each has its page in
 the reference, from [cancel](../reference/manage/cancel.mdx) to
@@ -211,6 +213,7 @@ not over the page.
             "outcome": "paid",
             "reason": null,
             "amount": "9990000",
+            "amount_received": "9990000",
             "amount_usd": "9.99",
             "signature": "5wHu1qwD4kLDLoREEPBpKvGvhbxWFxFFfr5nQq...",
             "retry": true,
@@ -224,6 +227,7 @@ not over the page.
             "outcome": "rejected",
             "reason": "insufficient_balance",
             "amount": "9990000",
+            "amount_received": null,
             "amount_usd": "9.99",
             "signature": null,
             "retry": false,
@@ -237,6 +241,7 @@ not over the page.
             "outcome": "paid",
             "reason": null,
             "amount": "9990000",
+            "amount_received": "9990000",
             "amount_usd": "9.99",
             "signature": "3kPzT9yLmR4vP7wJ8sN2aHcVbE5uYtKfDgQxWz1o...",
             "retry": false,
@@ -316,16 +321,24 @@ left. Until a read agrees, the attempt is `blocked`, and tried again.
 
 What you did to the plan:
 
-| `reason`                                  | `outcome` | What it says                                                       |
-| ----------------------------------------- | --------- | ------------------------------------------------------------------ |
-| `plan_removed`                            | `skipped` | The plan was deleted. The subscription ends, `plan_removed`        |
-| `plan_replaced`                           | `skipped` | Another plan stands at its address. It ends, `plan_replaced`       |
-| `plan_ended`                              | `skipped` | The plan's end date has passed. It ends, `plan_ended`              |
-| `receiver_not_allowed`                    | `blocked` | The plan's receiver is not among the destinations it allows        |
-| `receiver_account_missing`                | `blocked` | Neither the receiver nor your wallet has an account for that token |
-| `receiver_account_frozen`                 | `blocked` | The token account the plan pays is frozen                          |
-| `puller_not_allowed`                      | `blocked` | Mesub's puller was taken off the plan                              |
-| `program_130`, `501`, `506`, `516`, `519` | `blocked` | One of the changes above, made while the charge was on its way     |
+| `reason`                                  | `outcome` | What it says                                                               |
+| ----------------------------------------- | --------- | -------------------------------------------------------------------------- |
+| `plan_removed`                            | `skipped` | The plan was deleted. The subscription ends, `plan_removed`                |
+| `plan_replaced`                           | `skipped` | Another plan stands at its address. It ends, `plan_replaced`               |
+| `plan_ended`                              | `skipped` | The plan's end date has passed. It ends, `plan_ended`                      |
+| `receiver_not_allowed`                    | `blocked` | The plan's receiver is not among the destinations it allows                |
+| `receiver_account_missing`                | `blocked` | Neither the receiver nor your wallet has an account for that token         |
+| `receiver_account_frozen`                 | `blocked` | The token account the plan pays is frozen                                  |
+| `receiver_account_needs_memo`             | `blocked` | That token account requires a memo, which Mesub's charges lack             |
+| `receiver_account_confidential_only`      | `blocked` | That token account takes confidential transfers only                       |
+| `mint_paused`                             | `blocked` | The token's issuer paused it. Mesub charges again once it is lifted        |
+| `mint_transfer_hook`                      | `blocked` | The token's issuer added a transfer hook, which Mesub does not support yet |
+| `puller_not_allowed`                      | `blocked` | Mesub's puller was taken off the plan                                      |
+| `program_130`, `501`, `506`, `516`, `519` | `blocked` | One of the changes above, made while the charge was on its way             |
+
+`mint_paused` and `mint_transfer_hook` are the token issuer's doing, not
+yours: only the issuer lifts them. Mesub mails you when one holds your
+charges.
 
 What Mesub or the network did:
 
@@ -351,17 +364,18 @@ branch on both `reason` and `outcome`.
 
 ### The other fields
 
-| Field                 | What it says                                                     | Null when                               |
-| --------------------- | ---------------------------------------------------------------- | --------------------------------------- |
-| `attempted_at`        | When Mesub recorded the attempt                                  | Never                                   |
-| `amount`              | What was asked for, in the token's smallest unit, as a string    | Never                                   |
-| `amount_usd`          | `amount` in US dollars, at the token's price when it was charged | Not priced yet, or no price was found   |
-| `signature`           | The transaction that paid                                        | The outcome is not `paid`               |
-| `retry`               | True when a charge for this period had already failed            | Never                                   |
-| `retry_number`        | Which retry it was. 1 is the first after the missed charge       | It is not a retry                       |
-| `retries_allowed`     | How many retries the period had when the attempt ran             | It is not a retry                       |
-| `period_start`        | The start of the period it was for                               | Mesub stopped before reading the period |
-| `paid`, on the answer | `count` and `amount` of every `paid` attempt of the subscription | Never. `0` and `"0"` when none          |
+| Field                 | What it says                                                     | Null when                                    |
+| --------------------- | ---------------------------------------------------------------- | -------------------------------------------- |
+| `attempted_at`        | When Mesub recorded the attempt                                  | Never                                        |
+| `amount`              | What was asked for, in the token's smallest unit, as a string    | Never                                        |
+| `amount_received`     | What you received: `amount` less a Token-2022 transfer fee       | Not `paid`, or recorded before Mesub kept it |
+| `amount_usd`          | `amount` in US dollars, at the token's price when it was charged | Not priced yet, or no price was found        |
+| `signature`           | The transaction that paid                                        | The outcome is not `paid`                    |
+| `retry`               | True when a charge for this period had already failed            | Never                                        |
+| `retry_number`        | Which retry it was. 1 is the first after the missed charge       | It is not a retry                            |
+| `retries_allowed`     | How many retries the period had when the attempt ran             | It is not a retry                            |
+| `period_start`        | The start of the period it was for                               | Mesub stopped before reading the period      |
+| `paid`, on the answer | `count` and `amount` of every `paid` attempt of the subscription | Never. `0` and `"0"` when none               |
 
 `retry_number` and `retries_allowed` are kept as the attempt ran: changing the
 plan's retry policy later does not rewrite them. Both are also null, with

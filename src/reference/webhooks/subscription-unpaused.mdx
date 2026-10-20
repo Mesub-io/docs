@@ -2,7 +2,7 @@
 $schema: https://holocron.so/frontmatter.json
 title: "subscription.unpaused"
 sidebarTitle: "subscription.unpaused"
-description: "Not sent yet: Mesub turns this event on later. A parked seat is back: the project's tier has room for it again, and Mesub charges it again, at the end of..."
+description: "A parked seat is back: the project's tier has room for it again, and Mesub charges it again, at the end of the period it paid for, or at once when that..."
 hideTitle: true
 gridGap: 36
 prompt: |
@@ -24,7 +24,7 @@ import { More } from '../../components/api/more'
     "object": "event",
     "type": "subscription.unpaused",
     "created_at": "2026-01-13T00:00:00.000Z",
-    "network": "devnet",
+    "network": "mainnet-beta",
     "api_version": "2026-10-02",
     "sequence": 4,
     "data": {
@@ -78,7 +78,7 @@ if (event.type === 'subscription.unpaused') {
 
 <Endpoint id="webhook_subscription_unpaused">
 
-Not sent yet: Mesub turns this event on later. A parked seat is back: the project's tier has room for it again, and Mesub charges it again, at the end of the period it paid for, or at once when that period is over. `data.paused` is false.
+A parked seat is back: the project's tier has room for it again, and Mesub charges it again, at the end of the period it paid for, or at once when that period is over. `data.paused` is false.
 
 <More>
 

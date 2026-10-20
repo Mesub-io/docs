@@ -501,7 +501,7 @@
                       "name": "Pro",
                       "description": "Everything in Free, plus analytics.",
                       "project_name": "Fraise",
-                      "logo_url": "https://api.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
+                      "logo_url": "https://cdn.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
                       "amount": "9990000",
                       "amount_display": "9.99",
                       "amount_usd": "9.99",
@@ -525,7 +525,7 @@
                       "name": "Supporter",
                       "description": null,
                       "project_name": "Fraise",
-                      "logo_url": "https://api.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
+                      "logo_url": "https://cdn.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
                       "amount": "3000000000",
                       "amount_display": "30000",
                       "amount_usd": "0.45",
@@ -754,7 +754,7 @@
                   "name": "Pro",
                   "description": "Everything in Free, plus analytics.",
                   "project_name": "Fraise",
-                  "logo_url": "https://api.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
+                  "logo_url": "https://cdn.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
                   "amount": "9990000",
                   "amount_display": "9.99",
                   "amount_usd": "9.99",
@@ -1281,6 +1281,11 @@
                 "retryable": false
               },
               {
+                "code": "insufficient_sol",
+                "when": "The wallet holds less SOL than the transaction's network fee and the rent of the accounts it opens. The message says how much it holds and needs.",
+                "retryable": false
+              },
+              {
                 "code": "seat_cap_reached",
                 "when": "The project is at its tier's subscriber limit.",
                 "retryable": false
@@ -1348,6 +1353,26 @@
               {
                 "code": "receiver_account_frozen",
                 "when": "The account the plan pays for its token is frozen, so the first charge would fail.",
+                "retryable": false
+              },
+              {
+                "code": "receiver_account_needs_memo",
+                "when": "The account the plan pays for its token requires a memo on every transfer in, which Mesub's charges do not carry.",
+                "retryable": false
+              },
+              {
+                "code": "receiver_account_confidential_only",
+                "when": "The account the plan pays for its token takes confidential transfers only, so the first charge would fail.",
+                "retryable": false
+              },
+              {
+                "code": "mint_paused",
+                "when": "The plan's token is paused by its issuer: no payment in it moves until the issuer lifts the pause.",
+                "retryable": false
+              },
+              {
+                "code": "mint_transfer_hook",
+                "when": "The plan's token now runs its issuer's own program on every transfer, which Mesub does not support yet.",
                 "retryable": false
               },
               {
@@ -2102,6 +2127,11 @@
                 "retryable": false
               },
               {
+                "code": "insufficient_sol",
+                "when": "The wallet holds less SOL than the transaction's network fee and the rent of the accounts it opens. The message says how much it holds and needs.",
+                "retryable": false
+              },
+              {
                 "code": "receiver_account_missing",
                 "when": "Nobody the plan pays has an account for its token.",
                 "retryable": false
@@ -2149,6 +2179,26 @@
               {
                 "code": "receiver_account_frozen",
                 "when": "The account the plan pays for its token is frozen, so the first charge would fail.",
+                "retryable": false
+              },
+              {
+                "code": "receiver_account_needs_memo",
+                "when": "The account the plan pays for its token requires a memo on every transfer in, which Mesub's charges do not carry.",
+                "retryable": false
+              },
+              {
+                "code": "receiver_account_confidential_only",
+                "when": "The account the plan pays for its token takes confidential transfers only, so the first charge would fail.",
+                "retryable": false
+              },
+              {
+                "code": "mint_paused",
+                "when": "The plan's token is paused by its issuer: no payment in it moves until the issuer lifts the pause.",
+                "retryable": false
+              },
+              {
+                "code": "mint_transfer_hook",
+                "when": "The plan's token now runs its issuer's own program on every transfer, which Mesub does not support yet.",
                 "retryable": false
               }
             ],
@@ -2745,6 +2795,26 @@
                 "retryable": false
               },
               {
+                "code": "receiver_account_needs_memo",
+                "when": "The account the plan pays for its token requires a memo on every transfer in, which Mesub's charges do not carry.",
+                "retryable": false
+              },
+              {
+                "code": "receiver_account_confidential_only",
+                "when": "The account the plan pays for its token takes confidential transfers only, so the first charge would fail.",
+                "retryable": false
+              },
+              {
+                "code": "mint_paused",
+                "when": "The plan's token is paused by its issuer: no payment in it moves until the issuer lifts the pause.",
+                "retryable": false
+              },
+              {
+                "code": "mint_transfer_hook",
+                "when": "The plan's token now runs its issuer's own program on every transfer, which Mesub does not support yet.",
+                "retryable": false
+              },
+              {
                 "code": "subscription_cancelled",
                 "when": "The wallet's subscription to this plan is cancelled, and runs to the end of its period.",
                 "retryable": false
@@ -3215,6 +3285,7 @@
                       "outcome": "paid",
                       "reason": null,
                       "amount": "9990000",
+                      "amount_received": "9990000",
                       "amount_usd": "9.99",
                       "signature": "5wHu1qwD4kLDLoREEPBpKvGvhbxWFxFFfr5nQq7dxAsRRDXvHRqpNvfsCvC1qzjWQhqmPtBb8LnZjKmvpehJqSWk",
                       "retry": true,
@@ -3228,6 +3299,7 @@
                       "outcome": "skipped",
                       "reason": "insufficient-balance",
                       "amount": "9990000",
+                      "amount_received": null,
                       "amount_usd": "9.99",
                       "signature": null,
                       "retry": false,
@@ -6329,7 +6401,7 @@
                       "object": "event",
                       "type": "subscription.renewed",
                       "created_at": "2026-01-31T00:01:00.000Z",
-                      "network": "devnet",
+                      "network": "mainnet-beta",
                       "api_version": "2026-10-02",
                       "sequence": 3,
                       "data": {
@@ -6362,6 +6434,7 @@
                       },
                       "detail": {
                         "amount": "9990000",
+                        "amount_received": "9990000",
                         "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                         "period_start": "2026-01-31T00:00:00.000Z",
                         "period_end": "2026-03-02T00:00:00.000Z",
@@ -6576,7 +6649,7 @@
                   "object": "event",
                   "type": "subscription.renewed",
                   "created_at": "2026-01-31T00:01:00.000Z",
-                  "network": "devnet",
+                  "network": "mainnet-beta",
                   "api_version": "2026-10-02",
                   "sequence": 3,
                   "data": {
@@ -6609,6 +6682,7 @@
                   },
                   "detail": {
                     "amount": "9990000",
+                    "amount_received": "9990000",
                     "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     "period_start": "2026-01-31T00:00:00.000Z",
                     "period_end": "2026-03-02T00:00:00.000Z",
@@ -6928,7 +7002,11 @@
                         "properties": {
                           "amount": {
                             "type": "string",
-                            "description": "What was paid, in the token's smallest unit."
+                            "description": "What was paid, in the token's smallest unit: what the subscriber's wallet was charged."
+                          },
+                          "amount_received": {
+                            "type": ["string", "null"],
+                            "description": "What the receiving wallet got of `amount`, in the token's smallest unit: `amount` less the fee a Token-2022 token withholds on every transfer, which goes to the token's issuer. The same as `amount` on a token without a transfer fee. Null when Mesub could not tell; absent on events written before Mesub told it."
                           },
                           "mint": {
                             "type": ["string", "null"],
@@ -6953,7 +7031,7 @@
                 "object": "event",
                 "type": "subscription.created",
                 "created_at": "2026-01-01T00:00:05.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 1,
                 "data": {
@@ -6987,6 +7065,7 @@
                 "detail": {
                   "first_payment": {
                     "amount": "9990000",
+                    "amount_received": "9990000",
                     "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                     "signature": "5wHu1qwD4kLDLoREEPBpKvGvhbxWFxFFfr5nQq7dxAsRRDXvHRqpNvfsCvC1qzjWQhqmPtBb8LnZjKmvpehJqSWk"
                   }
@@ -7139,7 +7218,7 @@
                 "object": "event",
                 "type": "subscription.renewal_upcoming",
                 "created_at": "2026-02-22T12:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 2,
                 "data": {
@@ -7193,7 +7272,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.renewed",
         "operationId": "webhook_subscription_renewed",
-        "description": "A period was paid.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "A period was paid.\n\nSent once per payment. `data` shows the subscription with that period paid: `detail.period_start` and `detail.period_end` name it. When Mesub records a payment late, the event comes late, and its `data` still shows the period paid. On a cancelled or paused subscription, a payment that went through gives access to the end of the period it paid, and the subscription stays cancelled or paused.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-renewed",
           "guide": {
@@ -7292,7 +7371,11 @@
                     "properties": {
                       "amount": {
                         "type": "string",
-                        "description": "What was paid, in the token's smallest unit."
+                        "description": "What was paid, in the token's smallest unit: what the subscriber's wallet was charged."
+                      },
+                      "amount_received": {
+                        "type": ["string", "null"],
+                        "description": "What the receiving wallet got of `amount`, in the token's smallest unit: `amount` less the fee a Token-2022 token withholds on every transfer, which goes to the token's issuer. The same as `amount` on a token without a transfer fee. Null when Mesub could not tell; absent on events written before Mesub told it."
                       },
                       "mint": {
                         "type": "string",
@@ -7325,7 +7408,7 @@
                 "object": "event",
                 "type": "subscription.renewed",
                 "created_at": "2026-01-31T00:01:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -7358,6 +7441,7 @@
                 },
                 "detail": {
                   "amount": "9990000",
+                  "amount_received": "9990000",
                   "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                   "period_start": "2026-01-31T00:00:00.000Z",
                   "period_end": "2026-03-02T00:00:00.000Z",
@@ -7540,7 +7624,7 @@
                 "object": "event",
                 "type": "subscription.payment_failed",
                 "created_at": "2026-01-31T00:01:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -7712,7 +7796,7 @@
                 "object": "event",
                 "type": "subscription.stopped",
                 "created_at": "2026-02-04T00:04:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -7870,7 +7954,7 @@
                 "object": "event",
                 "type": "subscription.cancelled",
                 "created_at": "2026-01-15T00:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -8026,7 +8110,7 @@
                 "object": "event",
                 "type": "subscription.resumed",
                 "created_at": "2026-01-20T00:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -8074,7 +8158,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.ended",
         "operationId": "webhook_subscription_ended",
-        "description": "It is over. `data.end_reason` says why.\n\nNot sent yet for this case, which Mesub turns on later: a cancellation that reached its end (its expiry: the end of the period it paid for) sends this event with `end_reason: \"cancelled\"`, once per cancellation, once a read of the chain after the expiry shows the cancellation still in place: usually within half an hour of the expiry. `detail.changed_at` is the expiry, to the millisecond, and the moment `data` describes, `status: ended`. The `subscription.access_revoked` of that expiry is sent at the expiry itself, from Mesub's records, so it comes first; a resume signed in the wallet before the expiry and seen late by Mesub can still follow that `access_revoked` (then `subscription.resumed` and `subscription.access_granted`, and no `subscription.ended`). The subscription can still be closed afterwards, which sends this event again with `end_reason: \"closed\"` (or `\"cancelled\"` when Mesub finds it closed outside Mesub).\n\nOn a plan with an end date, a subscription still running or late is ended at the plan's end, within minutes of it, whatever period it paid for: this event then carries `end_reason: \"plan_ended\"`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "It is over. `data.end_reason` says why.\n\nA cancellation that reached its end (its expiry: the end of the period it paid for) sends this event with `end_reason: \"cancelled\"`, once per cancellation, once a read of the chain after the expiry shows the cancellation still in place: usually within half an hour of the expiry. `detail.changed_at` is the expiry, to the millisecond, and the moment `data` describes, `status: ended`. The `subscription.access_revoked` of that expiry is sent at the expiry itself, from Mesub's records, so it comes first; a resume signed in the wallet before the expiry and seen late by Mesub can still follow that `access_revoked` (then `subscription.resumed` and `subscription.access_granted`, and no `subscription.ended`). The subscription can still be closed afterwards, which sends this event again with `end_reason: \"closed\"` (or `\"cancelled\"` when Mesub finds it closed outside Mesub).\n\nOn a plan with an end date, a subscription still running or late is ended at the plan's end, within minutes of it, whatever period it paid for: this event then carries `end_reason: \"plan_ended\"`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-ended",
           "guide": {
@@ -8193,7 +8277,7 @@
                 "object": "event",
                 "type": "subscription.ended",
                 "created_at": "2026-01-31T00:01:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -8349,7 +8433,7 @@
                 "object": "event",
                 "type": "subscription.expired",
                 "created_at": "2026-01-01T00:30:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 1,
                 "data": {
@@ -8397,7 +8481,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.access_granted",
         "operationId": "webhook_subscription_access_granted",
-        "description": "Not sent yet: Mesub turns this event on later. Access started: the subscription grants access now, and did not just before. Its first access, a payment that gives access back after it ended, a comeback, a resume that comes after a cancellation ended. A renewal paid on time, or a resume while the paid period still runs, keeps access and sends none: only `subscription.renewed` or `subscription.resumed`.\n\nDrive the customer's access from `subscription.access_granted` and `subscription.access_revoked` alone: they are sent only when access actually changes, and every change sends one. The other events say why. Apply them in the order of `sequence`, since deliveries may arrive in any order: the last one applied says whether the customer has access. `detail.changed_at` is the moment access started, and `data.access` is true.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "Access started: the subscription grants access now, and did not just before. Its first access, a payment that gives access back after it ended, a comeback, a resume that comes after a cancellation ended. A renewal paid on time, or a resume while the paid period still runs, keeps access and sends none: only `subscription.renewed` or `subscription.resumed`.\n\nDrive the customer's access from `subscription.access_granted` and `subscription.access_revoked` alone: they are sent only when access actually changes, and every change sends one. The other events say why. Apply them in the order of `sequence`, since deliveries may arrive in any order: the last one applied says whether the customer has access. `detail.changed_at` is the moment access started, and `data.access` is true.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-access-granted",
           "guide": {
@@ -8506,7 +8590,11 @@
                           "receiver_not_allowed",
                           "receiver_account_missing",
                           "receiver_account_frozen",
+                          "receiver_account_needs_memo",
+                          "receiver_account_confidential_only",
                           "mint_gone",
+                          "mint_paused",
+                          "mint_transfer_hook",
                           "mesub",
                           null
                         ],
@@ -8530,7 +8618,7 @@
                 "object": "event",
                 "type": "subscription.access_granted",
                 "created_at": "2026-01-01T00:00:05.012Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 2,
                 "data": {
@@ -8582,7 +8670,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.access_revoked",
         "operationId": "webhook_subscription_access_revoked",
-        "description": "Not sent yet: Mesub turns this event on later. Access ended: the subscription grants no access now, and did just before. It stopped, ended, failed a payment on Free, a cancellation reached its end, its plan ended, or a collection blocked on Mesub's or the merchant's side reached the end of the access it keeps (`access_until`). Sent at the change, or, for a date that passed with nothing else happening, a few seconds after it: `detail.changed_at` is then that date, to the millisecond.\n\nDrive the customer's access from `subscription.access_granted` and `subscription.access_revoked` alone: they are sent only when access actually changes, and every change sends one. The other events say why. Apply them in the order of `sequence`, since deliveries may arrive in any order: the last one applied says whether the customer has access. `data.access` is false.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "Access ended: the subscription grants no access now, and did just before. It stopped, ended, failed a payment on Free, a cancellation reached its end, its plan ended, or a collection blocked on Mesub's or the merchant's side reached the end of the access it keeps (`access_until`). Sent at the change, or, for a date that passed with nothing else happening, a few seconds after it: `detail.changed_at` is then that date, to the millisecond.\n\nDrive the customer's access from `subscription.access_granted` and `subscription.access_revoked` alone: they are sent only when access actually changes, and every change sends one. The other events say why. Apply them in the order of `sequence`, since deliveries may arrive in any order: the last one applied says whether the customer has access. `data.access` is false.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-access-revoked",
           "guide": {
@@ -8691,7 +8779,11 @@
                           "receiver_not_allowed",
                           "receiver_account_missing",
                           "receiver_account_frozen",
+                          "receiver_account_needs_memo",
+                          "receiver_account_confidential_only",
                           "mint_gone",
+                          "mint_paused",
+                          "mint_transfer_hook",
                           "mesub",
                           null
                         ],
@@ -8715,7 +8807,7 @@
                 "object": "event",
                 "type": "subscription.access_revoked",
                 "created_at": "2026-01-31T00:00:04.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 4,
                 "data": {
@@ -8767,7 +8859,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.paused",
         "operationId": "webhook_subscription_paused",
-        "description": "Not sent yet: Mesub turns this event on later. A seat was parked: the project now holds more subscribers than its tier allows (it moved to a smaller tier, or a subscription confirmed late filled it), and Mesub stopped charging the newest ones rather than any within the limit. Not a pause the subscriber asked for: nothing changed on chain, and the status stays as it was.\n\nThe subscription keeps access to the end of the period it paid for, and no further: `data.paused` is true, `data.next_charge_at` null. Its `subscription.access_revoked` comes when that access ends, or right after this event, with a higher `sequence`, when it had already ended. The project moving back to a tier with room sends `subscription.unpaused`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "A seat was parked: the project now holds more subscribers than its tier allows (it moved to a smaller tier, or a subscription confirmed late filled it), and Mesub stopped charging the newest ones rather than any within the limit. Not a pause the subscriber asked for: nothing changed on chain, and the status stays as it was.\n\nThe subscription keeps access to the end of the period it paid for, and no further: `data.paused` is true, `data.next_charge_at` null. Its `subscription.access_revoked` comes when that access ends, or right after this event, with a higher `sequence`, when it had already ended. The project moving back to a tier with room sends `subscription.unpaused`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-paused",
           "guide": {
@@ -8875,7 +8967,7 @@
                 "object": "event",
                 "type": "subscription.paused",
                 "created_at": "2026-01-11T00:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 3,
                 "data": {
@@ -8923,7 +9015,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.unpaused",
         "operationId": "webhook_subscription_unpaused",
-        "description": "Not sent yet: Mesub turns this event on later. A parked seat is back: the project's tier has room for it again, and Mesub charges it again, at the end of the period it paid for, or at once when that period is over. `data.paused` is false.\n\nIts `subscription.access_granted` follows, with a higher `sequence`, when its access had ended while it was parked.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "A parked seat is back: the project's tier has room for it again, and Mesub charges it again, at the end of the period it paid for, or at once when that period is over. `data.paused` is false.\n\nIts `subscription.access_granted` follows, with a higher `sequence`, when its access had ended while it was parked.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-unpaused",
           "guide": {
@@ -9031,7 +9123,7 @@
                 "object": "event",
                 "type": "subscription.unpaused",
                 "created_at": "2026-01-13T00:00:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 4,
                 "data": {
@@ -9188,7 +9280,7 @@
                 "object": "event",
                 "type": "test",
                 "created_at": "2026-01-10T09:30:00.000Z",
-                "network": "devnet",
+                "network": "mainnet-beta",
                 "api_version": "2026-10-02",
                 "sequence": 1,
                 "data": {
@@ -9302,11 +9394,11 @@
           "outcome": {
             "type": "string",
             "enum": ["paid", "skipped", "rejected", "blocked"],
-            "description": "`skipped`: nothing was sent because the chain said it could not work. `rejected`: sent and refused. `blocked`: not tried, and never the customer's doing."
+            "description": "`skipped`: nothing was sent because the chain said it could not work. `rejected`: refused for a reason that is the customer's, by the program or by the check made before sending (then `signature` is null). `blocked`: not tried, and never the customer's doing."
           },
           "reason": {
             "type": ["string", "null"],
-            "description": "Why it did not pay, null on a paid one. Short and stable, in snake case, and an open family rather than a closed list: Mesub adds reasons, so keep a default branch. Among them: `insufficient_balance` (the wallet held less than the period costs), `approval_revoked`, `authority_closed` (the wallet's subscription authority closed for good), `token_account_frozen`, `plan_ended`, `plan_removed`, `plan_replaced`, `closed_elsewhere` (the subscription account closed outside Mesub), `cancelled` (cancelled, and past the end of the period paid for), and, on a `blocked` one, the plan's setup (`puller_not_allowed`, `receiver_not_allowed`, `receiver_account_missing`, `receiver_account_frozen`, `mint_gone`). A refusal Mesub does not name is `program_<N>` (the program's or the token program's error code N) or `solana_<N>` (Solana's own). `late_reason` on the subscription is the reading of it a program should branch on."
+            "description": "Why it did not pay, null on a paid one. Short and stable, in snake case, and an open family rather than a closed list: Mesub adds reasons, so keep a default branch. Among them: `insufficient_balance` (the wallet held less than the period costs), `approval_revoked`, `authority_closed` (the wallet's subscription authority closed for good), `token_account_frozen`, `plan_ended`, `plan_removed`, `plan_replaced`, `closed_elsewhere` (the subscription account closed outside Mesub), `cancelled` (cancelled, and past the end of the period paid for), and, on a `blocked` one, the plan's setup (`puller_not_allowed`, `receiver_not_allowed`, `receiver_account_missing`, `receiver_account_frozen`, `receiver_account_needs_memo`, `receiver_account_confidential_only`, `mint_gone`, `mint_paused`, `mint_transfer_hook`). A refusal Mesub does not name is `program_<N>` (the program's or the token program's error code N) or `solana_<N>` (Solana's own). `late_reason` on the subscription is the reading of it a program should branch on."
           },
           "amount": {
             "type": "string",
@@ -9363,7 +9455,7 @@
           },
           "subscription_id": {
             "type": ["string", "null"],
-            "description": "The subscription this answer is about: the one whose `status`, `access` and dates these are. Use it to [cancel](/reference/subscriptions/cancel), [resume](/reference/subscriptions/resume), [close](/reference/subscriptions/close) or [retry](/reference/subscriptions/retry) it without listing the customer's subscriptions first. When the customer has several on the plan, the one in force: among their wallets, the most recent that grants access, else the most recent; on one wallet, its latest, never a checkout left pending beside a subscription that runs, nor one left to expire. Null when the customer has nothing on this plan, with `status` `none`."
+            "description": "The subscription this answer is about: the one whose `status`, `access` and dates these are. Use it to [cancel](/reference/manage/cancel), [resume](/reference/manage/resume), [close](/reference/manage/close) or [retry](/reference/subscriptions/retry) it without listing the customer's subscriptions first. When the customer has several on the plan, the one in force: among their wallets, the most recent that grants access, else the most recent; on one wallet, its latest, never a checkout left pending beside a subscription that runs, nor one left to expire. Null when the customer has nothing on this plan, with `status` `none`."
           },
           "access": {
             "type": "boolean",
@@ -9428,11 +9520,15 @@
               "receiver_not_allowed",
               "receiver_account_missing",
               "receiver_account_frozen",
+              "receiver_account_needs_memo",
+              "receiver_account_confidential_only",
               "mint_gone",
+              "mint_paused",
+              "mint_transfer_hook",
               "mesub",
               null
             ],
-            "description": "Why the charges are held. Null with `blocked_since`. Five values name the plan's own setup, yours to fix: `puller_not_allowed` (Mesub's puller was taken off the plan on chain), `receiver_not_allowed` (the receiving wallet is not among the plan's destinations), `receiver_account_missing` (it has no account for the plan's token, and nobody else can be paid), `receiver_account_frozen` (its account for the plan's token is frozen) and `mint_gone` (the token no longer exists). `mesub` is any cause on Mesub's side: nothing for you to fix. Mesub may add a value: keep a default branch."
+            "description": "Why the charges are held. Null with `blocked_since`. Nine values name the plan's own setup, yours to fix or, for the last two, the token issuer's to lift: `puller_not_allowed` (Mesub's puller was taken off the plan on chain), `receiver_not_allowed` (the receiving wallet is not among the plan's destinations), `receiver_account_missing` (it has no account for the plan's token, and nobody else can be paid), `receiver_account_frozen` (its account for the plan's token is frozen), `receiver_account_needs_memo` (that account requires a memo on every transfer in, which Mesub's charges do not carry), `receiver_account_confidential_only` (that account takes confidential transfers only), `mint_gone` (the token no longer exists), `mint_paused` (the token's issuer paused it: no payment in it moves, and Mesub charges again once the pause is lifted) and `mint_transfer_hook` (the token's issuer made its transfers run a program of theirs, which Mesub does not support yet: it charges again if the issuer removes it). `mesub` is any cause on Mesub's side: nothing for you to fix. Mesub may add a value: keep a default branch."
           },
           "subscribed_since": {
             "type": ["string", "null"],
@@ -9729,11 +9825,15 @@
               "receiver_not_allowed",
               "receiver_account_missing",
               "receiver_account_frozen",
+              "receiver_account_needs_memo",
+              "receiver_account_confidential_only",
               "mint_gone",
+              "mint_paused",
+              "mint_transfer_hook",
               "mesub",
               null
             ],
-            "description": "Why the charges are held. Null with `blocked_since`. Five values name the plan's own setup, yours to fix: `puller_not_allowed` (Mesub's puller was taken off the plan on chain), `receiver_not_allowed` (the receiving wallet is not among the plan's destinations), `receiver_account_missing` (it has no account for the plan's token, and nobody else can be paid), `receiver_account_frozen` (its account for the plan's token is frozen) and `mint_gone` (the token no longer exists). `mesub` is any cause on Mesub's side: nothing for you to fix. Mesub may add a value: keep a default branch."
+            "description": "Why the charges are held. Null with `blocked_since`. Nine values name the plan's own setup, yours to fix or, for the last two, the token issuer's to lift: `puller_not_allowed` (Mesub's puller was taken off the plan on chain), `receiver_not_allowed` (the receiving wallet is not among the plan's destinations), `receiver_account_missing` (it has no account for the plan's token, and nobody else can be paid), `receiver_account_frozen` (its account for the plan's token is frozen), `receiver_account_needs_memo` (that account requires a memo on every transfer in, which Mesub's charges do not carry), `receiver_account_confidential_only` (that account takes confidential transfers only), `mint_gone` (the token no longer exists), `mint_paused` (the token's issuer paused it: no payment in it moves, and Mesub charges again once the pause is lifted) and `mint_transfer_hook` (the token's issuer made its transfers run a program of theirs, which Mesub does not support yet: it charges again if the issuer removes it). `mesub` is any cause on Mesub's side: nothing for you to fix. Mesub may add a value: keep a default branch."
           },
           "plan": {
             "type": ["string", "null"],
@@ -9836,6 +9936,7 @@
           "outcome",
           "reason",
           "amount",
+          "amount_received",
           "amount_usd",
           "signature",
           "retry",
@@ -9855,15 +9956,19 @@
           "outcome": {
             "type": "string",
             "enum": ["paid", "skipped", "rejected", "blocked"],
-            "description": "`skipped`: nothing was sent because the chain said it could not work. `rejected`: sent and refused. `blocked`: not tried, and never the customer's doing."
+            "description": "`skipped`: nothing was sent because the chain said it could not work. `rejected`: refused for a reason that is the customer's, by the program or by the check made before sending (then `signature` is null). `blocked`: not tried, and never the customer's doing."
           },
           "reason": {
             "type": ["string", "null"],
-            "description": "Why it did not pay, null on a paid one. Short and stable, in snake case, and an open family rather than a closed list: Mesub adds reasons, so keep a default branch. Among them: `insufficient_balance` (the wallet held less than the period costs), `approval_revoked`, `authority_closed` (the wallet's subscription authority closed for good), `token_account_frozen`, `plan_ended`, `plan_removed`, `plan_replaced`, `closed_elsewhere` (the subscription account closed outside Mesub), `cancelled` (cancelled, and past the end of the period paid for), and, on a `blocked` one, the plan's setup (`puller_not_allowed`, `receiver_not_allowed`, `receiver_account_missing`, `receiver_account_frozen`, `mint_gone`). A refusal Mesub does not name is `program_<N>` (the program's or the token program's error code N) or `solana_<N>` (Solana's own). `late_reason` on the subscription is the reading of it a program should branch on."
+            "description": "Why it did not pay, null on a paid one. Short and stable, in snake case, and an open family rather than a closed list: Mesub adds reasons, so keep a default branch. Among them: `insufficient_balance` (the wallet held less than the period costs), `approval_revoked`, `authority_closed` (the wallet's subscription authority closed for good), `token_account_frozen`, `plan_ended`, `plan_removed`, `plan_replaced`, `closed_elsewhere` (the subscription account closed outside Mesub), `cancelled` (cancelled, and past the end of the period paid for), and, on a `blocked` one, the plan's setup (`puller_not_allowed`, `receiver_not_allowed`, `receiver_account_missing`, `receiver_account_frozen`, `receiver_account_needs_memo`, `receiver_account_confidential_only`, `mint_gone`, `mint_paused`, `mint_transfer_hook`). A refusal Mesub does not name is `program_<N>` (the program's or the token program's error code N) or `solana_<N>` (Solana's own). `late_reason` on the subscription is the reading of it a program should branch on."
           },
           "amount": {
             "type": "string",
             "description": "In the token's smallest unit, as a string. What a paid one moved, what any other asked for."
+          },
+          "amount_received": {
+            "type": ["string", "null"],
+            "description": "On a paid one, what the receiving wallet got of `amount`, in the token's smallest unit, as a string: `amount` less the fee a Token-2022 token withholds on every transfer, which goes to the token's issuer. The same as `amount` on a token without a transfer fee. Null on any other outcome, and on a payment Mesub recorded before it kept this figure."
           },
           "amount_usd": {
             "type": ["string", "null"],

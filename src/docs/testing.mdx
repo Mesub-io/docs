@@ -133,10 +133,10 @@ fake.addEvent('subscription.access_revoked', { subscription: { id }, sequence: 5
 ```
 
 Every event carries the next `sequence` of its subscription; `sequence: null`
-leaves it out. The access events are off by default, as on Mesub:
+leaves it out. The fake raises no access event by default, where Mesub sends them:
 `new FakeMesub({ accessEvents: true })` raises `subscription.access_granted`
 or `subscription.access_revoked` right after a change that flips access, one
-`sequence` later.
+`sequence` later, as Mesub does.
 
 ## Subscribing and managing
 

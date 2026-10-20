@@ -66,8 +66,10 @@ Limits are per API key, per route, per minute.
 
 Requests with no key, or a wrong one, are counted by IP address: 120 a minute.
 
-Past a limit, Mesub answers 429 `rate_limited` with a `Retry-After` header. The
-SDK caches access answers, so one customer checked on every request costs far
+Every answer carries `X-RateLimit-Limit`, `X-RateLimit-Remaining` and
+`X-RateLimit-Reset`, the seconds until the window starts over. Past a limit,
+Mesub answers 429 `rate_limited` with a `Retry-After` header. The SDK caches
+access answers, so one customer checked on every request costs far
 fewer calls than requests.
 
 ## Other limits

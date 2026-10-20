@@ -36,7 +36,9 @@ project id in any path. [Authentication](./authentication.mdx) has the detail.
   9.99 of a token with six decimals.
 - Statuses and reasons are lowercase. Mesub may add one later: keep a default
   branch.
-- A field the route does not know is refused with a 400, not ignored.
+- A body field the route does not know is refused with a 400, not ignored. So
+  is an unknown query parameter on `/v1/subscriptions`, `/v1/access` and
+  `/v1/events`. The other routes ignore one.
 - Every error has [the same body](./errors.mdx), with a `code` to branch on.
 
 ## API version
@@ -127,7 +129,17 @@ See [Subscribe from your server](../docs/subscribe.mdx) and
 
 Lists take `limit` (1 to 100, 20 by default, 25 on events) and
 `starting_after`, the id of the last item of the previous page, and answer
-`{ data, has_more }`. Items come newest first.
+`{ data, has_more }`. Items come newest first. Attempts add `paid`, and events
+add `available_since`.
+
+Two answers are not paginated: `GET /v1/plans` answers `{ plans }`, every plan
+at once, and `GET /v1/access` without `plan` answers
+`{ plans, revalidate_after }`.
+
+`GET /v1/subscriptions` lists one customer's subscriptions, named by `wallet`,
+`external_id` or `email`. No route lists every subscription of the project:
+that list is in the [dashboard](https://mesub.io/dashboard#subscriptions) and
+the [MCP server](../docs/mcp.mdx).
 
 ```bash
 curl -G "https://api.mesub.io/v1/subscriptions" \

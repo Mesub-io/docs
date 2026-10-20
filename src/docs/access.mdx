@@ -245,7 +245,8 @@ not be answered.
 With no API key at all nothing is sent: `new Mesub()` throws a `TypeError`
 when the server starts.
 
-Every error body has the same shape:
+Every error body has the same shape. `request_id` is also in the
+`Mesub-Request-Id` header: quote it to Mesub support.
 
 ```json
 {
@@ -253,7 +254,8 @@ Every error body has the same shape:
     "message": "No plan of yours is named pro-max.",
     "error": "Not Found",
     "code": "plan_not_found",
-    "retryable": false
+    "retryable": false,
+    "request_id": "req_4f8KzQ2nVb7XcR1mT9wLp3sD"
 }
 ```
 
