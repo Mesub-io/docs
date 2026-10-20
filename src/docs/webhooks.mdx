@@ -14,8 +14,8 @@ prompt: |
   src/pull/pull.processor.ts: no renewal_upcoming for a charge that cannot
   happen, payment_failed with no retry, ended with plan_ended.
   The access events and sequence from backend PR #507, #502 and issue #425:
-  sent only on an effective access flip, on in dev and production
-  (ACCESS_EVENTS=on, src/access/access-flips.ts).
+  sent only on an effective access flip, and sent (ACCESS_EVENTS=on,
+  src/access/access-flips.ts).
 ---
 
 `hasAccess` is enough to gate a route. Webhooks are for reacting when something
@@ -229,9 +229,6 @@ A handler running on your machine needs a public URL. A tunnel such as
 | `subscription.access_revoked`   | Access ended, and was on just before                    |
 | `test`                          | You sent one from the dashboard                         |
 
-Mesub sends all of them, in dev and in production. A reference page that
-still says an event is "not sent yet" is out of date.
-
 Mesub may add a type later: keep a default branch. The reference has
 [one page per event](../reference/webhooks/overview.mdx), with its payload.
 
@@ -259,7 +256,7 @@ applied: the [reference](../reference/webhooks/overview.mdx) says how.
     "object": "event",
     "type": "subscription.payment_failed",
     "created_at": "2026-01-31T00:01:00.000Z",
-    "network": "devnet",
+    "network": "mainnet-beta",
     "api_version": "2026-10-02",
     "sequence": 3,
     "data": {
@@ -314,7 +311,7 @@ applied: the [reference](../reference/webhooks/overview.mdx) says how.
     "object": "event",
     "type": "subscription.renewed",
     "created_at": "2026-01-31T00:01:00.000Z",
-    "network": "devnet",
+    "network": "mainnet-beta",
     "api_version": "2026-10-02",
     "sequence": 3,
     "data": {

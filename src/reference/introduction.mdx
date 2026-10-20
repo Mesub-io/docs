@@ -24,25 +24,9 @@ curl "https://api.mesub.io/v1/project" \
   -H "Authorization: Bearer $MESUB_API_KEY"
 ```
 
-Every route lives under `/v1` and takes the project's **API key** as a bearer
-token. The key identifies the project: there is no project id in any path.
-[Authentication](./authentication.mdx) has the detail.
-
-Mesub runs two environments, each with its own host, projects and keys:
-
-| Environment | Base URL                      | Solana network |
-| ----------- | ----------------------------- | -------------- |
-| Production  | `https://api.mesub.io/v1`     | `mainnet-beta` |
-| Dev         | `https://api-dev.mesub.io/v1` | `devnet`       |
-
-A key works on its own environment's host only. A dev key sent to
-`api.mesub.io` gets 401 `invalid_api_key`. The examples on these pages use the
-production host: swap it for `api-dev.mesub.io` while you test on devnet. With
-`@mesub/node`, pass `baseUrl`:
-
-```ts
-const mesub = new Mesub({ baseUrl: 'https://api-dev.mesub.io' });
-```
+Every route lives under `https://api.mesub.io/v1` and takes the project's
+**API key** as a bearer token. The key identifies the project: there is no
+project id in any path. [Authentication](./authentication.mdx) has the detail.
 
 ## Conventions
 
@@ -89,9 +73,7 @@ Each route's page has a **Try it** button. It opens a panel where you paste an
 API key, fill the parameters and send the request from your browser.
 
 Calls are real: they act on the project the key belongs to. The key stays in
-your browser and goes only to the API. The panel sends to the production host,
-`https://api.mesub.io`, so a dev key gets 401 there: try dev calls with `curl`
-on `api-dev.mesub.io`.
+your browser and goes only to the API.
 
 The whole API is also described in one
 [OpenAPI file](https://docs.mesub.io/openapi.json), which these pages are

@@ -25,12 +25,6 @@ answers about that project only, and no call names a project id. The key starts
 with `SUB_`. [Get your API key](../docs/api-key.mdx) says where to create it and
 how to rotate it.
 
-Keys are per environment. A key of a dev project works on
-`https://api-dev.mesub.io` only, and a production key on
-`https://api.mesub.io` only. Sent to the other host, it gets 401
-`invalid_api_key`. The [introduction](./introduction.mdx#base-url) lists both
-hosts.
-
 The key goes in the header, never in the query string: a query string ends up
 in access logs and in browser history.
 
@@ -39,10 +33,10 @@ subscribers, so it never goes in a browser, a mobile app or a repository.
 
 ## When the key is refused
 
-| Status | `code`            | Meaning                                                    |
-| ------ | ----------------- | ---------------------------------------------------------- |
-| 401    | `missing_api_key` | No `Authorization: Bearer` header was sent                 |
-| 401    | `invalid_api_key` | Not a key of this host's environment, or one rotated since |
+| Status | `code`            | Meaning                                      |
+| ------ | ----------------- | -------------------------------------------- |
+| 401    | `missing_api_key` | No `Authorization: Bearer` header was sent   |
+| 401    | `invalid_api_key` | Not a key Mesub issued, or one rotated since |
 
 ```json
 {
