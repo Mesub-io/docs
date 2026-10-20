@@ -501,7 +501,7 @@
                       "name": "Pro",
                       "description": "Everything in Free, plus analytics.",
                       "project_name": "Fraise",
-                      "logo_url": "https://api.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
+                      "logo_url": "https://cdn.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
                       "amount": "9990000",
                       "amount_display": "9.99",
                       "amount_usd": "9.99",
@@ -525,7 +525,7 @@
                       "name": "Supporter",
                       "description": null,
                       "project_name": "Fraise",
-                      "logo_url": "https://api.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
+                      "logo_url": "https://cdn.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
                       "amount": "3000000000",
                       "amount_display": "30000",
                       "amount_usd": "0.45",
@@ -754,7 +754,7 @@
                   "name": "Pro",
                   "description": "Everything in Free, plus analytics.",
                   "project_name": "Fraise",
-                  "logo_url": "https://api.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
+                  "logo_url": "https://cdn.mesub.io/logos/3f9c2a7e5b1d4c68.webp",
                   "amount": "9990000",
                   "amount_display": "9.99",
                   "amount_usd": "9.99",
@@ -1278,6 +1278,11 @@
               {
                 "code": "insufficient_balance",
                 "when": "The wallet holds less of the plan's token than the first period costs.",
+                "retryable": false
+              },
+              {
+                "code": "insufficient_sol",
+                "when": "The wallet holds less SOL than the transaction's network fee and the rent of the accounts it opens. The message says how much it holds and needs.",
                 "retryable": false
               },
               {
@@ -8153,7 +8158,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.ended",
         "operationId": "webhook_subscription_ended",
-        "description": "It is over. `data.end_reason` says why.\n\nNot sent yet for this case, which Mesub turns on later: a cancellation that reached its end (its expiry: the end of the period it paid for) sends this event with `end_reason: \"cancelled\"`, once per cancellation, once a read of the chain after the expiry shows the cancellation still in place: usually within half an hour of the expiry. `detail.changed_at` is the expiry, to the millisecond, and the moment `data` describes, `status: ended`. The `subscription.access_revoked` of that expiry is sent at the expiry itself, from Mesub's records, so it comes first; a resume signed in the wallet before the expiry and seen late by Mesub can still follow that `access_revoked` (then `subscription.resumed` and `subscription.access_granted`, and no `subscription.ended`). The subscription can still be closed afterwards, which sends this event again with `end_reason: \"closed\"` (or `\"cancelled\"` when Mesub finds it closed outside Mesub).\n\nOn a plan with an end date, a subscription still running or late is ended at the plan's end, within minutes of it, whatever period it paid for: this event then carries `end_reason: \"plan_ended\"`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "It is over. `data.end_reason` says why.\n\nA cancellation that reached its end (its expiry: the end of the period it paid for) sends this event with `end_reason: \"cancelled\"`, once per cancellation, once a read of the chain after the expiry shows the cancellation still in place: usually within half an hour of the expiry. `detail.changed_at` is the expiry, to the millisecond, and the moment `data` describes, `status: ended`. The `subscription.access_revoked` of that expiry is sent at the expiry itself, from Mesub's records, so it comes first; a resume signed in the wallet before the expiry and seen late by Mesub can still follow that `access_revoked` (then `subscription.resumed` and `subscription.access_granted`, and no `subscription.ended`). The subscription can still be closed afterwards, which sends this event again with `end_reason: \"closed\"` (or `\"cancelled\"` when Mesub finds it closed outside Mesub).\n\nOn a plan with an end date, a subscription still running or late is ended at the plan's end, within minutes of it, whatever period it paid for: this event then carries `end_reason: \"plan_ended\"`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-ended",
           "guide": {
@@ -8476,7 +8481,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.access_granted",
         "operationId": "webhook_subscription_access_granted",
-        "description": "Not sent yet: Mesub turns this event on later. Access started: the subscription grants access now, and did not just before. Its first access, a payment that gives access back after it ended, a comeback, a resume that comes after a cancellation ended. A renewal paid on time, or a resume while the paid period still runs, keeps access and sends none: only `subscription.renewed` or `subscription.resumed`.\n\nDrive the customer's access from `subscription.access_granted` and `subscription.access_revoked` alone: they are sent only when access actually changes, and every change sends one. The other events say why. Apply them in the order of `sequence`, since deliveries may arrive in any order: the last one applied says whether the customer has access. `detail.changed_at` is the moment access started, and `data.access` is true.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "Access started: the subscription grants access now, and did not just before. Its first access, a payment that gives access back after it ended, a comeback, a resume that comes after a cancellation ended. A renewal paid on time, or a resume while the paid period still runs, keeps access and sends none: only `subscription.renewed` or `subscription.resumed`.\n\nDrive the customer's access from `subscription.access_granted` and `subscription.access_revoked` alone: they are sent only when access actually changes, and every change sends one. The other events say why. Apply them in the order of `sequence`, since deliveries may arrive in any order: the last one applied says whether the customer has access. `detail.changed_at` is the moment access started, and `data.access` is true.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-access-granted",
           "guide": {
@@ -8665,7 +8670,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.access_revoked",
         "operationId": "webhook_subscription_access_revoked",
-        "description": "Not sent yet: Mesub turns this event on later. Access ended: the subscription grants no access now, and did just before. It stopped, ended, failed a payment on Free, a cancellation reached its end, its plan ended, or a collection blocked on Mesub's or the merchant's side reached the end of the access it keeps (`access_until`). Sent at the change, or, for a date that passed with nothing else happening, a few seconds after it: `detail.changed_at` is then that date, to the millisecond.\n\nDrive the customer's access from `subscription.access_granted` and `subscription.access_revoked` alone: they are sent only when access actually changes, and every change sends one. The other events say why. Apply them in the order of `sequence`, since deliveries may arrive in any order: the last one applied says whether the customer has access. `data.access` is false.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "Access ended: the subscription grants no access now, and did just before. It stopped, ended, failed a payment on Free, a cancellation reached its end, its plan ended, or a collection blocked on Mesub's or the merchant's side reached the end of the access it keeps (`access_until`). Sent at the change, or, for a date that passed with nothing else happening, a few seconds after it: `detail.changed_at` is then that date, to the millisecond.\n\nDrive the customer's access from `subscription.access_granted` and `subscription.access_revoked` alone: they are sent only when access actually changes, and every change sends one. The other events say why. Apply them in the order of `sequence`, since deliveries may arrive in any order: the last one applied says whether the customer has access. `data.access` is false.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-access-revoked",
           "guide": {
@@ -8854,7 +8859,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.paused",
         "operationId": "webhook_subscription_paused",
-        "description": "Not sent yet: Mesub turns this event on later. A seat was parked: the project now holds more subscribers than its tier allows (it moved to a smaller tier, or a subscription confirmed late filled it), and Mesub stopped charging the newest ones rather than any within the limit. Not a pause the subscriber asked for: nothing changed on chain, and the status stays as it was.\n\nThe subscription keeps access to the end of the period it paid for, and no further: `data.paused` is true, `data.next_charge_at` null. Its `subscription.access_revoked` comes when that access ends, or right after this event, with a higher `sequence`, when it had already ended. The project moving back to a tier with room sends `subscription.unpaused`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "A seat was parked: the project now holds more subscribers than its tier allows (it moved to a smaller tier, or a subscription confirmed late filled it), and Mesub stopped charging the newest ones rather than any within the limit. Not a pause the subscriber asked for: nothing changed on chain, and the status stays as it was.\n\nThe subscription keeps access to the end of the period it paid for, and no further: `data.paused` is true, `data.next_charge_at` null. Its `subscription.access_revoked` comes when that access ends, or right after this event, with a higher `sequence`, when it had already ended. The project moving back to a tier with room sends `subscription.unpaused`.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-paused",
           "guide": {
@@ -9010,7 +9015,7 @@
         "tags": ["Webhooks"],
         "summary": "subscription.unpaused",
         "operationId": "webhook_subscription_unpaused",
-        "description": "Not sent yet: Mesub turns this event on later. A parked seat is back: the project's tier has room for it again, and Mesub charges it again, at the end of the period it paid for, or at once when that period is over. `data.paused` is false.\n\nIts `subscription.access_granted` follows, with a higher `sequence`, when its access had ended while it was parked.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
+        "description": "A parked seat is back: the project's tier has room for it again, and Mesub charges it again, at the end of the period it paid for, or at once when that period is over. `data.paused` is false.\n\nIts `subscription.access_granted` follows, with a higher `sequence`, when its access had ended while it was parked.\n\nMesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.",
         "x-mesub": {
           "href": "reference/webhooks/subscription-unpaused",
           "guide": {
@@ -9389,7 +9394,7 @@
           "outcome": {
             "type": "string",
             "enum": ["paid", "skipped", "rejected", "blocked"],
-            "description": "`skipped`: nothing was sent because the chain said it could not work. `rejected`: sent and refused. `blocked`: not tried, and never the customer's doing."
+            "description": "`skipped`: nothing was sent because the chain said it could not work. `rejected`: refused for a reason that is the customer's, by the program or by the check made before sending (then `signature` is null). `blocked`: not tried, and never the customer's doing."
           },
           "reason": {
             "type": ["string", "null"],
@@ -9450,7 +9455,7 @@
           },
           "subscription_id": {
             "type": ["string", "null"],
-            "description": "The subscription this answer is about: the one whose `status`, `access` and dates these are. Use it to [cancel](/reference/subscriptions/cancel), [resume](/reference/subscriptions/resume), [close](/reference/subscriptions/close) or [retry](/reference/subscriptions/retry) it without listing the customer's subscriptions first. When the customer has several on the plan, the one in force: among their wallets, the most recent that grants access, else the most recent; on one wallet, its latest, never a checkout left pending beside a subscription that runs, nor one left to expire. Null when the customer has nothing on this plan, with `status` `none`."
+            "description": "The subscription this answer is about: the one whose `status`, `access` and dates these are. Use it to [cancel](/reference/manage/cancel), [resume](/reference/manage/resume), [close](/reference/manage/close) or [retry](/reference/subscriptions/retry) it without listing the customer's subscriptions first. When the customer has several on the plan, the one in force: among their wallets, the most recent that grants access, else the most recent; on one wallet, its latest, never a checkout left pending beside a subscription that runs, nor one left to expire. Null when the customer has nothing on this plan, with `status` `none`."
           },
           "access": {
             "type": "boolean",
@@ -9951,7 +9956,7 @@
           "outcome": {
             "type": "string",
             "enum": ["paid", "skipped", "rejected", "blocked"],
-            "description": "`skipped`: nothing was sent because the chain said it could not work. `rejected`: sent and refused. `blocked`: not tried, and never the customer's doing."
+            "description": "`skipped`: nothing was sent because the chain said it could not work. `rejected`: refused for a reason that is the customer's, by the program or by the check made before sending (then `signature` is null). `blocked`: not tried, and never the customer's doing."
           },
           "reason": {
             "type": ["string", "null"],

@@ -2,7 +2,7 @@
 $schema: https://holocron.so/frontmatter.json
 title: "subscription.access_granted"
 sidebarTitle: "subscription.access_granted"
-description: "Not sent yet: Mesub turns this event on later. Access started: the subscription grants access now, and did not just before. Its first access, a payment that..."
+description: "Access started: the subscription grants access now, and did not just before. Its first access, a payment that gives access back after it ended, a comeback,..."
 hideTitle: true
 gridGap: 36
 prompt: |
@@ -82,7 +82,7 @@ if (event.type === 'subscription.access_granted') {
 
 <Endpoint id="webhook_subscription_access_granted">
 
-Not sent yet: Mesub turns this event on later. Access started: the subscription grants access now, and did not just before. Its first access, a payment that gives access back after it ended, a comeback, a resume that comes after a cancellation ended. A renewal paid on time, or a resume while the paid period still runs, keeps access and sends none: only `subscription.renewed` or `subscription.resumed`.
+Access started: the subscription grants access now, and did not just before. Its first access, a payment that gives access back after it ended, a comeback, a resume that comes after a cancellation ended. A renewal paid on time, or a resume while the paid period still runs, keeps access and sends none: only `subscription.renewed` or `subscription.resumed`.
 
 <More>
 
