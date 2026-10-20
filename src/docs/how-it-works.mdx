@@ -66,6 +66,19 @@ which is what lets Mesub charge on schedule without your signature. If you take 
 the plan, charges are blocked until it is back, and your subscribers are not
 held to be late for it.
 
+The token can be any SPL Token or Token-2022 mint. Creating the plan is
+refused for a token nobody could pay in, before you sign anything:
+
+| `code`                   | The token                                                   |
+| ------------------------ | ----------------------------------------------------------- |
+| `mint_paused`            | Is paused by its issuer                                     |
+| `mint_frozen_by_default` | Starts every new account frozen                             |
+| `mint_non_transferable`  | Can never be transferred                                    |
+| `mint_transfer_hook`     | Runs a program of its issuer's on every transfer            |
+| `mint_confidential_only` | Is held in confidential balances only                       |
+| `mint_extension_unknown` | Uses a Token-2022 extension Mesub does not support yet      |
+| `mint_display_scaled`    | Shows in wallets scaled by an interest rate or a multiplier |
+
 ### An end date
 
 A plan runs until you close it, unless you give it an end date when you create
@@ -111,7 +124,11 @@ The delegation copies the plan's terms when it is created, so a customer keeps
 the price they signed for.
 
 Both accounts cost rent, about 0.0036 SOL together. The customer pays it and
-gets it back when the subscription is closed.
+gets it back when the subscription is closed. The customer's wallet is also the
+fee payer of that transaction, so it pays the network fee too. A wallet that
+holds less SOL than the rent, the fee and the small reserve Solana makes every
+wallet keep is refused with `insufficient_sol`, before anything is signed: the
+customer adds SOL and tries again.
 
 ### A charge
 
@@ -120,6 +137,16 @@ the four conditions above, moves the tokens from the customer's token account
 to your destination, and updates the delegation's period counters. If the
 wallet is short, nothing moves and Mesub retries according to the plan's retry
 policy.
+
+Some Token-2022 tokens take a transfer fee for their issuer. The customer
+still pays the plan's `amount`, and your wallet receives it less that fee:
+`amount_received`, on the attempt and in the `subscription.created` and
+`subscription.renewed` events, says what arrived. PYUSD is such a token, with a fee of 0 today. When the issuer changes
+the fee, Mesub mails you once and keeps charging the same `amount`. When the
+issuer pauses the token or adds a transfer hook after the plan was made, Mesub
+holds the charges (`blocked_reason` `mint_paused` or `mint_transfer_hook`),
+mails you, and charges again once the issuer lifts the pause or removes the
+hook.
 
 ### Cancelling
 

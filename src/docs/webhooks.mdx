@@ -347,6 +347,7 @@ applied: the [reference](../reference/webhooks/overview.mdx) says how.
     },
     "detail": {
         "amount": "9990000",
+        "amount_received": "9990000",
         "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
         "period_start": "2026-01-31T00:00:00.000Z",
         "period_end": "2026-03-02T00:00:00.000Z",
@@ -405,6 +406,7 @@ own transaction paid:
 {
     "first_payment": {
         "amount": "9990000",
+        "amount_received": "9990000",
         "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
         "signature": "5wHu1qwD4kLDLoREEPBpKvGvhbxWFxFFfr5nQq7dxAsRRDXvHRqpNvfsCvC1qzjWQhqmPtBb8LnZjKmvpehJqSWk"
     }
@@ -413,6 +415,11 @@ own transaction paid:
 
 It is null when the subscription landed in a period paid only in part, which
 the next charge collects, and absent on events written before Mesub added it.
+
+`amount` is what the subscriber paid. `amount_received` is what your wallet
+got: less on a Token-2022 token with a transfer fee, the same on any other.
+It is null when Mesub could not tell, and absent on events written before it
+was added. `subscription.renewed` carries both too.
 
 ## Cancellations that end, parked seats
 

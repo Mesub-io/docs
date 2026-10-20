@@ -94,6 +94,14 @@ chain refuses as expired is rebuilt, whatever this date said.
 when the subscription is closed; `fee` is spent. `rent.authority` is null when
 the customer already has an authority for that token.
 
+The customer's wallet pays both, in SOL: it is the fee payer of the
+transaction. It must also keep a small reserve, the rent of an empty account,
+which Solana asks of every wallet left with SOL. A wallet that holds less than
+`costs.total` plus that reserve is refused with `insufficient_sol`, at
+`create` and at `transaction`, before anything is signed. Its message says
+what the wallet holds and needs. Ask the customer to add SOL, then call
+`transaction` again.
+
 </Step>
 <Step title="Sign the terms, in the browser">
 
@@ -207,6 +215,12 @@ const plan = await mesub.plans.retrieve('pro'); // or mesub.plans.list()
 Mesub fills `token` itself, from the plan's exact mint: nothing in it is typed
 by you or sent by the browser. `verified` is true for the tokens Mesub vouches
 for, USDC, USDT and PYUSD, and for one Jupiter marks as verified.
+
+A plan's token can be an SPL Token or a Token-2022 token. A Token-2022 token
+can take a fee on every transfer, for its issuer. The customer always pays
+`amount`; your wallet receives it less that fee, and `amount_received` on
+[the attempt](./manage.mdx#read-an-attempt) says how much. Show the customer
+`amount`: it is what leaves their wallet.
 
 **Show an unverified token as unverified, and keep its mint in view.** A
 symbol is free text on chain: anyone can create a token and call it USDC, and
@@ -347,16 +361,17 @@ one only once it is `expired`.
 
 Each one is thrown as a `MesubError`. `apiCode` says which:
 
-| On       | `apiCode`                | What to do                             |
-| -------- | ------------------------ | -------------------------------------- |
-| `create` | `already_subscribed`     | This wallet already holds this plan    |
-| `create` | `insufficient_balance`   | The wallet cannot pay the first period |
-| `create` | `plan_not_found`         | Fix the slug                           |
-| `create` | `plan_ended`             | The plan is past its end date          |
-| `submit` | `terms_expired`          | Create again and sign the fresh terms  |
-| `submit` | `terms_changed`          | The plan changed since. Create again   |
-| `submit` | `transaction_expired`    | Ask for a new transaction and sign it  |
-| `submit` | `subscription_not_found` | The id is not one of your project's    |
+| On       | `apiCode`                | What to do                                |
+| -------- | ------------------------ | ----------------------------------------- |
+| `create` | `already_subscribed`     | This wallet already holds this plan       |
+| `create` | `insufficient_balance`   | The wallet cannot pay the first period    |
+| `create` | `insufficient_sol`       | The wallet lacks SOL for the rent and fee |
+| `create` | `plan_not_found`         | Fix the slug                              |
+| `create` | `plan_ended`             | The plan is past its end date             |
+| `submit` | `terms_expired`          | Create again and sign the fresh terms     |
+| `submit` | `terms_changed`          | The plan changed since. Create again      |
+| `submit` | `transaction_expired`    | Ask for a new transaction and sign it     |
+| `submit` | `subscription_not_found` | The id is not one of your project's       |
 
 `subscriptions.transaction` is refused like `create` when the plan or the
 wallet no longer allows the subscription, and with `not_awaiting_signature`

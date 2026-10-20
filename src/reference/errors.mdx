@@ -66,18 +66,22 @@ Each route's page lists the codes that route answers. This page lists them all.
 
 ## Plans
 
-| `code`                     | Status | When                                                  |
-| -------------------------- | ------ | ----------------------------------------------------- |
-| `plan_not_found`           | 404    | No plan of yours under that slug                      |
-| `plan_not_on_chain`        | 409    | The plan was never published                          |
-| `plan_removed`             | 409    | The plan is gone from the chain                       |
-| `plan_sunset`              | 409    | The plan takes no new subscribers                     |
-| `plan_ended`               | 409    | The plan is past its end date: see below              |
-| `plan_replaced`            | 409    | Another plan now stands at its address                |
-| `plan_mismatch`            | 409    | The plan on chain is not the one Mesub recorded       |
-| `receiver_account_missing` | 409    | The wallet that receives has no account for the token |
-| `receiver_account_frozen`  | 409    | The account the plan pays into is frozen              |
-| `mint_not_on_chain`        | 400    | The token does not exist on chain                     |
+| `code`                               | Status | When                                                  |
+| ------------------------------------ | ------ | ----------------------------------------------------- |
+| `plan_not_found`                     | 404    | No plan of yours under that slug                      |
+| `plan_not_on_chain`                  | 409    | The plan was never published                          |
+| `plan_removed`                       | 409    | The plan is gone from the chain                       |
+| `plan_sunset`                        | 409    | The plan takes no new subscribers                     |
+| `plan_ended`                         | 409    | The plan is past its end date: see below              |
+| `plan_replaced`                      | 409    | Another plan now stands at its address                |
+| `plan_mismatch`                      | 409    | The plan on chain is not the one Mesub recorded       |
+| `receiver_account_missing`           | 409    | The wallet that receives has no account for the token |
+| `receiver_account_frozen`            | 409    | The account the plan pays into is frozen              |
+| `receiver_account_needs_memo`        | 409    | That account requires a memo on every transfer in     |
+| `receiver_account_confidential_only` | 409    | That account takes confidential transfers only        |
+| `mint_paused`                        | 409    | The token's issuer paused it                          |
+| `mint_transfer_hook`                 | 409    | The token's issuer made its transfers run a program   |
+| `mint_not_on_chain`                  | 400    | The token does not exist on chain                     |
 
 `plan_ended` is what [Create a subscription](./subscriptions/create.mdx)
 answers once a plan's end date has passed. In the dashboard, the same code
@@ -96,22 +100,30 @@ end date:
 None of the three is retryable: change the date. An end date is counted in
 Unix seconds, and `end_date_too_far` is what a date sent in milliseconds gets.
 
+The dashboard also refuses a plan on a token nobody could pay in, before you
+sign: `mint_not_a_token` (400, no token program owns that address),
+`mint_paused` and `mint_transfer_hook` (409), and `mint_frozen_by_default`,
+`mint_non_transferable`, `mint_confidential_only`, `mint_extension_unknown`
+and `mint_display_scaled` (400).
+[How it works](../docs/how-it-works.mdx#the-plan) says what each means.
+
 ## Subscribing
 
-| `code`                       | Status | When                                                       |
-| ---------------------------- | ------ | ---------------------------------------------------------- |
-| `already_subscribed`         | 409    | This wallet already holds this plan                        |
-| `insufficient_balance`       | 409    | The wallet cannot pay the first period                     |
-| `seat_cap_reached`           | 409    | The project is at its subscriber limit                     |
-| `pending_cap_reached`        | 429    | Too many subscriptions wait for a signature. Retryable     |
-| `wallet_mismatch`            | 409    | The wallet is not the one the subscription was created for |
-| `payment_pending`            | 409    | A payment on it failed and is being retried                |
-| `subscription_cancelled`     | 409    | It was cancelled already                                   |
-| `subscription_stopped`       | 409    | It stopped after missed payments                           |
-| `subscription_terms_changed` | 409    | The plan's terms changed since it was created              |
-| `comeback_in_flight`         | 409    | A return to this plan is being confirmed. Retryable        |
-| `comeback_landed`            | 409    | A return to this plan already landed                       |
-| `comeback_period_rolling`    | 409    | A return while its billing period turns. Retryable         |
+| `code`                       | Status | When                                                                  |
+| ---------------------------- | ------ | --------------------------------------------------------------------- |
+| `already_subscribed`         | 409    | This wallet already holds this plan                                   |
+| `insufficient_balance`       | 409    | The wallet cannot pay the first period                                |
+| `insufficient_sol`           | 409    | The wallet holds too little SOL for the rent, the fee and its reserve |
+| `seat_cap_reached`           | 409    | The project is at its subscriber limit                                |
+| `pending_cap_reached`        | 429    | Too many subscriptions wait for a signature. Retryable                |
+| `wallet_mismatch`            | 409    | The wallet is not the one the subscription was created for            |
+| `payment_pending`            | 409    | A payment on it failed and is being retried                           |
+| `subscription_cancelled`     | 409    | It was cancelled already                                              |
+| `subscription_stopped`       | 409    | It stopped after missed payments                                      |
+| `subscription_terms_changed` | 409    | The plan's terms changed since it was created                         |
+| `comeback_in_flight`         | 409    | A return to this plan is being confirmed. Retryable                   |
+| `comeback_landed`            | 409    | A return to this plan already landed                                  |
+| `comeback_period_rolling`    | 409    | A return while its billing period turns. Retryable                    |
 
 ## Signing and sending
 

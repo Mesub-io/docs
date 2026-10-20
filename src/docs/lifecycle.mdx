@@ -145,17 +145,23 @@ it instead, on `GET /v1/access` and on
 the date the block began, and `blocked_reason`. Both are null on a
 subscription that is not blocked.
 
-| `blocked_reason`           | What happened                                                       | What it asks of you                                                      |
-| -------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `puller_not_allowed`       | Mesub's puller was taken off the plan on chain                      | Add Mesub back to the plan's pullers, with the wallet that owns the plan |
-| `receiver_not_allowed`     | The receiving wallet is not among the plan's destinations           | Choose a receiving wallet that is among them                             |
-| `receiver_account_missing` | It has no account for the plan's token, and nobody else can be paid | Open an account for that token                                           |
-| `receiver_account_frozen`  | The token account it is paid into is frozen                         | Have it thawed, or choose another receiving wallet                       |
-| `mint_gone`                | The plan's token no longer exists                                   | Create a new plan with another token                                     |
-| `mesub`                    | Any cause on Mesub's side                                           | Nothing                                                                  |
+| `blocked_reason`                     | What happened                                                       | What it asks of you                                                      |
+| ------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `puller_not_allowed`                 | Mesub's puller was taken off the plan on chain                      | Add Mesub back to the plan's pullers, with the wallet that owns the plan |
+| `receiver_not_allowed`               | The receiving wallet is not among the plan's destinations           | Choose a receiving wallet that is among them                             |
+| `receiver_account_missing`           | It has no account for the plan's token, and nobody else can be paid | Open an account for that token                                           |
+| `receiver_account_frozen`            | The token account it is paid into is frozen                         | Have it thawed, or choose another receiving wallet                       |
+| `receiver_account_needs_memo`        | That token account requires a memo on every transfer in             | Turn the memo requirement off, or choose another receiving wallet        |
+| `receiver_account_confidential_only` | That token account takes confidential transfers only                | Allow plain transfers into it, or choose another receiving wallet        |
+| `mint_gone`                          | The plan's token no longer exists                                   | Create a new plan with another token                                     |
+| `mint_paused`                        | The token's issuer paused it                                        | Nothing: Mesub charges again once the issuer lifts the pause             |
+| `mint_transfer_hook`                 | The token's issuer made its transfers run a program of theirs       | Nothing, if the issuer removes it. Otherwise a new plan in another token |
+| `mesub`                              | Any cause on Mesub's side                                           | Nothing                                                                  |
 
-The first five are your plan's own setup, and only you can undo them. `mesub`
-covers every other cause, whatever it is.
+The first seven are your plan's own setup, and only you can undo them.
+`mint_paused` and `mint_transfer_hook` are the token issuer's: only the issuer
+lifts them. Mesub mails you when your setup or the issuer holds your charges.
+`mesub` covers every other cause, whatever it is.
 
 Mesub keeps trying: about every ten minutes, then less often, at least once a
 day, once a subscription blocked by the plan's setup has lost its access.
@@ -166,10 +172,10 @@ nothing to sign.
 
 Access has an end all the same, and `access_until` is its date:
 
-| `blocked_reason`  | Access lasts                                                            |
-| ----------------- | ----------------------------------------------------------------------- |
-| `mesub`           | To the end of the period after the one paid for                         |
-| One of your setup | Past the paid period, as long as the plan's retries give a late payment |
+| `blocked_reason` | Access lasts                                                            |
+| ---------------- | ----------------------------------------------------------------------- |
+| `mesub`          | To the end of the period after the one paid for                         |
+| Any other        | Past the paid period, as long as the plan's retries give a late payment |
 
 It is never less than a few minutes after the end of the paid period, which is
 what a plan with no retry, and any plan on Free, gets. It is never later than the end of the period after the one paid
