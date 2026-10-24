@@ -67,8 +67,9 @@ command are your tool's own, this is only its usual shape:
 <McpCommand />
 
 Nothing is chosen for you, with one exception. If you opened **Connect agent**
-inside a project of the dashboard in the last 15 minutes, that project is
-chosen as the pin. You can change it before you authorize.
+inside a project of the dashboard, in this browser in the last 15 minutes,
+that project is chosen as the pin, if it still has room. You can change it
+before you authorize.
 
 Once you choose, the page says what the agent will reach, and with which role.
 For an organization called Northwind, with the projects Shop and Docs:
@@ -127,12 +128,12 @@ or on another project than the pin, connect again and choose it.
 | -------------- | --------------------------------------------------------------------------------------- |
 | `prepare_plan` | Fill in a plan for you. It does not exist until the organization's team wallet signs it |
 
-Before preparing, your agent asks you two things: whether to **lock the receiving wallets** (up to four, and which one is paid for now) and whether the plan **has an end**, a day and a time in UTC. A locked list can never change once the plan is signed. With no list, the plan pays the organization's team wallet, and you can change the receiving wallet later in the dashboard.
+Before preparing, your agent asks you two things: whether to **lock the receiving wallets** (up to four, and which one is paid for now) and whether the plan **has an end**, a day and a time in UTC. A locked list can never change once the plan is signed. With no list, the plan pays the organization's team wallet, and the Owner or an Admin can change the receiving wallet later in the dashboard.
 
 **Who signs a prepared plan.** Whoever holds the organization's **team
-wallet**. The agent hands you two links: the plan's page, where you review it
-and can still edit it, and its entry in **To sign**. The team wallet signs from
-either one. In a personal organization, the team wallet is the wallet your
+wallet**. The agent hands you the plan's page, where you review it and can
+still edit it, and usually its entry in **To sign** too. The team wallet signs
+from either one. In a personal organization, the team wallet is the wallet your
 account signs with, until you register another one in Organization settings.
 
 The tools describe their own parameters to the agent, so there is nothing to
@@ -141,9 +142,9 @@ learn here: ask in plain words.
 ## Which project a tool works on
 
 Every tool but `list_projects`, `search_docs` and `ping` takes a `project`: the
-project's id, or its name. The agent does not need to know them in advance: `list_projects`
-returns every project the connection reaches, none left out. Your agent calls
-it when it does not know which project you mean.
+project's id, or its name. The agent does not need to know the ids or names
+in advance: `list_projects` returns every project the connection reaches. The
+agent calls it when it does not know which project you mean.
 
 When the agent leaves `project` out, the tool falls back like this:
 
@@ -162,16 +163,16 @@ So on Northwind, connected as a whole:
 - On a connection pinned to Shop, the same request needs no `project`: it lands
   in Shop. Naming Docs there is refused.
 
-A name is matched inside the organization only. The exact name wins; else the
-case does not matter, so `shop` finds Shop. When the value names two projects,
+A name is matched inside the organization only. An exact name match comes
+first. If there is none, case is ignored: `shop` finds Shop. When the value names two projects,
 the agent uses the id instead. A project of another organization is never
 found, even one you are a member of.
 
-Every change answers with the project it acted on: "Project acted on:
-“Shop”." The MCP server checks it against the project the agent named. When
-they differ, it stops and tells you (`project_mismatch`, below).
-`delete_webhook` is the one change Mesub answers with nothing, so it does not
-say where it deleted.
+Every change names the project it acted on, for example "Project acted on:
+“Shop”." The MCP server compares it with the project the agent named. When
+they differ, the server returns `project_mismatch`, and the agent stops and
+tells you. Mesub's answer to `delete_webhook` does not name a project, so the
+agent cannot confirm where the endpoint was deleted.
 
 ## What each role's agent can do
 
@@ -195,18 +196,19 @@ organization: their agents are disconnected.
 ## When a call is refused
 
 A refused call returns a Mesub error code, its message and what to do next.
-The agent never calls a tool that changes something again because it failed,
-unless the error says it is temporary.
+The server tells the agent never to call a tool that changes something again
+after it failed, unless the error says it is temporary.
 
-| Code                   | When                                                                  | What happens next                                                                                                                                |
-| ---------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `role_required`        | Your role does not allow the tool                                     | The agent relays the message as it is. It does not retry, and connecting again changes nothing. Someone it names can do it, or give you the role |
-| `team_wallet_required` | `prepare_plan` in a team organization with no team wallet             | Nothing is prepared. The agent gives you the link to Organization settings. The Owner sets the team wallet there, then the agent calls again     |
-| `project_required`     | No `project`, where the table above refuses it                        | The agent calls `list_projects`, asks you which project when it is not clear, then calls again with it                                           |
-| `project_not_found`    | No project of the organization has that id or name                    | The agent takes the project from `list_projects`                                                                                                 |
-| `project_ambiguous`    | The value names two projects, for example one's id and another's name | The agent calls again with the id                                                                                                                |
-| `project_outside_pin`  | A pinned connection named another project                             | You connect again and choose the whole organization, or that project                                                                             |
-| `project_mismatch`     | Mesub's answer names another project than the one the agent named     | The agent tells you and stops. The change may have gone through elsewhere: check it in the dashboard                                             |
+| Code                   | When                                                                             | What happens next                                                                                                                                                                                       |
+| ---------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `role_required`        | Your role does not allow the tool                                                | The agent relays the message as it is and does not retry. The Owner or an Admin can do it for you, or the Owner can make you an Admin. Connecting again changes nothing                                 |
+| `team_wallet_required` | `prepare_plan` in a team organization with no team wallet                        | Nothing is prepared. The agent gives you a link to Organization settings, where the Owner sets the team wallet. Then the agent calls again                                                              |
+| `wallet_required`      | `prepare_plan` in a personal organization whose Owner has connected no wallet    | Nothing is prepared. In your own organization, the agent gives you the link where you connect your wallet. In someone else's, the message names its Owner, who connects one. Then the agent calls again |
+| `project_required`     | No `project`, where the table above refuses it                                   | The agent calls `list_projects`, asks you which project when it is not clear, then calls again with it                                                                                                  |
+| `project_not_found`    | No project of the organization has that id or name                               | The agent takes the project from `list_projects`                                                                                                                                                        |
+| `project_ambiguous`    | The value names two projects, for example one's id and another's name            | The agent calls again with the id                                                                                                                                                                       |
+| `project_outside_pin`  | A pinned connection named another project                                        | You connect again and choose the whole organization, or that project                                                                                                                                    |
+| `project_mismatch`     | Mesub's answer names another project than the one the agent named, or names none | The agent tells you and stops. The change may have gone through elsewhere: check it in the dashboard                                                                                                    |
 
 For example, a pinned connection that names Docs gets: "This connection
 reaches “Shop” only. Connect again without a pin to work on another project."
@@ -238,7 +240,7 @@ organization has one budget for all its projects.
 
 How many agents can be connected at once:
 
-- **10 per organization** reaching all its projects.
+- **10 per organization**, for connections to the whole organization.
 - **10 per project** pinned to it. A connection to the whole organization
   takes none of these places.
 - **30 per account**, across everything you connected.
@@ -262,8 +264,8 @@ The Owner and Admins see everyone's agents. A Member sees their own.
 - **Revoke** cuts a connection. The agent's very next call is refused.
   Revoking a connection to the whole organization from a project's list cuts
   it from every project, not only that one.
-- You can always revoke your own. A Member's agent can be revoked by the Owner
-  and Admins; an Admin's or the Owner's, by the Owner only.
+- You can always revoke your own. The Owner and Admins can revoke a Member's
+  agent. Only the Owner can revoke an Admin's agent or the Owner's own.
 - A connection **ends by itself after a day without use**. While it is used,
   it stays open: your tool renews its one hour token by itself.
 
