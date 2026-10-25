@@ -1,7 +1,7 @@
 {
   "repo": "Mesub-io/backend",
   "file": "openapi/v1.json",
-  "commit": "fb782daddc3c6fbde6abc964980a3039e7cdcf24",
-  "committed_at": "2026-10-20T15:33:39+02:00",
-  "sha256": "40dba3b89d24ab22734ac2e8d818dae07bbbf387ef7c57113f6b3f9d3acf3360"
+  "commit": "339b57366fb9765d7ae8541afef437a57cc6e0a6",
+  "committed_at": "2026-10-25T13:59:21+01:00",
+  "sha256": "ebc101fb1f6e3ae4669a8676f2d935ab29a56fa413031d92dd7b6f3963d87f99"
 }

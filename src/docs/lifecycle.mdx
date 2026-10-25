@@ -4,20 +4,6 @@ title: "The lifecycle of a subscription"
 sidebarTitle: Lifecycle
 description: "Every status a Mesub subscription goes through, what each grants, how a missed payment is retried, and what cancelling, resuming and ending do."
 icon: "lucide:refresh-cw"
-prompt: |
-  Document a subscription's statuses and transitions from
-  @https://github.com/Mesub-io/backend (src/access/access.service.ts,
-  src/pull/retry-policy.ts, src/pull/pull.constants.ts) and
-  @https://github.com/Mesub-io/node-sdk (README: What the answer says).
-  The diagram of @../components/lifecycle.tsx, a table of statuses with access
-  and payment_status, late payments on paid tiers and on Free, cancelling and
-  resuming, why a subscription ends, parked seats, and a customer coming back.
-  A plan's end date from src/plans/plan-end.ts, src/access/access.controller.ts
-  and src/subscriptions/terms.ts: access stops there for everybody, the last
-  period is charged in full, and what the dates read in the last period.
-  Blocked charges from src/pull/blocked.ts, src/access/access.service.ts
-  (accessCapOf) and src/access/access.controller.ts: whose cause each
-  blocked_reason is, that the status does not move, and when access ends.
 ---
 
 import { Lifecycle } from "../components/lifecycle";
@@ -148,7 +134,7 @@ subscription that is not blocked.
 | `blocked_reason`                     | What happened                                                       | What it asks of you                                                      |
 | ------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | `puller_not_allowed`                 | Mesub's puller was taken off the plan on chain                      | Add Mesub back to the plan's pullers, with the wallet that owns the plan |
-| `receiver_not_allowed`               | The receiving wallet is not among the plan's destinations           | Choose a receiving wallet that is among them                             |
+| `receiver_not_allowed`               | The receiving wallet is not among those the plan allows             | Choose a receiving wallet that is among them                             |
 | `receiver_account_missing`           | It has no account for the plan's token, and nobody else can be paid | Open an account for that token                                           |
 | `receiver_account_frozen`            | The token account it is paid into is frozen                         | Have it thawed, or choose another receiving wallet                       |
 | `receiver_account_needs_memo`        | That token account requires a memo on every transfer in             | Turn the memo requirement off, or choose another receiving wallet        |
@@ -257,8 +243,8 @@ It is null on every other status.
 
 ## Parked seats
 
-A project holds a limited number of subscribers on Free and Dev. After a
-downgrade, the seats over the limit are parked: `paused` is true, the `status`
+A project holds a limited number of [seats](./pricing.mdx#what-counts) on Free
+and Dev tiers. After a downgrade, the newest seats over the limit are parked: `paused` is true, the `status`
 stays as it was, nothing is charged, and access runs to the end of the period
 already paid. Moving back up a tier puts them back on schedule.
 
@@ -275,6 +261,13 @@ billing period is refused with `comeback_period_rolling`, so the terms the
 wallet signs name the period that is really charged. Wait for the `Retry-After`
 it carries, then create the subscription again: a transaction built before the
 wait is not sent.
+
+A wallet that revoked or replaced Mesub's approval of the token cannot take a
+`stopped` subscription up again: that is refused with
+`comeback_approval_revoked`. The customer cancels it, closes it, then
+subscribes again. That new subscription makes the wallet's approval again,
+and its terms say first that this ends every other subscription the wallet
+has in that token.
 
 `subscribed_since` is the start of the current one, and
 `first_subscribed_at` the start of the very first.

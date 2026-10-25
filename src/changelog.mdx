@@ -1,0 +1,85 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Changelog"
+sidebarTitle: Changelog
+description: "What changed in Mesub for developers: the API, its error codes, @mesub/node, @mesub/react, the MCP server and the dashboard, newest first."
+icon: "lucide:history"
+---
+
+The API version is `2026-10-02`, the only one served. Nothing below needs a
+new `Mesub-Version`: new codes are added, and your code keeps a default branch
+for codes it does not know ([errors](./reference/errors.mdx)).
+
+## 2026-10-25
+
+API v0.1.6, dashboard v0.1.15, MCP server v0.2.0.
+
+- **Organizations.** Every Mesub account has a personal organization. You
+  can create others and invite members, as Owner, Admin or Member. See
+  [organizations](./docs/organizations.mdx).
+- **Organization wallet.** It signs the organization's plans and pays its
+  Dev tier. Only the Owner sets it.
+- **To sign.** Plans and actions wait there for the organization wallet. The
+  New plan form ends with **Sign and publish** when you hold that wallet.
+- **Tiers change in Billing**, per project.
+- **New codes:**
+  - `approval_too_low` (409): the wallet caps what its subscriptions in this
+    token may take below one payment of the plan. The customer raises the
+    cap, then tries again.
+  - `comeback_approval_revoked` (409): a return to a stopped subscription
+    whose wallet no longer approves the token. Cancel it, close it, then
+    subscribe again.
+- **Subscribing after a revoke works.** When a wallet revoked or replaced
+  Mesub's approval, subscribing makes its authority for that token again. The
+  terms say first that this ends every other subscription the wallet has in
+  that token. The rent goes back to whoever paid it.
+- **MCP v0.2.0.** A connection reaches a whole organization, or one project
+  it is pinned to. The tools take `project`, by id or name, and
+  `list_projects` lists them. New refusals: `project_required`,
+  `project_not_found`, `project_ambiguous`, `project_outside_pin`,
+  `project_mismatch`, and `role_required` and `team_wallet_required` on
+  `prepare_plan`. See [the MCP server](./docs/mcp.mdx).
+- **Words.** Messages say organization wallet, receiving wallet and To sign.
+  No code or field was renamed.
+
+## 2026-10-21
+
+`@mesub/node` 0.1.2 and `@mesub/react` 0.1.2, the first releases of 0.1.1 on
+npm.
+
+- `@mesub/react`: `chain` defaults to `solana:mainnet`. Set
+  `chain="solana:devnet"` to test on devnet.
+- `@mesub/node`: the test fake defaults to mainnet. A payment carries
+  `amount_received`, typed.
+- A plan's end is shown with its time, in UTC.
+
+## 2026-10-20
+
+API v0.1.3 to v0.1.5.
+
+- `insufficient_sol` (409): the wallet holds too little SOL for the rent, the
+  fee and its reserve. Refused before anything is signed, when a plan is
+  created or a customer subscribes.
+- Token-2022 plans: Mesub reads the token's extensions and records what the
+  receiving wallet got, `amount_received`.
+- A plan's end takes a time, to the minute, in UTC.
+- A `subscription.renewed` delivered late carries the period it paid.
+
+## 2026-10-18
+
+First production release: the API and the MCP server.
+
+- Access events: `subscription.access_granted` and
+  `subscription.access_revoked` ([webhooks](./docs/webhooks.mdx)).
+- Rotating a webhook secret can keep the old one signing for a while.
+
+## 2026-10-16
+
+`@mesub/node` 0.1.0 (Node 22 or later) and `@mesub/react` 0.1.0 (React 18 or
+19) on npm.
+
+## 2026-10-02
+
+API version `2026-10-02`. Before the first integrator, two codes were renamed
+within it: `plan_deleted` became `plan_removed`, and `plan_rebuilt` became
+`plan_replaced`. The old names are no longer answered.

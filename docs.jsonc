@@ -28,7 +28,7 @@
           {
             "group": "Get started",
             "icon": "lucide:rocket",
-            "pages": ["index", "docs/quickstart", "docs/how-it-works", "docs/api-key"]
+            "pages": ["index", "docs/quickstart", "docs/how-it-works", "docs/api-key", "docs/organizations"]
           },
           {
             "group": "Access and status",
@@ -43,7 +43,7 @@
           {
             "group": "Go live",
             "icon": "lucide:send",
-            "pages": ["docs/testing", "docs/pricing"]
+            "pages": ["docs/testing", "docs/troubleshooting", "docs/pricing", "changelog"]
           },
           {
             "group": "AI",

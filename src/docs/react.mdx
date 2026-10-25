@@ -4,12 +4,6 @@ title: "Subscribe and manage buttons for React"
 sidebarTitle: React widget
 description: "Add a subscribe button and a manage window to a React app with @mesub/react. It handles the wallet and calls your own server, never Mesub."
 icon: "lucide:mouse-pointer-click"
-prompt: |
-  Document the React widget from @https://github.com/Mesub-io/react-sdk (README:
-  One line on each side, Subscribe, Manage, The states to know, Theming) and
-  @https://github.com/Mesub-io/node-sdk (README: Routes for the React widget).
-  Setup on both sides, MesubProvider's props, SubscribeButton and useSubscribe,
-  ManageButton, ManageSubscriptions and useSubscriptions, theming, and what the widget does when something goes wrong.
 ---
 
 `@mesub/react` is the wallet part of subscribing, ready made: picking a wallet,
@@ -17,8 +11,8 @@ connecting it, and signing in the right order. It is optional. Everything it
 does goes through routes on your own server, so it holds no key and never
 calls Mesub.
 
-It is not a wallet connector for your site. It asks a wallet for an account
-when it needs a signature, and never disconnects one.
+It is not a wallet connector for your site. It connects a wallet only when it
+needs a signature, and never disconnects one.
 
 ## Set it up
 
@@ -94,19 +88,19 @@ export function App({ children }) {
 }
 ```
 
-| Prop        | What it is                                                                   |
-| ----------- | ---------------------------------------------------------------------------- |
-| `endpoint`  | Where you mounted the routes. A path on your site, or a full URL             |
-| `chain`     | The network the wallet signs for and sends on. `solana:devnet` when left out |
-| `theme`     | `light`, `dark` or `auto`                                                    |
-| `fetch`     | Your own `(url, init) => Promise<Response>`, to add headers                  |
-| `manageUrl` | Where "Cancel any time" leads once subscribed. `null` for no link            |
+| Prop        | What it is                                                                    |
+| ----------- | ----------------------------------------------------------------------------- |
+| `endpoint`  | Where you mounted the routes. A path on your site, or a full URL              |
+| `chain`     | The network the wallet signs for and sends on. `solana:mainnet` when left out |
+| `theme`     | `light`, `dark` or `auto`                                                     |
+| `fetch`     | Your own `(url, init) => Promise<Response>`, to add headers                   |
+| `manageUrl` | Where "Cancel any time" leads once subscribed. `null` for no link             |
 
-`chain` must match the `network` of your plans. For plans on mainnet
-(`mainnet-beta`), set it, or the wallet signs for devnet:
+`chain` must match the `network` of your plans. For plans on devnet, set it,
+or the wallet signs for mainnet (`mainnet-beta`):
 
 ```tsx
-<MesubProvider endpoint="/api/mesub" chain="solana:mainnet">
+<MesubProvider endpoint="/api/mesub" chain="solana:devnet">
     {children}
 </MesubProvider>
 ```

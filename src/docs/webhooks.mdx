@@ -4,22 +4,24 @@ title: "Handle Mesub webhooks on your server"
 sidebarTitle: Webhooks
 description: "Register an endpoint, verify each delivery with its signing secret, and react to renewals, missed payments and cancellations."
 icon: "lucide:webhook"
-prompt: |
-  Document webhooks from @https://github.com/Mesub-io/node-sdk (README, section
-  Webhooks) and @https://github.com/Mesub-io/backend (src/webhooks/webhook-payload.ts,
-  src/webhooks/webhook-samples.ts, src/pull/pull-events.ts).
-  Set up the endpoint, the handler in Express, Next.js and NestJS, testing it (webhook.site, then a test event), the
-  table of events, full event bodies in collapsed blocks, delivery behavior.
-  What a plan's end date changes, from src/pull/renewal-check.sweep.ts and
-  src/pull/pull.processor.ts: no renewal_upcoming for a charge that cannot
-  happen, payment_failed with no retry, ended with plan_ended.
-  The access events and sequence from backend PR #507, #502 and issue #425:
-  sent only on an effective access flip, and sent (ACCESS_EVENTS=on,
-  src/access/access-flips.ts).
 ---
 
 `hasAccess` is enough to gate a route. Webhooks are for reacting when something
 changes: a renewal, a missed payment, a cancellation.
+
+## In short
+
+- Add your endpoint in **Developers**, then **Webhooks**, and put its secret
+  in `MESUB_WEBHOOK_SECRET`.
+- Verify each delivery on the **raw body** with `mesub.webhooks.verify`.
+  Answer 400 to `invalid_webhook`.
+- Drop an event whose `id` you handled already: one can arrive twice.
+- Apply a subscription's events in `sequence` order: they can arrive out of
+  order.
+- Drive access from `subscription.access_granted` and
+  `subscription.access_revoked`.
+- Answer 2xx. Otherwise Mesub retries for about three days, then
+  disables the endpoint.
 
 ## Set up your endpoint
 
@@ -464,8 +466,8 @@ what the coming charge would meet:
 
 `balance` means the wallet holds less than the amount, or has no account for
 the token: the customer adds funds. `authority` means Mesub can no longer move
-the tokens: the approval was replaced or is too small, or the account is
-frozen. Subscribing again gives a new approval.
+the tokens: the approval was replaced or is too small, or the token account
+is frozen. Subscribing again gives a new approval.
 
 It is sent whether the charge can pay or not, so it also works as a plain
 reminder before a renewal. It is a reading, not a promise: a wallet topped up

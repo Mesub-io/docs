@@ -464,7 +464,7 @@
         "tags": ["Plans"],
         "summary": "List plans",
         "operationId": "listPlans",
-        "description": "Every plan of the project that is published and named by a slug, active or sunset, sorted by slug. Drafts and closed plans are left out.",
+        "description": "Every plan of the project that is published and named by a slug, active or sunset, sorted by slug. Plans waiting in To sign and closed plans are left out.",
         "x-mesub": {
           "href": "reference/plans/list",
           "title": "List the plans of a project",
@@ -1292,7 +1292,7 @@
               },
               {
                 "code": "plan_not_on_chain",
-                "when": "The plan was never published: it is still a draft.",
+                "when": "The plan was never published: it is still waiting in To sign.",
                 "retryable": false
               },
               {
@@ -1328,6 +1328,16 @@
               {
                 "code": "subscription_terms_changed",
                 "when": "The plan's terms changed since the wallet's subscription stopped.",
+                "retryable": false
+              },
+              {
+                "code": "comeback_approval_revoked",
+                "when": "The wallet no longer approves this token for its subscriptions: cancel and close the stopped subscription, then subscribe again.",
+                "retryable": false
+              },
+              {
+                "code": "approval_too_low",
+                "when": "The wallet caps what its subscriptions in this token may take below one payment of this plan: it raises that cap, then tries again.",
                 "retryable": false
               },
               {
@@ -2162,6 +2172,16 @@
                 "retryable": false
               },
               {
+                "code": "comeback_approval_revoked",
+                "when": "The wallet no longer approves this token for its subscriptions: cancel and close the stopped subscription, then subscribe again.",
+                "retryable": false
+              },
+              {
+                "code": "approval_too_low",
+                "when": "The wallet caps what its subscriptions in this token may take below one payment of this plan: it raises that cap, then tries again.",
+                "retryable": false
+              },
+              {
                 "code": "comeback_in_flight",
                 "when": "A return to this plan may still land. Ask again later.",
                 "retryable": true
@@ -2742,6 +2762,16 @@
               {
                 "code": "subscription_terms_changed",
                 "when": "The plan's terms changed since the wallet's subscription stopped.",
+                "retryable": false
+              },
+              {
+                "code": "comeback_approval_revoked",
+                "when": "The wallet no longer approves this token for its subscriptions: cancel and close the stopped subscription, then subscribe again.",
+                "retryable": false
+              },
+              {
+                "code": "approval_too_low",
+                "when": "The wallet caps what its subscriptions in this token may take below one payment of this plan: it raises that cap, then tries again.",
                 "retryable": false
               },
               {

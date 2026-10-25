@@ -4,13 +4,6 @@ title: "How Mesub charges a wallet on a schedule"
 sidebarTitle: How it works
 description: "What happens when a customer subscribes, how each period is charged, and where your server fits. Built on the Solana Foundation's subscriptions program."
 icon: "lucide:workflow"
-prompt: |
-  Explain how Mesub works from @https://github.com/Mesub-io/node-sdk (README,
-  sections How it fits, Gate a route, Subscribe from your server),
-  @https://github.com/Mesub-io/react-sdk and
-  @https://github.com/solana-foundation/subscriptions.
-  Plain prose, the sequence diagram of @../components/sequence.tsx, one table
-  of what runs where. No cards, no marketing tone.
 ---
 
 import { Sequence } from '../components/sequence'
@@ -60,7 +53,7 @@ Three accounts are involved, all PDAs of that program:
 Creating a plan in the [dashboard](https://mesub.io/dashboard#plans) sends one transaction, signed by your wallet,
 that creates the `Plan` account with its `mint`, `amount`, `period_hours` and
 `end_ts`. `amount` and `period_hours` are immutable.
-`destinations` lists the wallets that may receive the money, and `pullers`
+`destinations` lists the receiving wallets the plan allows, and `pullers`
 lists who may trigger a charge besides you: Mesub's puller is one of them,
 which is what lets Mesub charge on schedule without your signature. If you take it off
 the plan, charges are blocked until it is back, and your subscribers are not
@@ -121,7 +114,7 @@ approved as delegate on their token account; it can only move tokens when a
 delegation says so, and a delegation only allows this:
 
 - up to the plan's `amount` per period, counted in `amount_pulled_in_period`,
-- to one of the plan's `destinations`,
+- to one of the plan's receiving wallets, listed in `destinations`,
 - triggered by the plan's owner or one of its `pullers`,
 - while `expires_at_ts` is zero or in the future.
 
@@ -139,7 +132,7 @@ customer adds SOL and tries again.
 
 Each period, Mesub's puller sends a transfer instruction. The program checks
 the four conditions above, moves the tokens from the customer's token account
-to your destination, and updates the delegation's period counters. If the
+to your receiving wallet, and updates the delegation's period counters. If the
 wallet is short, nothing moves and Mesub retries according to the plan's retry
 policy.
 

@@ -13,7 +13,7 @@ These pages explain how to build on it.
 
 | Page                       | What it covers                                                              |
 | -------------------------- | --------------------------------------------------------------------------- |
-| First subscriber           | A plan, an API key, the server routes and a subscribe button, in four steps |
+| First subscriber           | Devnet test money, then a plan, an API key, the routes and a button         |
 | How it works               | The flow from a click to a renewal, and the on-chain accounts behind it     |
 | API key                    | Creating the key, putting it on a server, rotating it                       |
 | Check access               | `hasAccess`, the guards, `GET /v1/access`, its answer and its errors        |
@@ -22,8 +22,10 @@ These pages explain how to build on it.
 | React widget               | The subscribe and manage buttons of `@mesub/react`                          |
 | Subscribe from your server | Create, sign in the browser, submit, without the widget                     |
 | Manage from your server    | Cancel, resume, close, and a subscription's payments                        |
-| Test your integration      | The fake Mesub of `@mesub/node/testing`                                     |
+| Test with the fake         | The fake Mesub of `@mesub/node/testing`                                     |
 | Pricing and limits         | The tiers, what counts toward a limit, the API's rate limits                |
+| Organizations              | Members and roles, the organization wallet, To sign, Billing                |
+| Changelog                  | What changed for developers, newest first                                   |
 
 **API reference**
 

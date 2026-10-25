@@ -42,6 +42,8 @@ public/openapi.source.json the backend commit, its date and the sha256 of that c
                          written by `pnpm spec`; the reference's introduction shows the commit
 scripts/spec.mjs         copies the backend's spec into public/openapi.json
 scripts/reference.mjs    writes the generated pages from the spec
+scripts/check-prompts.mjs fails when a page's prompt is published (run after a build)
+prompts/                 what each hand-written page was written from, by its path
 src/components/api/      the endpoint page and its try-it panel, drawn from the spec
                          (samples.tsx: the sample cards of the right column;
                          more.tsx: "Read more" under an introduction;
@@ -55,13 +57,17 @@ public/                  logo, icon, robots.txt
 ## Add or change a guide
 
 1. Write `src/docs/<name>.mdx`, with the frontmatter the other pages have:
-   `title`, `sidebarTitle`, `description`, `icon`, and `prompt`, which records
-   what the page was written from.
+   `title`, `sidebarTitle`, `description` and `icon`. What the page was
+   written from goes in `prompts/<same path>.md`, never in the page: Holocron
+   publishes a page's whole frontmatter, in the site's data and in the `.md`
+   copies, `docs.zip` and what "Ask AI" reads. `pnpm check:prompts`, after a
+   build, fails if a prompt is published.
 2. List it in `docs.jsonc`, under the group it belongs to. A page that is not
    listed is not served.
 3. Link to other pages by their file, relatively: `[webhooks](./webhooks.mdx)`.
 4. After touching a table, run `npx -y @holocron.so/cli diagrams fix <file>`.
-5. Run `pnpm build`, and look at the page in both themes.
+5. Run `pnpm build` and `pnpm check:prompts`, and look at the page in both
+   themes.
 
 ## Add or change a route in the reference
 
@@ -95,15 +101,16 @@ starting or building to point it elsewhere:
   and limits, the SDKs for what a call takes and returns. An example that could
   not be checked says so in the pull request.
 - Plain prose. No stack of cards, no marketing tone, bold only where a reader
-  scans for the word. The home page has four cards, as navigation, and that is
-  all.
+  scans for the word. The home page has five cards, as navigation: four to start,
+  one for the AI tools. That is all.
 - Code for Express, Next.js and NestJS, as tabs, wherever the three differ.
 - A full answer is collapsed, under "See a full answer", after the short
   example.
 - Nothing floats beside the text in a guide: no `Aside`. Notes go in the
   paragraph. The reference's pages keep their samples in the right column.
 - It says API key, never secret key, and mentions a network only where code
-  needs it: production is mainnet, the wallet chain `solana:mainnet`; never a
-  dev environment.
+  needs it: production is mainnet, the wallet chain `solana:mainnet`. The
+  devnet environment (dev.mesub.io, `https://api-dev.mesub.io`) is named in
+  one place, the quickstart's step 0, for test money.
 - No line of code or table wider than the column: check it in the browser.
 - The accent is Mesub's orange, `#f46036`, in both themes.
