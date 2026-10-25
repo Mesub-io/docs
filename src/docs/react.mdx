@@ -88,19 +88,19 @@ export function App({ children }) {
 }
 ```
 
-| Prop        | What it is                                                                   |
-| ----------- | ---------------------------------------------------------------------------- |
-| `endpoint`  | Where you mounted the routes. A path on your site, or a full URL             |
-| `chain`     | The network the wallet signs for and sends on. `solana:devnet` when left out |
-| `theme`     | `light`, `dark` or `auto`                                                    |
-| `fetch`     | Your own `(url, init) => Promise<Response>`, to add headers                  |
-| `manageUrl` | Where "Cancel any time" leads once subscribed. `null` for no link            |
+| Prop        | What it is                                                                    |
+| ----------- | ----------------------------------------------------------------------------- |
+| `endpoint`  | Where you mounted the routes. A path on your site, or a full URL              |
+| `chain`     | The network the wallet signs for and sends on. `solana:mainnet` when left out |
+| `theme`     | `light`, `dark` or `auto`                                                     |
+| `fetch`     | Your own `(url, init) => Promise<Response>`, to add headers                   |
+| `manageUrl` | Where "Cancel any time" leads once subscribed. `null` for no link             |
 
-`chain` must match the `network` of your plans. For plans on mainnet
-(`mainnet-beta`), set it, or the wallet signs for devnet:
+`chain` must match the `network` of your plans. For plans on devnet, set it,
+or the wallet signs for mainnet (`mainnet-beta`):
 
 ```tsx
-<MesubProvider endpoint="/api/mesub" chain="solana:mainnet">
+<MesubProvider endpoint="/api/mesub" chain="solana:devnet">
     {children}
 </MesubProvider>
 ```

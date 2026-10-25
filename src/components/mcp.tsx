@@ -1,7 +1,8 @@
 // The MCP page's snippets, drawn from one address so that it is written once.
 import { CodeBlock } from '@holocron.so/vite/mdx'
 
-// PLACEHOLDER: the server is not hosted yet. The only value to change when it is.
+// The production server, against the production API. Written once: every
+// snippet of the MCP page is drawn from it.
 const MCP_URL = 'https://mcp.mesub.io/mcp'
 
 /** The address alone, on a line to copy. */
