@@ -43,7 +43,7 @@
           {
             "group": "Go live",
             "icon": "lucide:send",
-            "pages": ["docs/testing", "docs/pricing", "changelog"]
+            "pages": ["docs/testing", "docs/troubleshooting", "docs/pricing", "changelog"]
           },
           {
             "group": "AI",
