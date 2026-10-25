@@ -96,14 +96,8 @@ export function App({ children }) {
 | `fetch`     | Your own `(url, init) => Promise<Response>`, to add headers                   |
 | `manageUrl` | Where "Cancel any time" leads once subscribed. `null` for no link             |
 
-`chain` must match the `network` of your plans. For plans on devnet, set it,
-or the wallet signs for mainnet (`mainnet-beta`):
-
-```tsx
-<MesubProvider endpoint="/api/mesub" chain="solana:devnet">
-    {children}
-</MesubProvider>
-```
+`chain` must match the `network` of your plans: `solana:mainnet`, the
+default, for plans made at mesub.io.
 
 Requests are sent with `credentials: 'include'`, so your session cookie
 travels. If your login is a bearer token, add it in `fetch`.

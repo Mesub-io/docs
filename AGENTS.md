@@ -109,8 +109,7 @@ starting or building to point it elsewhere:
 - Nothing floats beside the text in a guide: no `Aside`. Notes go in the
   paragraph. The reference's pages keep their samples in the right column.
 - It says API key, never secret key, and mentions a network only where code
-  needs it: production is mainnet, the wallet chain `solana:mainnet`. The
-  devnet environment (dev.mesub.io, `https://api-dev.mesub.io`) is named in
-  one place, the quickstart's step 0, for test money.
+  needs it: production is mainnet, the wallet chain `solana:mainnet`; never a
+  dev environment (decided again on 2026-10-25: it is ours, not a sandbox).
 - No line of code or table wider than the column: check it in the browser.
 - The accent is Mesub's orange, `#f46036`, in both themes.
