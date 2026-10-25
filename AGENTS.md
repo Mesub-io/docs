@@ -101,8 +101,8 @@ starting or building to point it elsewhere:
   and limits, the SDKs for what a call takes and returns. An example that could
   not be checked says so in the pull request.
 - Plain prose. No stack of cards, no marketing tone, bold only where a reader
-  scans for the word. The home page has four cards, as navigation, and that is
-  all.
+  scans for the word. The home page has five cards, as navigation: four to start,
+  one for the AI tools. That is all.
 - Code for Express, Next.js and NestJS, as tabs, wherever the three differ.
 - A full answer is collapsed, under "See a full answer", after the short
   example.

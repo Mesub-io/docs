@@ -17,6 +17,27 @@ You publish a plan in the [dashboard](https://mesub.io/dashboard), add
 `@mesub/node` to your server, and gate what is paid. A React widget is there
 for the wallet part if you want it.
 
+## Before you start
+
+- **A Solana wallet** in a wallet app such as Phantom or Solflare. It signs
+  your plans and receives the money.
+- **A Mesub account**, at [mesub.io](https://mesub.io/dashboard). To test
+  first, on devnet: see [step 0](./docs/quickstart.mdx#step-0-test-money-on-devnet).
+- **A server with your own login**, on Node 22 or later. Mesub asks it who is
+  signed in, and never sees your users' passwords.
+- **React 18 or later**, only for the widget.
+
+## What your customer sees
+
+- **They approve once.** Their wallet signs the plan's terms and the first
+  payment. They need no Mesub account.
+- **Each payment is capped.** Mesub can take up to the plan's price each period,
+  into the plan's receiving wallets, and nothing else. The Solana program
+  enforces it, not Mesub's servers.
+- **They cancel any time**, on your site or at
+  [mesub.io/subscriptions](https://mesub.io/subscriptions) with their wallet.
+  Access runs to the end of the period paid.
+
 ## Start here
 
 <Columns cols={2}>
@@ -36,6 +57,20 @@ for the wallet part if you want it.
     Every route with its parameters, its answers and its error codes. Try a request from the page.
   </Card>
 </Columns>
+
+## With an AI agent
+
+<Columns cols={2}>
+  <Card title="AI tools" icon="lucide:bot" href="./docs/mcp.mdx">
+    An agent that writes your code, acts on your projects, or reads these docs.
+  </Card>
+</Columns>
+
+| You want the agent to                          | Use                                                     |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| Write your integration, in your codebase       | The [agent skills](./docs/skills.mdx)                   |
+| Act on your projects: plans, charges, webhooks | The [MCP server](./docs/mcp.mdx)                        |
+| Read these docs                                | [`/llms.txt`](/llms.txt), or any page's address + `.md` |
 
 ## Understand
 
@@ -59,4 +94,5 @@ for the wallet part if you want it.
 
 - [Pricing and limits](./docs/pricing.mdx): the tiers, what counts toward a
   limit, the API's rate limits.
+- [Changelog](./changelog.mdx): what changed, newest first.
 - [Errors](./reference/errors.mdx): the body of an error and every error code.
