@@ -42,7 +42,8 @@ public/openapi.source.json the backend commit, its date and the sha256 of that c
                          written by `pnpm spec`; the reference's introduction shows the commit
 scripts/spec.mjs         copies the backend's spec into public/openapi.json
 scripts/reference.mjs    writes the generated pages from the spec
-scripts/strip-prompt.mjs keeps each page's `prompt:` out of what the site serves
+scripts/check-prompts.mjs fails when a page's prompt is published (run after a build)
+prompts/                 what each hand-written page was written from, by its path
 src/components/api/      the endpoint page and its try-it panel, drawn from the spec
                          (samples.tsx: the sample cards of the right column;
                          more.tsx: "Read more" under an introduction;
@@ -56,15 +57,17 @@ public/                  logo, icon, robots.txt
 ## Add or change a guide
 
 1. Write `src/docs/<name>.mdx`, with the frontmatter the other pages have:
-   `title`, `sidebarTitle`, `description`, `icon`, and `prompt`, which records
-   what the page was written from. `prompt` is for authors: the plugin in
-   `scripts/strip-prompt.mjs` takes it out of the `.md` copies, `docs.zip` and
-   what "Ask AI" reads (`llms-full.txt` drops the whole frontmatter).
+   `title`, `sidebarTitle`, `description` and `icon`. What the page was
+   written from goes in `prompts/<same path>.md`, never in the page: Holocron
+   publishes a page's whole frontmatter, in the site's data and in the `.md`
+   copies, `docs.zip` and what "Ask AI" reads. `pnpm check:prompts`, after a
+   build, fails if a prompt is published.
 2. List it in `docs.jsonc`, under the group it belongs to. A page that is not
    listed is not served.
 3. Link to other pages by their file, relatively: `[webhooks](./webhooks.mdx)`.
 4. After touching a table, run `npx -y @holocron.so/cli diagrams fix <file>`.
-5. Run `pnpm build`, and look at the page in both themes.
+5. Run `pnpm build` and `pnpm check:prompts`, and look at the page in both
+   themes.
 
 ## Add or change a route in the reference
 

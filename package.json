@@ -8,6 +8,7 @@
     "reference": "node scripts/reference.mjs",
     "dev": "node scripts/reference.mjs && vite dev",
     "build": "node scripts/reference.mjs && vite build",
+    "check:prompts": "node scripts/check-prompts.mjs",
     "start": "node dist/rsc/index.js"
   },
   "dependencies": {

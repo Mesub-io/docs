@@ -45,6 +45,11 @@ jobs:
       - name: Build
         run: pnpm build
 
+      # A page's prompt lives in prompts/: fails if one is published anyway,
+      # in dist/ or in the markdown the built server hands to agents.
+      - name: No prompt published
+        run: pnpm check:prompts
+
   # A version tag only, once the site builds: docs.mesub.io (#73). Main builds
   # and goes no further. A GitHub-hosted runner, which starts empty every time.
   deploy:
