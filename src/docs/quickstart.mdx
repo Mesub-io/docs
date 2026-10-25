@@ -15,12 +15,11 @@ wallet part; without it, see `subscriptions.create` in the
 
 Test on devnet first. It is the same product, paid in test tokens.
 
-|              | Devnet, to test                                | Mainnet, for real                              |
-| ------------ | ---------------------------------------------- | ---------------------------------------------- |
-| Dashboard    | [dev.mesub.io](https://dev.mesub.io/dashboard) | [mesub.io](https://mesub.io/dashboard)         |
-| API          | `https://api-dev.mesub.io`                     | `https://api.mesub.io`, the SDK's default      |
-| Wallet chain | `solana:devnet`                                | `solana:mainnet`, the widget's default         |
-| USDC mint    | `4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU` | `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v` |
+|           | Devnet, to test                                | Mainnet, for real                      |
+| --------- | ---------------------------------------------- | -------------------------------------- |
+| Dashboard | [dev.mesub.io](https://dev.mesub.io/dashboard) | [mesub.io](https://mesub.io/dashboard) |
+| API       | `https://api-dev.mesub.io`                     | `https://api.mesub.io`, the default    |
+| Chain     | `solana:devnet`                                | `solana:mainnet`, the default          |
 
 The two do not share anything: you sign up to each, and each has its own
 projects, plans and API keys. A plan made on dev.mesub.io lives on devnet.
@@ -41,7 +40,11 @@ What you need:
 
 3. **Devnet USDC** on the customer's wallet, from
    [Circle's faucet](https://faucet.circle.com): choose **Solana Devnet**. In
-   the plan form on dev.mesub.io, it is the token **USD Coin (devnet)**.
+   the plan form on dev.mesub.io, it is the token **USD Coin (devnet)**, mint:
+
+   ```text
+   4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
+   ```
 
 Your code points at devnet in two places. Remove both to go live:
 
