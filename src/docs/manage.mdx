@@ -326,8 +326,8 @@ What you did to the plan:
 | `plan_removed`                            | `skipped` | The plan was deleted. The subscription ends, `plan_removed`                |
 | `plan_replaced`                           | `skipped` | Another plan stands at its address. It ends, `plan_replaced`               |
 | `plan_ended`                              | `skipped` | The plan's end date has passed. It ends, `plan_ended`                      |
-| `receiver_not_allowed`                    | `blocked` | The plan's receiver is not among the destinations it allows                |
-| `receiver_account_missing`                | `blocked` | Neither the receiver nor your wallet has an account for that token         |
+| `receiver_not_allowed`                    | `blocked` | The receiving wallet is not among those the plan allows                    |
+| `receiver_account_missing`                | `blocked` | Neither the receiving wallet nor yours has an account for that token       |
 | `receiver_account_frozen`                 | `blocked` | The token account the plan pays is frozen                                  |
 | `receiver_account_needs_memo`             | `blocked` | That token account requires a memo, which Mesub's charges lack             |
 | `receiver_account_confidential_only`      | `blocked` | That token account takes confidential transfers only                       |

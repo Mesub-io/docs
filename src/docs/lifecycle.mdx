@@ -148,7 +148,7 @@ subscription that is not blocked.
 | `blocked_reason`                     | What happened                                                       | What it asks of you                                                      |
 | ------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | `puller_not_allowed`                 | Mesub's puller was taken off the plan on chain                      | Add Mesub back to the plan's pullers, with the wallet that owns the plan |
-| `receiver_not_allowed`               | The receiving wallet is not among the plan's destinations           | Choose a receiving wallet that is among them                             |
+| `receiver_not_allowed`               | The receiving wallet is not among those the plan allows             | Choose a receiving wallet that is among them                             |
 | `receiver_account_missing`           | It has no account for the plan's token, and nobody else can be paid | Open an account for that token                                           |
 | `receiver_account_frozen`            | The token account it is paid into is frozen                         | Have it thawed, or choose another receiving wallet                       |
 | `receiver_account_needs_memo`        | That token account requires a memo on every transfer in             | Turn the memo requirement off, or choose another receiving wallet        |
@@ -257,8 +257,8 @@ It is null on every other status.
 
 ## Parked seats
 
-A project holds a limited number of subscribers on Free and Dev. After a
-downgrade, the seats over the limit are parked: `paused` is true, the `status`
+A project holds a limited number of [seats](./pricing.mdx#what-counts) on Free
+and Dev tiers. After a downgrade, the newest seats over the limit are parked: `paused` is true, the `status`
 stays as it was, nothing is charged, and access runs to the end of the period
 already paid. Moving back up a tier puts them back on schedule.
 

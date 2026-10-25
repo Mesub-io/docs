@@ -95,7 +95,7 @@ or on another project than the pin, connect again and choose it.
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `list_projects`           | The projects the connection reaches, with their id, name and tier, and your role and what it allows                                                                    |
 | `get_project`             | One project, its tier, and how much of its limits is used                                                                                                              |
-| `list_plans`              | Every plan, with its subscribers and what it collected this period. A prepared plan waits there with its link to sign                                                  |
+| `list_plans`              | Every plan, with its subscribers and what it collected this period. A plan waiting in **To sign** is listed there with its link                                                  |
 | `get_plan`                | One plan: its subscribers by status, its latest charges, why charges fail                                                                                              |
 | `list_subscriptions`      | Subscriptions, by plan or by status, or found by wallet or by your own customer id                                                                                     |
 | `get_subscription`        | One subscription and every charge tried on it                                                                                                                          |
@@ -126,15 +126,16 @@ or on another project than the pin, connect again and choose it.
 
 | Tool           | What it does                                                                            |
 | -------------- | --------------------------------------------------------------------------------------- |
-| `prepare_plan` | Fill in a plan for you. It does not exist until the organization's team wallet signs it |
+| `prepare_plan` | Fill in a plan for you. It does not exist until the organization wallet signs it |
 
-Before preparing, your agent asks you two things: whether to **lock the receiving wallets** (up to four, and which one is paid for now) and whether the plan **has an end**, a day and a time in UTC. A locked list can never change once the plan is signed. With no list, the plan pays the organization's team wallet, and the Owner or an Admin can change the receiving wallet later in the dashboard.
+Before preparing, your agent asks you two things: whether to **lock the receiving wallets** (up to four, and which one is paid for now) and whether the plan **has an end**, a day and a time in UTC. A locked list can never change once the plan is signed. With no list, the plan pays into the organization wallet, and the Owner or an Admin can change the receiving wallet later in the dashboard.
 
-**Who signs a prepared plan.** Whoever holds the organization's **team
-wallet**. The agent hands you the plan's page, where you review it and can
-still edit it, and usually its entry in **To sign** too. The team wallet signs
-from either one. In a personal organization, the team wallet is the wallet your
-account signs with, until you register another one in Organization settings.
+**Who signs a plan the agent prepared.** Whoever holds the **organization
+wallet**. The plan waits in **To sign**. The agent hands you the plan's page,
+where you review it and can still edit it, and usually its entry in To sign
+too. The organization wallet signs from either one. In a personal
+organization, the organization wallet is the wallet your Mesub account signs with,
+until you register another one in Organization settings.
 
 The tools describe their own parameters to the agent, so there is nothing to
 learn here: ask in plain words.
@@ -202,7 +203,7 @@ after it failed, unless the error says it is temporary.
 | Code                   | When                                                                             | What happens next                                                                                                                                                                                       |
 | ---------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `role_required`        | Your role does not allow the tool                                                | The agent relays the message as it is and does not retry. The Owner or an Admin can do it for you, or the Owner can make you an Admin. Connecting again changes nothing                                 |
-| `team_wallet_required` | `prepare_plan` in a team organization with no team wallet                        | Nothing is prepared. The agent gives you a link to Organization settings, where the Owner sets the team wallet. Then the agent calls again                                                              |
+| `team_wallet_required` | `prepare_plan` in an organization, not a personal one, with no organization wallet | Nothing is prepared. The agent gives you a link to Organization settings, where the Owner sets the organization wallet. Then the agent calls again                                                      |
 | `wallet_required`      | `prepare_plan` in a personal organization whose Owner has connected no wallet    | Nothing is prepared. In your own organization, the agent gives you the link where you connect your wallet. In someone else's, the message names its Owner, who connects one. Then the agent calls again |
 | `project_required`     | No `project`, where the table above refuses it                                   | The agent calls `list_projects`, asks you which project when it is not clear, then calls again with it                                                                                                  |
 | `project_not_found`    | No project of the organization has that id or name                               | The agent takes the project from `list_projects`                                                                                                                                                        |
@@ -223,7 +224,7 @@ Whatever the agent is asked, by you or by anything it reads:
 - Change a project's tier.
 - Delete a project or a plan.
 - Close a plan, or change the end or the receiving wallets of a plan already signed.
-- Sign a plan. It prepares one; the team wallet signs it.
+- Sign a plan. It prepares one; the organization wallet signs it.
 - Resend an old webhook delivery.
 - Read a customer's email. It can check access for an email you give it, and
   never gets one back: a customer is shown by wallet and by your own id.
@@ -243,7 +244,7 @@ How many agents can be connected at once:
 - **10 per organization**, for connections to the whole organization.
 - **10 per project** pinned to it. A connection to the whole organization
   takes none of these places.
-- **30 per account**, across everything you connected.
+- **30 per Mesub account**, across everything you connected.
 
 Only live connections count: one revoked, or unused for a day, frees its
 place. When there is no room, the consent page greys out that choice, and
@@ -292,10 +293,10 @@ that question on, and read it.
 project, those created later included. Pin the agent to one project when it
 needs only that one.
 
-**You review every prepared plan.** The agent fills it in, the team wallet
-signs it. Read the project, the price, the token, the period, the end and above
+**You review every plan waiting in To sign.** The agent fills it in, the
+organization wallet signs it. Read the project, the price, the token, the period, the end and above
 all the **receiving wallets** in the dashboard before signing: each one is
-shown in full and marked when it is not on your account. You can still edit
+shown in full and marked when it is not on your Mesub account. You can still edit
 the plan there first.
 
 ## Things to ask
