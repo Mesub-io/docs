@@ -2,62 +2,25 @@
 $schema: https://holocron.so/frontmatter.json
 title: "Your first Solana subscriber in four steps"
 sidebarTitle: First subscriber
-description: "Get devnet test money, publish a plan, give your server an API key, mount the Mesub routes, and put a subscribe button on a page. Ends with a first test charge and a paid route."
+description: "Publish a plan, give your server an API key, mount the Mesub routes, and put a subscribe button on a page. Ends with a first charge and a paid route."
 icon: "lucide:zap"
 ---
 
-This page takes an empty project to one paying subscriber. On devnet, with
-test money, it takes about ten minutes. It uses the React widget for the
-wallet part; without it, see `subscriptions.create` in the
+This page takes an empty project to one paying subscriber, in about ten
+minutes. It uses the React widget for the wallet part; without it, see
+`subscriptions.create` in the
 [`@mesub/node` README](https://github.com/Mesub-io/node-sdk#subscribe-from-your-server).
 
-## Step 0: test money on devnet
+## Step 0: what you need
 
-Test on devnet first. It is the same product, paid in test tokens.
+1. **Two wallets**, in a wallet app such as Phantom or Solflare. One is yours:
+   it signs the plan and receives the money. The other plays your customer.
+2. **A little SOL** on both, for network fees and rent: a few cents' worth.
+3. **A little USDC** on the customer's wallet, enough for one payment.
 
-|           | Devnet, to test                                | Mainnet, for real                      |
-| --------- | ---------------------------------------------- | -------------------------------------- |
-| Dashboard | [dev.mesub.io](https://dev.mesub.io/dashboard) | [mesub.io](https://mesub.io/dashboard) |
-| API       | `https://api-dev.mesub.io`                     | `https://api.mesub.io`, the default    |
-| Chain     | `solana:devnet`                                | `solana:mainnet`, the default          |
-
-The two do not share anything: you sign up to each, and each has its own
-projects, plans and API keys. A plan made on dev.mesub.io lives on devnet.
-A plan made on mesub.io lives on mainnet. The dashboard links below go to
-mesub.io: on devnet, open the same section on dev.mesub.io.
-
-What you need:
-
-1. **Two wallets**, in a wallet app such as Phantom or Solflare, set to
-   devnet in its settings. One is yours: it signs the plan and receives the
-   money. The other plays your customer.
-2. **Devnet SOL** on both, for network fees and rent. Use the
-   [Solana faucet](https://faucet.solana.com), or the CLI:
-
-   ```bash
-   solana airdrop 1 <WALLET_ADDRESS> --url devnet
-   ```
-
-3. **Devnet USDC** on the customer's wallet, from
-   [Circle's faucet](https://faucet.circle.com): choose **Solana Devnet**. In
-   the plan form on dev.mesub.io, it is the token **USD Coin (devnet)**, mint:
-
-   ```text
-   4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU
-   ```
-
-Your code points at devnet in two places. Remove both to go live:
-
-```ts
-// Your server: one client for devnet, handed to the routes and guards
-// as `client`, e.g. mesubRoutes({ client: mesub, customer }).
-const mesub = new Mesub({ baseUrl: 'https://api-dev.mesub.io' });
-```
-
-```tsx
-// Your page: the wallet signs for devnet.
-<MesubProvider endpoint="/api/mesub" chain="solana:devnet">
-```
+To try it without paying, use the [fake Mesub](./testing.mdx) in your tests
+first. For a first real charge, make a cheap plan, such as 1 USDC a day,
+subscribe with your second wallet, then cancel.
 
 <Steps>
 <Step title="Publish a plan">
@@ -224,8 +187,7 @@ export function App({ children }) {
 }
 ```
 
-The wallet signs for mainnet by default. For plans on devnet, add
-`chain="solana:devnet"`, as in step 0.
+The wallet signs for mainnet, where your plans are.
 
 Then place the button, with the plan's slug:
 
