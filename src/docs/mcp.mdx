@@ -46,7 +46,7 @@ command are your tool's own, this is only its usual shape:
 
 <McpCommand />
 
-Nothing is chosen for you, with one exception. If you opened **Connect agent**
+Nothing is chosen for you, with one exception. If you opened **Connect an AI agent**
 inside a project of the dashboard, in this browser in the last 15 minutes,
 that project is chosen as the pin, if it still has room. You can change it
 before you authorize.
@@ -234,17 +234,18 @@ connection first.
 ## See and cut a connection
 
 In the dashboard, **AI & agents** lists every agent connected to the
-organization, whole or pinned. Inside a project, **Developers**, then
-**Connected agents**, lists the agents that reach that project: those pinned
-to it, and those connected to the whole organization. Each line is one
-connection: the application, what it reaches, when it connected, when it was
-last used and when it ends.
+organization, whole or pinned, and is where you revoke one. Inside a project,
+**Developers**, then **Agents**, only lists the agents that reach that
+project: those pinned to it, and those connected to the whole organization.
+Its **Manage in AI & agents** button leads to the organization's list. Each
+line is one connection: the application, what it reaches, when it connected,
+when it was last used and when it ends.
 
 The Owner and Admins see everyone's agents. A Member sees their own.
 
-- **Revoke** cuts a connection. The agent's very next call is refused.
-  Revoking a connection to the whole organization from a project's list cuts
-  it from every project, not only that one.
+- **Revoke**, in AI & agents, cuts a connection. The agent's very next call
+  is refused. A connection to the whole organization is cut from every
+  project at once.
 - You can always revoke your own. The Owner and Admins can revoke a Member's
   agent. Only the Owner can revoke an Admin's agent or the Owner's own.
 - A connection **ends by itself after a day without use**. While it is used,
