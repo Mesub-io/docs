@@ -42,6 +42,7 @@ public/openapi.source.json the backend commit, its date and the sha256 of that c
                          written by `pnpm spec`; the reference's introduction shows the commit
 scripts/spec.mjs         copies the backend's spec into public/openapi.json
 scripts/reference.mjs    writes the generated pages from the spec
+scripts/strip-prompt.mjs keeps each page's `prompt:` out of what the site serves
 src/components/api/      the endpoint page and its try-it panel, drawn from the spec
                          (samples.tsx: the sample cards of the right column;
                          more.tsx: "Read more" under an introduction;
@@ -56,7 +57,9 @@ public/                  logo, icon, robots.txt
 
 1. Write `src/docs/<name>.mdx`, with the frontmatter the other pages have:
    `title`, `sidebarTitle`, `description`, `icon`, and `prompt`, which records
-   what the page was written from.
+   what the page was written from. `prompt` is for authors: the plugin in
+   `scripts/strip-prompt.mjs` takes it out of the `.md` copies, `docs.zip` and
+   what "Ask AI" reads (`llms-full.txt` drops the whole frontmatter).
 2. List it in `docs.jsonc`, under the group it belongs to. A page that is not
    listed is not served.
 3. Link to other pages by their file, relatively: `[webhooks](./webhooks.mdx)`.
