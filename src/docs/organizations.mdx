@@ -1,0 +1,112 @@
+---
+$schema: https://holocron.so/frontmatter.json
+title: "Organizations, roles and To sign in the Mesub dashboard"
+sidebarTitle: Organizations
+description: "How the dashboard is shared: organizations and their members, the Owner, Admin and Member roles, the organization wallet, the To sign list, Sign and publish, and where a project's tier changes."
+icon: "lucide:users"
+---
+
+## In short
+
+- An **organization** holds projects, their members and their billing.
+- Every Mesub account has a **personal organization**. You can create others
+  and invite members.
+- The **organization wallet** signs the organization's plans and pays its
+  Dev tier. Only the Owner sets it.
+- What it has not signed yet waits in **To sign**.
+- A project's tier changes in **Billing**.
+
+## Your first sign-in
+
+The dashboard asks three things, one per screen:
+
+1. **Name your organization.**
+2. **Create your first project**: one project per app that takes payments.
+3. **Connect your AI agent**, through the [MCP server](./mcp.mdx). You can
+   skip it.
+
+## Organizations
+
+Your personal organization stays as long as your Mesub account does. To
+create another one, open the organization menu, then **Create an
+organization**. You become its Owner.
+
+The organization's own pages are **Overview**, **Projects**, **To sign**,
+**Activity**, **Members**, **AI & agents**, **Billing** and **Organization
+settings**. Each project has **Overview**, **Plans**, **Subscriptions**,
+**Payments**, **Developers** and **Settings**.
+
+## Roles
+
+| Role   | What it can do                                                                  |
+| ------ | ------------------------------------------------------------------------------- |
+| Owner  | Everything. Alone: the organization wallet, billing, Admins, deleting a project |
+| Admin  | API keys, webhooks, receiving wallets, projects. Invites and removes Members    |
+| Member | Sees everything. Prepares plans, handles subscribers, connects AI agents        |
+
+There is one Owner. To change who it is, the Owner uses **Transfer
+ownership** and picks an Admin, who becomes the Owner. The old Owner becomes
+an Admin. This does not hand over any wallet key, nor control of plans
+already on chain.
+
+To add someone, open **Members**, then **Invite members**. The invite is for
+that email address only, and expires in 7 days. The person opens the link
+and presses **Join** the organization. Removing a member ends their access
+at their next click and disconnects their AI agents. Nothing they made is
+deleted.
+
+**Activity** lists who changed what in the organization.
+
+## The organization wallet
+
+The organization wallet signs the organization's plans and pays its Dev
+tier. The Owner sets it in **Organization settings**, on the **Organization
+wallet** card:
+
+1. Connect the wallet.
+2. Sign a message. It costs nothing and moves nothing.
+3. Enter the code Mesub emails you.
+
+In a personal organization, it is the wallet your Mesub account signs with,
+until you register another one there.
+
+The organization wallet is not the **receiving wallet**: each plan names the
+wallets it pays into, up to four. The Owner and Admins can change a plan's
+receiving wallet, through To sign.
+
+## To sign
+
+**To sign** lists the plans and actions waiting for a signature: a new plan,
+ending, closing or renaming a plan, changing a plan's receiving wallet,
+starting or cancelling the Dev tier.
+
+- **Who signs**: whoever holds the wallet's key, whatever their role.
+- **Who refuses**: only the wallet that signs it.
+- **Who cancels**: the person who prepared it, or the Owner or an Admin.
+
+Nobody is emailed. To ask someone to sign, copy the link of a row and send
+it.
+
+## Sign and publish
+
+The last button of **New plan** depends on the wallet you are signed in
+with:
+
+| Your situation                                    | The button                                          |
+| ------------------------------------------------- | --------------------------------------------------- |
+| You hold the organization wallet                  | **Sign and publish**: the plan goes on chain now    |
+| Someone else holds it                             | **Send to To sign**: the plan waits for that wallet |
+| No organization wallet yet, you are the Owner     | **Connect a wallet**                                |
+| No organization wallet yet, you are not the Owner | None: the Owner sets the wallet first               |
+
+A plan an agent prepares with `prepare_plan` waits in To sign the same way.
+
+## Tiers and Billing
+
+A tier belongs to a project: see [pricing and limits](./pricing.mdx). It
+changes in **Billing**, and only the Owner changes it.
+
+- In a personal organization, **Upgrade to Dev** is paid by your Mesub
+  account's wallet.
+- In any other organization, **Start Dev** and **Cancel Dev** wait in To
+  sign, and the organization wallet pays.

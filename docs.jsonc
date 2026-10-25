@@ -28,7 +28,7 @@
           {
             "group": "Get started",
             "icon": "lucide:rocket",
-            "pages": ["index", "docs/quickstart", "docs/how-it-works", "docs/api-key"]
+            "pages": ["index", "docs/quickstart", "docs/how-it-works", "docs/api-key", "docs/organizations"]
           },
           {
             "group": "Access and status",
