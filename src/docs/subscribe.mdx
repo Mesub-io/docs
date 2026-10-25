@@ -343,17 +343,18 @@ one only once it is `expired`.
 
 Each one is thrown as a `MesubError`. `apiCode` says which:
 
-| On       | `apiCode`                | What to do                                |
-| -------- | ------------------------ | ----------------------------------------- |
-| `create` | `already_subscribed`     | This wallet already holds this plan       |
-| `create` | `insufficient_balance`   | The wallet cannot pay the first period    |
-| `create` | `insufficient_sol`       | The wallet lacks SOL for the rent and fee |
-| `create` | `plan_not_found`         | Fix the slug                              |
-| `create` | `plan_ended`             | The plan is past its end date             |
-| `submit` | `terms_expired`          | Create again and sign the fresh terms     |
-| `submit` | `terms_changed`          | The plan changed since. Create again      |
-| `submit` | `transaction_expired`    | Ask for a new transaction and sign it     |
-| `submit` | `subscription_not_found` | The id is not one of your project's       |
+| On       | `apiCode`                | What to do                                 |
+| -------- | ------------------------ | ------------------------------------------ |
+| `create` | `already_subscribed`     | This wallet already holds this plan        |
+| `create` | `insufficient_balance`   | The wallet cannot pay the first period     |
+| `create` | `insufficient_sol`       | The wallet lacks SOL for the rent and fee  |
+| `create` | `approval_too_low`       | The wallet caps its approval: it raises it |
+| `create` | `plan_not_found`         | Fix the slug                               |
+| `create` | `plan_ended`             | The plan is past its end date              |
+| `submit` | `terms_expired`          | Create again and sign the fresh terms      |
+| `submit` | `terms_changed`          | The plan changed since. Create again       |
+| `submit` | `transaction_expired`    | Ask for a new transaction and sign it      |
+| `submit` | `subscription_not_found` | The id is not one of your project's        |
 
 `subscriptions.transaction` is refused like `create` when the plan or the
 wallet no longer allows the subscription, and with `not_awaiting_signature`

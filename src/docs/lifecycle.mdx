@@ -262,5 +262,12 @@ wallet signs name the period that is really charged. Wait for the `Retry-After`
 it carries, then create the subscription again: a transaction built before the
 wait is not sent.
 
+A wallet that revoked or replaced Mesub's approval of the token cannot take a
+`stopped` subscription up again: that is refused with
+`comeback_approval_revoked`. The customer cancels it, closes it, then
+subscribes again. That new subscription makes the wallet's approval again,
+and its terms say first that this ends every other subscription the wallet
+has in that token.
+
 `subscribed_since` is the start of the current one, and
 `first_subscribed_at` the start of the very first.
