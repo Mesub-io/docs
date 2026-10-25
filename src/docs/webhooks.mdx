@@ -9,6 +9,20 @@ icon: "lucide:webhook"
 `hasAccess` is enough to gate a route. Webhooks are for reacting when something
 changes: a renewal, a missed payment, a cancellation.
 
+## In short
+
+- Add your endpoint in **Developers**, then **Webhooks**, and put its secret
+  in `MESUB_WEBHOOK_SECRET`.
+- Verify each delivery on the **raw body** with `mesub.webhooks.verify`.
+  Answer 400 to `invalid_webhook`.
+- Drop an event whose `id` you handled already: one can arrive twice.
+- Apply a subscription's events in `sequence` order: they can arrive out of
+  order.
+- Drive access from `subscription.access_granted` and
+  `subscription.access_revoked`.
+- Answer 2xx. Otherwise Mesub retries for about three days, then
+  disables the endpoint.
+
 ## Set up your endpoint
 
 In the [dashboard](https://mesub.io/dashboard#developers), open **Developers**,

@@ -10,6 +10,16 @@ The [React widget](./react.mdx) does this for you. Without it, your server
 makes three calls and the customer's wallet signs twice in the browser: the
 terms first, then the transaction. The API key never leaves your server.
 
+## In short
+
+1. `create`, on your server: it reserves the subscription and returns the
+   terms.
+2. The wallet signs the terms, in the browser.
+3. `transaction`, on your server: a fresh transaction to sign.
+4. The wallet signs it **without sending it**.
+5. `submit`, on your server: Mesub sends it and answers whether it landed.
+   Branch on `reason_code`, never on `reason`.
+
 The order matters. The terms live five minutes, and a transaction lives 150
 blocks, about half a minute. So the customer reads and signs the terms first,
 and your server asks for the transaction only when the wallet is ready to sign
