@@ -26,15 +26,24 @@ says that the project has a key and when it was last used. If you lose it,
 
 ```bash
 MESUB_API_KEY=SUB_...
+# Only when Mesub gives you another API address:
+MESUB_BASE_URL=https://...
 ```
 
-`@mesub/node` reads that variable by itself:
+`@mesub/node` reads both variables by itself:
 
 ```ts
 import { Mesub } from '@mesub/node';
 
-const mesub = new Mesub(); // reads MESUB_API_KEY
+const mesub = new Mesub(); // reads MESUB_API_KEY and MESUB_BASE_URL
 ```
+
+The key and the API address go together. Leave `MESUB_BASE_URL` unset, and
+the SDK calls `https://api.mesub.io`; set it, beside the key and from the same
+place, only when the dashboard or the Mesub MCP server gives you another API
+address. Point it only at Mesub's address or at a proxy you trust: your key is
+sent there on every call. A `baseUrl` passed to `new Mesub()` wins over the
+variable, which `@mesub/node` reads from 0.1.3.
 
 Keep the key on your server. It creates subscriptions and reads your
 subscribers, so it never goes in a browser, a mobile app or a repository. The
