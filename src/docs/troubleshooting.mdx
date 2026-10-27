@@ -11,26 +11,27 @@ Find your symptom, then follow the link. Every error code is on
 
 ## Your server and the API
 
-| Symptom                 | Cause                                                           | Fix                                                                   |
-| ----------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `missing_api_key` (401) | `MESUB_API_KEY` is not set where the server runs                | [Put the key on your server](./api-key.mdx#put-it-on-your-server)     |
-| `invalid_api_key` (401) | A wrong or rotated key | [Put the key on your server](./api-key.mdx#put-it-on-your-server) |
-| Your guard answers 401  | `customer` returned nothing: nobody is signed in on your site   | [What a guard answers](./access.mdx#what-a-guard-answers)             |
-| Your guard answers 402  | Mesub says this customer has no access                          | [Read the answer](./access.mdx#read-the-answer)                       |
-| `plan_not_found` | A wrong slug | Read the slug in the plan's **Implement** tab |
-| `plan_not_on_chain`     | The plan was never published: it may wait in **To sign**        | [To sign](./organizations.mdx#to-sign)                                |
-| `rate_limited` (429)    | Too many calls a minute                                         | [Rate limits](./pricing.mdx#api-rate-limits)                          |
+| Symptom                                   | Cause                                                         | Fix                                                                 |
+| ----------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `missing_api_key` (401)                   | `MESUB_API_KEY` is not set where the server runs              | [Put the key on your server](./api-key.mdx#put-it-on-your-server)   |
+| `invalid_api_key` (401)                   | A wrong or rotated key                                        | [Put the key on your server](./api-key.mdx#put-it-on-your-server)   |
+| `invalid_api_key` (401), the key is right | The key and `MESUB_BASE_URL` come from different places       | Set both [from the same place](./api-key.mdx#put-it-on-your-server) |
+| Your guard answers 401                    | `customer` returned nothing: nobody is signed in on your site | [What a guard answers](./access.mdx#what-a-guard-answers)           |
+| Your guard answers 402                    | Mesub says this customer has no access                        | [Read the answer](./access.mdx#read-the-answer)                     |
+| `plan_not_found`                          | A wrong slug                                                  | Read the slug in the plan's **Implement** tab                       |
+| `plan_not_on_chain`                       | The plan was never published: it may wait in **To sign**      | [To sign](./organizations.mdx#to-sign)                              |
+| `rate_limited` (429)                      | Too many calls a minute                                       | [Rate limits](./pricing.mdx#api-rate-limits)                        |
 
 ## Subscribing
 
-| Symptom                                | Cause                                                       | Fix                                                                        |
-| -------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------- |
-| The wallet signs for the wrong network | The widget's `chain` does not match the plan's `network`    | [Set `chain`](./react.mdx)                                                 |
-| `insufficient_sol` | The customer's wallet lacks SOL for the rent and the fee | Add SOL |
-| `insufficient_balance` | The wallet cannot pay the first period | Add the plan's token |
-| `approval_too_low`                     | The wallet caps its approval of the token below one payment | The customer raises the cap in their wallet, then tries again              |
-| `seat_cap_reached`                     | The project is at its tier's subscriber limit               | [Pricing and limits](./pricing.mdx#at-a-limit)                             |
-| `transaction_expired`                  | The wallet signed too late                                  | [Subscribe from your server](./subscribe.mdx)                              |
+| Symptom                                | Cause                                                       | Fix                                                           |
+| -------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
+| The wallet signs for the wrong network | The widget's `chain` does not match the plan's `network`    | [Set `chain`](./react.mdx)                                    |
+| `insufficient_sol`                     | The customer's wallet lacks SOL for the rent and the fee    | Add SOL                                                       |
+| `insufficient_balance`                 | The wallet cannot pay the first period                      | Add the plan's token                                          |
+| `approval_too_low`                     | The wallet caps its approval of the token below one payment | The customer raises the cap in their wallet, then tries again |
+| `seat_cap_reached`                     | The project is at its tier's subscriber limit               | [Pricing and limits](./pricing.mdx#at-a-limit)                |
+| `transaction_expired`                  | The wallet signed too late                                  | [Subscribe from your server](./subscribe.mdx)                 |
 
 ## After the first payment
 
