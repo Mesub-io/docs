@@ -114,19 +114,22 @@ approved as delegate on their token account; it can only move tokens when a
 delegation says so, and a delegation only allows this:
 
 - up to the plan's `amount` per period, counted in `amount_pulled_in_period`,
-- to one of the plan's receiving wallets, listed in `destinations`,
+- to a wallet the plan allows: one listed in `destinations`, or any wallet
+  when that list is empty, as the dashboard leaves it unless you fill it,
 - triggered by the plan's owner or one of its `pullers`,
 - while `expires_at_ts` is zero or in the future.
 
 The delegation copies the plan's terms when it is created, so a customer keeps
 the price they signed for.
 
-Both accounts cost rent, about 0.0036 SOL together. The customer pays it and
-gets it back when the subscription is closed. The customer's wallet is also the
-fee payer of that transaction, so it pays the network fee too. A wallet that
-holds less SOL than the rent, the fee and the small reserve Solana makes every
-wallet keep is refused with `insufficient_sol`, before anything is signed: the
-customer adds SOL and tries again.
+Both accounts cost rent, which the customer pays. The subscription's rent comes
+back when the subscription is closed, the authority's when the customer closes
+that authority. The customer's wallet is also the fee payer of that
+transaction, so it pays the network fee too. How much, in lamports, is in the
+[`costs`](./subscribe.mdx) of the answer that prepares the transaction. A
+wallet that holds less SOL than the rent, the fee and the small reserve Solana
+makes every wallet keep is refused with `insufficient_sol`, before anything is
+signed: the customer adds SOL and tries again.
 
 ### A charge
 
