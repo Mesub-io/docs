@@ -81,9 +81,10 @@ half a minute after the answer: use it for a countdown, or to ask for a fresh
 transaction before it runs out. The height is the truth: a transaction the
 chain refuses as expired is rebuilt, whatever this date said.
 
-`costs` is in lamports, as strings. `rent` is a deposit the customer gets back
-when the subscription is closed; `fee` is spent. `rent.authority` is null when
-the customer already has an authority for that token.
+`costs` is in lamports, as strings. `rent` is a deposit the customer gets back:
+`rent.subscription` when the subscription is closed, `rent.authority` when they
+close that token's authority. `fee` is spent. `rent.authority` is null when the
+customer already has an authority for that token.
 
 The customer's wallet pays both, in SOL: it is the fee payer of the
 transaction. It must also keep a small reserve, the rent of an empty account,
