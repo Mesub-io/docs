@@ -25,9 +25,11 @@ starts the built site on `::`, which Holocron's own entry does not (it listens o
 0.0.0.0, and Fly's private network is IPv6 only). It also hands Holocron the
 https address when Cloudflare's `X-Forwarded-Proto` says so; without it the
 sitemap, `llms.txt` and each page's `og:url` say http (#92). After a Holocron
-upgrade, check that `/sitemap.xml` still lists https. A version tag (`v*`) deploys
-it once the build passes and a reviewer approves (job `deploy`, token in the
-`production` environment, which takes tags only); `main` only builds.
+upgrade, check that `/sitemap.xml` still lists https. And it drops the stack
+trace spiceflow writes into an error's JSON body; the log keeps it (#94). A
+version tag (`v*`) deploys it once the build passes and a reviewer approves
+(job `deploy`, token in the `production` environment, which takes tags only);
+`main` only builds.
 One site serves both environments.
 
 ## Where things are
