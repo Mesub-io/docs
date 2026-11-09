@@ -163,6 +163,10 @@ now. Leave `plan` out to open their live subscription whatever its plan.
 | `cancelled`, with access still running                                 | Resume    |
 | `closable: true` (ended, cancelled and past its end, stopped for good) | Close     |
 
+The exception: a `stopped` one whose `stop_reason` is `authority_closed` has
+nothing to cancel, so it allows Close once `closable` is true, and nothing
+before.
+
 Each one is a transaction the wallet signs and sends itself. Only the wallet
 that pays a subscription can sign for it. Closing returns the deposit to that
 wallet.
