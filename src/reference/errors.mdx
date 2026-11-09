@@ -94,6 +94,18 @@ end date:
 None of the three is retryable: change the date. An end date is counted in
 Unix seconds, and `end_date_too_far` is what a date sent in milliseconds gets.
 
+Three more come from the project's [tier](../docs/pricing.mdx#tiers), when a
+plan is created in the dashboard or prepared by an agent:
+
+| `code`                | Status | When                                                              |
+| --------------------- | ------ | ----------------------------------------------------------------- |
+| `plan_cap_reached`    | 403    | The project is at the plan limit of its tier                      |
+| `retries_not_on_tier` | 403    | A retry policy was set on Free, which does not retry              |
+| `period_too_short`    | 403    | The period is shorter than the tier allows: a day on Free and Dev |
+
+None is retryable. A longer period, or a project moved up, is what passes. A
+plan already live keeps its period.
+
 The dashboard also refuses a plan on a token nobody could pay in, before you
 sign: `mint_not_a_token` (400, no token program owns that address),
 `mint_paused` and `mint_transfer_hook` (409), and `mint_frozen_by_default`,
