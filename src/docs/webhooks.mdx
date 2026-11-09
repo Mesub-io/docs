@@ -197,8 +197,9 @@ done: it would receive your real events too.
 ### Send a test event to your own handler
 
 In the dashboard, on your endpoint, pick the event to simulate and click
-**Send test**. With no event picked, the plain `test` event is sent. A test
-delivery is signed like a real one and carries `"test": true` at the top of its
+**Send test**. The dashboard sends a sample of one of the endpoint's events; the
+plain `test` event is only what a connected agent sends when it picks no event. A
+test delivery is signed like a real one and carries `"test": true` at the top of its
 body, with a made-up subscription whose id is `sub_test`, so your handler can
 recognise and ignore it.
 
