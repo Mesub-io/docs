@@ -2,7 +2,7 @@
 $schema: https://holocron.so/frontmatter.json
 title: "test"
 sidebarTitle: "test"
-description: "You sent one from the dashboard, with no event picked. It carries a made-up subscription whose id is sub_test."
+description: "A connected agent sent it to test an endpoint, with no event picked. It carries a made-up subscription whose id is sub_test."
 hideTitle: true
 gridGap: 36
 ---
@@ -75,11 +75,13 @@ if (event.type === 'test') {
 
 <Endpoint id="webhook_test">
 
-You sent one from the dashboard, with no event picked. It carries a made-up subscription whose id is `sub_test`.
+A connected agent sent it to test an endpoint, with no event picked. It carries a made-up subscription whose id is `sub_test`.
 
 <More>
 
-Mesub posts this to every endpoint of the project subscribed to it. Answer with a 2xx within 10 seconds.
+The dashboard's Send test never sends this one: it sends a sample of one of the endpoint's events, marked `test: true`.
+
+It goes to the one endpoint the agent tested. Answer with a 2xx within 10 seconds.
 
 </More>
 
