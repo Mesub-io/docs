@@ -8,3 +8,6 @@ blocked_reason).
 hasAccess, the three guards as tabs, the raw HTTP call, who to ask about, the
 answer with a full example in a collapsed block, the guards' refusals, the
 API's errors and MesubError, and the outage behavior. Leave the detail of each status to the lifecycle page.
+A short note on Next.js pages under Cache Components (Next 16, cacheComponents):
+`export const instant = false` or a Suspense boundary, never `export const dynamic`.
+Checked with `next build` on Next 16.4.5.
