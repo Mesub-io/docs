@@ -22,8 +22,9 @@ The dashboard asks three things, one per screen:
 
 1. **Name your organization.**
 2. **Create your first project**: one project per app that takes payments.
-3. **Connect your AI agent**, through the [MCP server](./mcp.mdx). You can
-   skip it.
+   You can skip it.
+3. **How Mesub fits your app**: the two ways to set it up, your own code or
+   your AI agent through the [MCP server](./mcp.mdx). Nothing to install yet.
 
 ## Organizations
 
@@ -89,15 +90,15 @@ it.
 
 ## Sign and publish
 
-The last button of **New plan** depends on the wallet you are signed in
-with:
+The last button of **New plan** is always **Sign and publish**. What happens
+depends on the wallet you are signed in with:
 
-| Your situation                                    | The button                                          |
-| ------------------------------------------------- | --------------------------------------------------- |
-| You hold the organization wallet                  | **Sign and publish**: the plan goes on chain now    |
-| Someone else holds it                             | **Send to To sign**: the plan waits for that wallet |
-| No organization wallet yet, you are the Owner     | **Connect a wallet**                                |
-| No organization wallet yet, you are not the Owner | None: the Owner sets the wallet first               |
+| Your situation                                    | What happens                                                                                      |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| You hold the organization wallet                  | It signs, and the plan goes on chain now                                                          |
+| Someone else holds it                             | The link **Send it to its holder** hands the plan off, and it waits in To sign for that wallet    |
+| No organization wallet yet, you are the Owner     | **Connect a wallet**: the wallet you connect becomes the organization wallet, then signs the plan |
+| No organization wallet yet, you are not the Owner | Nothing can be signed: the Owner sets the wallet first                                            |
 
 A plan an agent prepares with `prepare_plan` waits in To sign the same way.
 
