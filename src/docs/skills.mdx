@@ -110,8 +110,9 @@ Every skill tells the agent not to:
   a wallet, so the agent reports what it checked and what is left for you to
   click.
 
-The scripts a skill ships only read your project: no write, no install, no
-outbound call, and they never print a key.
+The scripts a skill ships read your project: no write, no install, and they
+never print a key. Only `send-test-delivery` makes a call, and only to
+localhost: it posts signed test deliveries to your own server.
 
 These are instructions, not a lock. An agent can still get one wrong, which is
 one more reason to read the diff.
