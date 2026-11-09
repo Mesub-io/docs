@@ -80,7 +80,7 @@ Every event has the same shape:
 | `sequence`    | Its place among this subscription's events: 1, 2, 3... Absent on some events                               |
 | `data`        | The subscription, as [Retrieve a subscription](../subscriptions/retrieve.mdx) answers it, shortened here   |
 | `detail`      | The event's own fields. Empty on most events                                                               |
-| `test`        | `true` on a delivery sent by hand from the dashboard. Absent otherwise                                     |
+| `test`        | `true` on a delivery sent by hand, from the dashboard or by a connected agent. Absent otherwise            |
 
 `data` is the subscription as it stood right after the change that raised the
 event, however late the delivery. Events raised by the same change share it:
@@ -121,7 +121,7 @@ a resend too: `{ type, created_at, data }`, with `detail` inside `data`, no
 | [`subscription.unpaused`](./subscription-unpaused.mdx)                 | A parked seat is back                                   |
 | [`subscription.access_granted`](./subscription-access-granted.mdx)     | Access started, and was off just before                 |
 | [`subscription.access_revoked`](./subscription-access-revoked.mdx)     | Access ended, and was on just before                    |
-| [`test`](./test.mdx)                                                   | You sent one from the dashboard                         |
+| [`test`](./test.mdx)                                                   | Sent by hand, from the dashboard or a connected agent   |
 
 Mesub may add a type later: keep a default branch.
 
