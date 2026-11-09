@@ -10,9 +10,54 @@ The API version is `2026-10-02`, the only one served. Nothing below needs a
 new `Mesub-Version`: new codes are added, and your code keeps a default branch
 for codes it does not know ([errors](./reference/errors.mdx)).
 
+## 2026-11-06
+
+API v0.1.8.
+
+- **Shortest billing period per tier.** On the Free and Dev tiers, a plan
+  bills at most once a day. Business has no limit. Creating a plan, or
+  editing a draft's period, below that answers `period_too_short` (403), and
+  so does `prepare_plan` on the MCP server. A published plan keeps its
+  period: a project that moves down from Business only cannot create new
+  short ones. See [pricing](./docs/pricing.mdx).
+- **Checked again at signing.** A draft prepared before, or on a higher tier,
+  is refused with `period_too_short` when it is signed: give it a period of a
+  day or more. A plan put on chain anyway with a period its tier refuses is
+  never served: delete it to take its rent back.
+- **A plan signed while its confirmation was lost** (a closed tab, the
+  network) is found on chain and published, no longer left waiting.
+
+## 2026-11-01
+
+`@mesub/node` 0.1.5: the README links to the guide to the Solana
+Subscriptions program. No change to the code.
+
+## 2026-10-29
+
+`@mesub/node` 0.1.4 and MCP server v0.2.2.
+
+- `@mesub/node`: a redirect from the API is never followed, since every call
+  carries the API key. The call fails once, as `unexpected`, naming where it
+  pointed: check that `baseUrl` is the Mesub API.
+- **MCP v0.2.2.** A server that calls another Mesub API than
+  `https://api.mesub.io` says so in its instructions: the merchant's server
+  sets `MESUB_BASE_URL` to that address beside `MESUB_API_KEY`, both from that
+  Mesub's dashboard. `search_docs` searches the docs as of 2026-10-27.
+
+## 2026-10-27
+
+`@mesub/node` 0.1.3 and API v0.1.7.
+
+- `@mesub/node`: `new Mesub()` reads its address from `MESUB_BASE_URL` when
+  `baseUrl` is not given, then defaults to `https://api.mesub.io`, as the key
+  comes from `MESUB_API_KEY`. The helpers' default client (`mesubRoutes`,
+  `requirePlan`, `withMesub`, ...) follows it. An empty variable counts as
+  unset. See [the API key](./docs/api-key.mdx).
+- The Dev tier's plan shows its logo again.
+
 ## 2026-10-25
 
-API v0.1.6, dashboard v0.1.15, MCP server v0.2.0.
+API v0.1.6, dashboard v0.1.15, MCP server v0.2.0 and v0.2.1.
 
 - **Organizations.** Every Mesub account has a personal organization. You
   can create others and invite members, as Owner, Admin or Member. See
@@ -41,11 +86,14 @@ API v0.1.6, dashboard v0.1.15, MCP server v0.2.0.
   `prepare_plan`. See [the MCP server](./docs/mcp.mdx).
 - **Words.** Messages say organization wallet, receiving wallet and To sign.
   No code or field was renamed.
+- **MCP v0.2.1.** `search_docs` searches the organization docs, and
+  `update_webhook` says that disabling an endpoint mails the Owner and the
+  Admins.
 
 ## 2026-10-21
 
-`@mesub/node` 0.1.2 and `@mesub/react` 0.1.2, the first releases of 0.1.1 on
-npm.
+`@mesub/node` 0.1.2 and `@mesub/react` 0.1.2. They carry the changes of 0.1.1,
+which was tagged but never reached npm.
 
 - `@mesub/react`: `chain` defaults to `solana:mainnet`.
 - `@mesub/node`: the test fake defaults to mainnet. A payment carries
