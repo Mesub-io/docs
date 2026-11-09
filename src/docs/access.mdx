@@ -289,6 +289,9 @@ is too slow, or answers that the rate limit is reached:
 - `hasAccess` and the guards serve the **last answer they knew** for that
   customer and plan, for up to 24 hours. A paying customer is not locked out
   by an outage.
+- A known "yes" never outlives its `access_until` when nothing renews it: a
+  cancelled or parked subscription, or one whose charges are blocked
+  (`blocked_since`), stops granting there, outage or not.
 - For a customer never seen before, `hasAccess` answers `false` and a guard
   answers 503 with the `Retry-After` Mesub sent, or 30 seconds when it sent
   none.
