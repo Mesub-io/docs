@@ -93,6 +93,40 @@ types a subscriber's address.
 A guard also takes a list, `requirePlan(['pro', 'team'], ...)`: the first plan
 that grants access lets the request through. Three plans at most.
 
+A Next.js page or server component has no guard: call `hasAccess` and choose
+what to render. With Next.js 16 and `cacheComponents: true`, a page that reads
+the session and asks Mesub outside `<Suspense>` fails `next build`, and
+`export const dynamic` is refused there. Add `export const instant = false` to
+the page, so it renders at each request, or keep the page static and move the
+check into a child component inside `<Suspense>`:
+
+```tsx
+// app/reports/page.tsx
+import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
+import { mesub } from '@/lib/mesub'; // your one Mesub client
+
+export default function ReportsPage() {
+    return (
+        <Suspense fallback={<p>Loading…</p>}>
+            <PaidReports />
+        </Suspense>
+    );
+}
+
+async function PaidReports() {
+    const session = await yourSession();
+    if (!session) redirect('/login');
+    const paid = await mesub.hasAccess(
+        { external_id: session.userId },
+        'pro',
+    );
+    return paid ? <Reports /> : <Upsell />;
+}
+```
+
+Never cache `hasAccess` with `use cache`: a cached yes outlives a cancellation.
+
 Without the SDK, it is one authenticated GET:
 
 ```bash
