@@ -65,12 +65,12 @@ top up. Every charge and retry is kept with its own outcome and reason:
 Mesub retries on its own. A plan gets **3 retries** by default, so a period has
 4 tries in all. Each retry waits a quarter of the period, one day at most:
 
-| Plan period | Wait between tries |
-| ----------- | ------------------ |
-| 1 month     | 1 day              |
-| 1 week      | 1 day              |
-| 1 day       | 6 hours            |
-| 1 hour      | 15 minutes         |
+| Plan period              | Wait between tries |
+| ------------------------ | ------------------ |
+| 1 month                  | 1 day              |
+| 1 week                   | 1 day              |
+| 1 day                    | 6 hours            |
+| 1 hour, on Business only | 15 minutes         |
 
 Access stays on while retries run. `next_retry_at` says when the next one is,
 `next_retry_number` and `retries_allowed` say which one it is, and
