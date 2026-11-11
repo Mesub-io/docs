@@ -375,8 +375,8 @@ when the subscription is no longer `pending`. Create again if it `expired`.
 ### When the wallet's subscription is cancelled
 
 `create`, `transaction` and `submit` answer `subscription_cancelled` when this
-wallet's subscription to the plan is cancelled. From `@mesub/node` 0.1.7, with
-the next API release, the error says what to do with it:
+wallet's subscription to the plan is cancelled. From `@mesub/node` 0.1.7 and
+API v0.1.10, the error says what to do with it:
 
 ```ts
 import { MesubError } from '@mesub/node';
@@ -400,8 +400,8 @@ try {
 `subscriptionId` is given only when that subscription is this customer's: the
 same `external_id`, else the same `email`, else no customer on either side.
 Resume and close are the [manage](./manage.mdx) calls, signed by the wallet.
-The widget routes hand the three fields to the browser, and `@mesub/react`
-0.1.5 offers Resume it, or Close it and subscribe. The raw body is in
+The widget routes hand the three fields to the browser, and from
+`@mesub/react` 0.1.5 the checkout offers Resume it, or Close it and subscribe. The raw body is in
 [errors](../reference/errors.mdx#a-cancelled-subscription-in-the-way).
 
 Calling `create` again for the same plan, wallet and customer, while nothing
