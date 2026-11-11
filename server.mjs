@@ -15,8 +15,24 @@ app.handle = async (request, options) => {
     url.protocol = 'https:';
     request = new Request(url, request);
   }
-  return withoutStack(await handle(request, options));
+  return withCanonical(request, await withoutStack(await handle(request, options)));
 };
+
+// Every page names its one address (#119): Search Console found 55 pages it
+// saw twice, mostly their http copies, and Holocron writes no
+// <link rel="canonical">. Google reads the same thing from this header, on the
+// page's own response, without touching Holocron's HTML. Pages only: an asset,
+// a redirect or an error names nothing.
+const CANONICAL_ORIGIN = 'https://docs.mesub.io';
+
+function withCanonical(request, response) {
+  if (response.status !== 200 || !response.headers.get('content-type')?.includes('text/html')) {
+    return response;
+  }
+  const headers = new Headers(response.headers);
+  headers.append('Link', `<${CANONICAL_ORIGIN}${new URL(request.url).pathname}>; rel="canonical"`);
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
 
 // spiceflow answers an error with its stack trace in the JSON body, whatever
 // NODE_ENV says: file paths and line numbers a reader has no use for (#94). The
