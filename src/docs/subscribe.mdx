@@ -354,22 +354,55 @@ one only once it is `expired`.
 
 Each one is thrown as a `MesubError`. `apiCode` says which:
 
-| On       | `apiCode`                | What to do                                 |
-| -------- | ------------------------ | ------------------------------------------ |
-| `create` | `already_subscribed`     | This wallet already holds this plan        |
-| `create` | `insufficient_balance`   | The wallet cannot pay the first period     |
-| `create` | `insufficient_sol`       | The wallet lacks SOL for the rent and fee  |
-| `create` | `approval_too_low`       | The wallet caps its approval: it raises it |
-| `create` | `plan_not_found`         | Fix the slug                               |
-| `create` | `plan_ended`             | The plan is past its end date              |
-| `submit` | `terms_expired`          | Create again and sign the fresh terms      |
-| `submit` | `terms_changed`          | The plan changed since. Create again       |
-| `submit` | `transaction_expired`    | Ask for a new transaction and sign it      |
-| `submit` | `subscription_not_found` | The id is not one of your project's        |
+| On                                | `apiCode`                | What to do                                 |
+| --------------------------------- | ------------------------ | ------------------------------------------ |
+| `create`                          | `already_subscribed`     | This wallet already holds this plan        |
+| `create`, `transaction`, `submit` | `subscription_cancelled` | Resume or close it: see below              |
+| `create`                          | `insufficient_balance`   | The wallet cannot pay the first period     |
+| `create`                          | `insufficient_sol`       | The wallet lacks SOL for the rent and fee  |
+| `create`                          | `approval_too_low`       | The wallet caps its approval: it raises it |
+| `create`                          | `plan_not_found`         | Fix the slug                               |
+| `create`                          | `plan_ended`             | The plan is past its end date              |
+| `submit`                          | `terms_expired`          | Create again and sign the fresh terms      |
+| `submit`                          | `terms_changed`          | The plan changed since. Create again       |
+| `submit`                          | `transaction_expired`    | Ask for a new transaction and sign it      |
+| `submit`                          | `subscription_not_found` | The id is not one of your project's        |
 
 `subscriptions.transaction` is refused like `create` when the plan or the
 wallet no longer allows the subscription, and with `not_awaiting_signature`
 when the subscription is no longer `pending`. Create again if it `expired`.
+
+### When the wallet's subscription is cancelled
+
+`create`, `transaction` and `submit` answer `subscription_cancelled` when this
+wallet's subscription to the plan is cancelled. From `@mesub/node` 0.1.7, with
+the next API release, the error says what to do with it:
+
+```ts
+import { MesubError } from '@mesub/node';
+
+try {
+    await mesub.subscriptions.create({ plan: 'pro', wallet, external_id: user.id });
+} catch (error) {
+    if (!(error instanceof MesubError) || error.apiCode !== 'subscription_cancelled') throw error;
+    if (!error.subscriptionId) {
+        // another customer's, on this wallet: show error.message
+    } else if (error.canResume) {
+        // resume(error.subscriptionId): its access still runs
+    } else if (error.closableFrom) {
+        // close it from error.closableFrom, then create again
+    } else {
+        // close(error.subscriptionId), then create again
+    }
+}
+```
+
+`subscriptionId` is given only when that subscription is this customer's: the
+same `external_id`, else the same `email`, else no customer on either side.
+Resume and close are the [manage](./manage.mdx) calls, signed by the wallet.
+The widget routes hand the three fields to the browser, and `@mesub/react`
+0.1.5 offers Resume it, or Close it and subscribe. The raw body is in
+[errors](../reference/errors.mdx#a-cancelled-subscription-in-the-way).
 
 Calling `create` again for the same plan, wallet and customer, while nothing
 has landed, answers the same subscription with a fresh transaction. The

@@ -128,11 +128,14 @@ const data = await response.json();
 ```json title="409" lines=false
 {
     "statusCode": 409,
-    "message": "You are already subscribed to this plan.",
+    "message": "Your subscription to this plan is cancelled but runs until Nov 30, 2026, 14:00 UTC: resume it instead of subscribing again.",
     "error": "Conflict",
-    "code": "already_subscribed",
+    "code": "subscription_cancelled",
     "retryable": false,
-    "request_id": "req_7Hq2LxVb9TzK4mWc1RpN6sYd"
+    "request_id": "req_7Hq2LxVb9TzK4mWc1RpN6sYd",
+    "subscription_id": "cmg1x0abc0001",
+    "can_resume": true,
+    "closable_from": null
 }
 ```
 ```json title="429" lines=false
