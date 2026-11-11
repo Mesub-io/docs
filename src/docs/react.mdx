@@ -238,14 +238,15 @@ sheet.
 
 Each case has its own screen, and says whether anything was charged.
 
-| What happens                                   | What the widget does                                                                                                        |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Nobody is signed in on your site               | Says to sign in first. Nothing to sign                                                                                      |
-| No wallet is installed                         | Links to Phantom and Solflare                                                                                               |
-| The wallet refuses                             | Nothing is submitted. Try again starts over                                                                                 |
-| The terms expired before they were signed      | Asks your server again and shows the review with fresh terms                                                                |
-| The wrong wallet is used to manage             | Says which wallet pays. Nothing is signed                                                                                   |
-| Mesub refuses, for instance already subscribed | Shows Mesub's message as written                                                                                            |
-| The network fails after the payment was sent   | "Payment may be pending", and Check again, which never pays twice                                                           |
-| Mesub is busy at submit (a 503 with a wait)    | Mesub sent nothing: it waits, then sends the same request once more; still busy, it says how long to wait, with Check again |
-| Mesub is busy at **Pay now**                   | Nothing was charged: the button counts down, about 20 seconds, then can be pressed again                                    |
+| What happens                                   | What the widget does                                                                                                            |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Nobody is signed in on your site               | Says to sign in first. Nothing to sign                                                                                          |
+| No wallet is installed                         | Links to Phantom and Solflare                                                                                                   |
+| The wallet refuses                             | Nothing is submitted. Try again starts over                                                                                     |
+| The terms expired before they were signed      | Asks your server again and shows the review with fresh terms                                                                    |
+| The wrong wallet is used to manage             | Says which wallet pays. Nothing is signed                                                                                       |
+| This customer's subscription is cancelled      | From `@mesub/react` 0.1.5: Resume it while it runs, or Close it and subscribe, then the review with fresh terms. Else, as below |
+| Mesub refuses, for instance already subscribed | Shows Mesub's message as written                                                                                                |
+| The network fails after the payment was sent   | "Payment may be pending", and Check again, which never pays twice                                                               |
+| Mesub is busy at submit (a 503 with a wait)    | Mesub sent nothing: it waits, then sends the same request once more; still busy, it says how long to wait, with Check again     |
+| Mesub is busy at **Pay now**                   | Nothing was charged: the button counts down, about 20 seconds, then can be pressed again                                        |

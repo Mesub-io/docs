@@ -27,6 +27,9 @@ Every error has the same body:
 | `retryable`  | Whether the same request, sent again unchanged, may succeed later                      |
 | `request_id` | The request's id, as the `Mesub-Request-Id` header says it. Quote it to Mesub support  |
 
+A code may add fields of its own, beside these six: so far only
+`subscription_cancelled` on a subscribe, [below](#a-cancelled-subscription-in-the-way).
+
 Branch on `code`, never on `message`. A code is never moved to another status
 or reused, and is renamed only in a new `Mesub-Version`, but new ones are
 added: keep a default branch.
@@ -129,13 +132,59 @@ and `mint_display_scaled` (400).
 | `seat_cap_reached`           | 409    | The project is at its subscriber limit                                |
 | `pending_cap_reached`        | 429    | Too many subscriptions wait for a signature. Retryable                |
 | `payment_pending`            | 409    | This wallet's subscription is `unpaid`: a payment failed              |
-| `subscription_cancelled`     | 409    | Cancelled already: it runs to the end of its period                   |
+| `subscription_cancelled`     | 409    | This wallet's subscription to this plan is cancelled: see below       |
 | `subscription_stopped`       | 409    | This wallet's subscription stopped after missed payments              |
 | `subscription_terms_changed` | 409    | The plan's terms changed since that subscription stopped              |
 | `comeback_in_flight`         | 409    | A return to this plan may still land. Retryable                       |
 | `comeback_landed`            | 409    | A return to this plan already landed                                  |
 | `comeback_period_rolling`    | 409    | A return while its billing period turns. Retryable                    |
 | `comeback_approval_revoked`  | 409    | A return to a stopped one whose wallet no longer approves the token   |
+
+### A cancelled subscription in the way
+
+From the next API release, `subscription_cancelled` on
+[create](./subscriptions/create.mdx), [a fresh transaction](./subscriptions/transaction.mdx)
+and [submit](./subscriptions/submit.mdx) adds three fields at the top level of
+the body, the `SubscribeConflict` schema. No other code carries them.
+
+```json
+{
+    "statusCode": 409,
+    "message": "Your subscription to this plan is cancelled but runs until Nov 30, 2026, 14:00 UTC: resume it instead of subscribing again.",
+    "error": "Conflict",
+    "code": "subscription_cancelled",
+    "retryable": false,
+    "request_id": "req_7Hq2LxVb9TzK4mWc1RpN6sYd",
+    "subscription_id": "cmg1x0abc0001",
+    "can_resume": true,
+    "closable_from": null
+}
+```
+
+| Field             | What it says                                                                                    |
+| ----------------- | ----------------------------------------------------------------------------------------------- |
+| `subscription_id` | The cancelled subscription in the way, when it is this customer's. `null` otherwise             |
+| `can_resume`      | `true` while it still grants access: resume it. Always `false` when the id is `null`            |
+| `closable_from`   | When it can be closed, while that is ahead. `null` when it can close now, resumes, or has no id |
+
+The id is given only for the customer this subscribe is for: the same
+`external_id` when you give one, else the same `email`, else no customer on
+either side. A subscription of another customer on the same wallet is never
+named, nor one taken out for a customer when this subscribe names none, or the
+reverse.
+
+What to do with it:
+
+- `can_resume` is `true`: [resume](./manage/resume.mdx) that subscription
+  rather than subscribe again.
+- `can_resume` is `false` and `closable_from` is `null`:
+  [close](./manage/close.mdx) it, then subscribe again.
+- `closable_from` is a date: close it from then, then subscribe again.
+- `subscription_id` is `null`: nothing to act on from here. Show `message`.
+
+`@mesub/node` 0.1.7 reads them as `subscriptionId`, `canResume` and
+`closableFrom` on the `MesubError`, and `@mesub/react` 0.1.5 offers Resume it,
+or Close it and subscribe, in the widget.
 
 ## Signing and sending
 
