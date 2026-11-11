@@ -88,16 +88,22 @@ export function App({ children }) {
 }
 ```
 
-| Prop        | What it is                                                                    |
-| ----------- | ----------------------------------------------------------------------------- |
-| `endpoint`  | Where you mounted the routes. A path on your site, or a full URL              |
-| `chain`     | The network the wallet signs for and sends on. `solana:mainnet` when left out |
-| `theme`     | `light`, `dark` or `auto`                                                     |
-| `fetch`     | Your own `(url, init) => Promise<Response>`, to add headers                   |
-| `manageUrl` | Where "Cancel any time" leads once subscribed. `null` for no link             |
+| Prop              | What it is                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------- |
+| `endpoint`        | Where you mounted the routes. A path on your site, or a full URL                                        |
+| `chain`           | The network the wallet signs for and sends on. `solana:mainnet` when left out                           |
+| `theme`           | `light`, `dark` or `auto`                                                                               |
+| `fetch`           | Your own `(url, init) => Promise<Response>`, to add headers                                             |
+| `manageUrl`       | Where "Cancel any time" leads once subscribed. `null` for no link                                       |
+| `openInWalletUrl` | On a phone, the page the wallet app reopens (`/pricing`, or a full URL). The current page when left out |
 
 `chain` must match the `network` of your plans: `solana:mainnet`, the
 default, for plans made at mesub.io.
+
+On a phone, wallets are apps the browser cannot see. When it finds none, the
+widget offers to open the page in the wallet's own browser, with a link each
+for Phantom and Solflare, which leads to the app when it is not installed.
+The customer subscribes from there. From `@mesub/react` 0.1.4.
 
 Requests are sent with `credentials: 'include'`, so your session cookie
 travels. If your login is a bearer token, add it in `fetch`.
@@ -215,6 +221,9 @@ carries `action`: `cancel`, `resume`, `close` or null, and `payable`: whether
 `{ ok, message }`, the words to show, with `retryAfter` in seconds when Mesub
 was busy; it never throws.
 
+`hasMore` is true when the customer holds more subscriptions than your server
+listed; `ManageSubscriptions` says so under its list.
+
 ## Theming
 
 `@mesub/react/styles.css` styles the widget only. Set these custom properties
@@ -241,7 +250,7 @@ Each case has its own screen, and says whether anything was charged.
 | What happens                                   | What the widget does                                                                                                            |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | Nobody is signed in on your site               | Says to sign in first. Nothing to sign                                                                                          |
-| No wallet is installed                         | Links to Phantom and Solflare                                                                                                   |
+| No wallet is installed                         | Links to Phantom and Solflare. On a phone, links to open the page in either wallet's browser                                    |
 | The wallet refuses                             | Nothing is submitted. Try again starts over                                                                                     |
 | The terms expired before they were signed      | Asks your server again and shows the review with fresh terms                                                                    |
 | The wrong wallet is used to manage             | Says which wallet pays. Nothing is signed                                                                                       |
