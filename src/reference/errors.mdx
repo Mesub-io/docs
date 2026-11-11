@@ -142,7 +142,7 @@ and `mint_display_scaled` (400).
 
 ### A cancelled subscription in the way
 
-From the next API release, `subscription_cancelled` on
+From API v0.1.10, `subscription_cancelled` on
 [create](./subscriptions/create.mdx), [a fresh transaction](./subscriptions/transaction.mdx)
 and [submit](./subscriptions/submit.mdx) adds three fields at the top level of
 the body, the `SubscribeConflict` schema. No other code carries them.
@@ -182,9 +182,9 @@ What to do with it:
 - `closable_from` is a date: close it from then, then subscribe again.
 - `subscription_id` is `null`: nothing to act on from here. Show `message`.
 
-`@mesub/node` 0.1.7 reads them as `subscriptionId`, `canResume` and
-`closableFrom` on the `MesubError`, and `@mesub/react` 0.1.5 offers Resume it,
-or Close it and subscribe, in the widget.
+`@mesub/node` reads them from 0.1.7, as `subscriptionId`, `canResume` and
+`closableFrom` on the `MesubError`, and `@mesub/react` offers Resume it, or
+Close it and subscribe, in the widget from 0.1.5.
 
 ## Signing and sending
 

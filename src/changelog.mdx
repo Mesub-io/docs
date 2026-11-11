@@ -12,15 +12,34 @@ for codes it does not know ([errors](./reference/errors.mdx)).
 
 ## 2026-11-11
 
-`@mesub/react` 0.1.4.
+API v0.1.10, `@mesub/node` 0.1.7, `@mesub/react` 0.1.4 and 0.1.5.
 
-- **Phones.** A phone's browser sees no wallet app. With no wallet found
+- **A cancelled subscription in the way, named.** `subscription_cancelled`
+  on create, a fresh transaction and submit adds `subscription_id`,
+  `can_resume` and `closable_from` to the body: the cancelled subscription,
+  whether to resume it, and when it can be closed while that is ahead. The id
+  is given only when that subscription is the same customer's. See
+  [errors](./reference/errors.mdx#a-cancelled-subscription-in-the-way).
+- `@mesub/node`: `MesubError` carries them as `subscriptionId`, `canResume`
+  and `closableFrom`, null on any other error. The Express and Next widget
+  routes hand them on to the browser beside `code` and `message`, and
+  `FakeMesub` answers them; `fail()` takes them as `details`. See
+  [subscribe](./docs/subscribe.mdx#when-the-wallets-subscription-is-cancelled).
+- `@mesub/react` 0.1.5: a checkout refused because the customer's own
+  subscription to that plan is cancelled offers Resume it while it runs, or
+  Close it and subscribe once it is over, each with one approval in the
+  wallet. A refused resume or close says why, with Try again when it is only
+  for now. See [React](./docs/react.mdx).
+- `@mesub/react` 0.1.5: the dialog keeps its content height in in-app
+  browsers that give a modal dialog none, such as Phantom's on iPhone.
+- `@mesub/react` 0.1.4, **phones.** A phone's browser sees no wallet app. With no wallet found
   there, the widget no longer offers to install one: it offers to open the
   page in the wallet's own browser, one link each for Phantom and Solflare,
   which leads to the app when it is not installed. Desktop keeps the install
   links. `openInWalletUrl` on `MesubProvider` names the page to reopen, the
   current one by default. See [React](./docs/react.mdx).
-- The Phantom and Solflare links show the wallets' own logos.
+- `@mesub/react` 0.1.4: the Phantom and Solflare links show the wallets' own
+  logos.
 
 ## 2026-11-09
 
