@@ -35,10 +35,11 @@ Find your symptom, then follow the link. Every error code is on
 
 ## After the first payment
 
-| Symptom                              | Cause                                                       | Fix                                                   |
-| ------------------------------------ | ----------------------------------------------------------- | ----------------------------------------------------- |
-| A subscription is `unpaid`           | A charge missed: the wallet was short, or its approval went | [Late payments](./lifecycle.mdx#late-payments)        |
-| `blocked_reason` is set              | Something on the plan's side holds the charges              | [Blocked charges](./lifecycle.mdx#blocked-charges)    |
-| `paused` is true                     | The seat is parked over the tier's limit                    | [Parked seats](./lifecycle.mdx#parked-seats)          |
-| `invalid_webhook` on every event     | The body was parsed before `verify`, or the secret is wrong | [Create a handler](./webhooks.mdx#create-a-handler)   |
-| Events arrive twice, or out of order | Both are normal                                             | [Delivery behavior](./webhooks.mdx#delivery-behavior) |
+| Symptom                              | Cause                                                        | Fix                                                                                           |
+| ------------------------------------ | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| A subscription is `unpaid`           | A charge missed: the wallet was short, or its approval went  | [Late payments](./lifecycle.mdx#late-payments)                                                |
+| `late_reason` is `approval_revoked`  | Revoked in the wallet, or replaced by another app's approval | [What a revoke does to a subscription](https://mesub.io/guides/revoke-token-approvals-solana) |
+| `blocked_reason` is set              | Something on the plan's side holds the charges               | [Blocked charges](./lifecycle.mdx#blocked-charges)                                            |
+| `paused` is true                     | The seat is parked over the tier's limit                     | [Parked seats](./lifecycle.mdx#parked-seats)                                                  |
+| `invalid_webhook` on every event     | The body was parsed before `verify`, or the secret is wrong  | [Create a handler](./webhooks.mdx#create-a-handler)                                           |
+| Events arrive twice, or out of order | Both are normal                                              | [Delivery behavior](./webhooks.mdx#delivery-behavior)                                         |

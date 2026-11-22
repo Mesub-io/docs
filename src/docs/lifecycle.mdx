@@ -58,7 +58,7 @@ other status, and when Mesub cannot name the cause.
 An approval is revoked in the wallet itself, or replaced when another app is
 approved on the same token. The customer can see what their wallet has granted
 with the
-[Solana Subscription Permissions Checker](https://mesub.io/tools/solana-subscription-checker).
+[Solana Token Approval Checker](https://mesub.io/tools/solana-subscription-checker).
 [What a revoke does to a subscription](https://mesub.io/guides/revoke-token-approvals-solana)
 explains when charges stop and when they can start again.
 Read `late_reason` before you tell a customer to top up. Every charge and retry is kept with its own outcome and reason:
@@ -177,8 +177,9 @@ on Mesub's side gives way to one of your setup, or back, it starts again.
 ## Cancelling and resuming
 
 The customer cancels by signing one transaction with the wallet that pays. It
-moves no money: it records on chain that the subscription ends with the period
-already paid.
+moves no money: it records on chain, in the
+[Solana Subscriptions program](https://mesub.io/guides/solana-subscriptions-program),
+that the subscription ends with the period already paid.
 
 | Field            | Before   | After cancelling          |
 | ---------------- | -------- | ------------------------- |
