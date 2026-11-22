@@ -162,8 +162,9 @@ Closing the delegation afterwards returns its rent.
 ### Why your server asks Mesub and not the chain
 
 A delegation that reads active on chain is not proof that the next charge will
-land: the wallet may be empty, or the customer may have revoked the token
-approval outside the program. Mesub tracks every attempt and its outcome, and
+land: the wallet may be empty, or the customer may have
+[revoked the token approval](https://mesub.io/guides/revoke-token-approvals-solana)
+outside the program. Mesub tracks every attempt and its outcome, and
 `hasAccess` answers from that record, not from the account alone.
 
 Next: [your first subscriber](./quickstart.mdx), with a plan, an API key and
