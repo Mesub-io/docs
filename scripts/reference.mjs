@@ -156,7 +156,9 @@ function page({ kind, method, route, operation }) {
     '$schema: https://holocron.so/frontmatter.json',
     `title: "${title}"`,
     `sidebarTitle: "${operation.summary}"`,
-    `description: "${plain(operation.description)}"`,
+    // A webhook's first sentence alone ("A period was paid.") is too short for a
+    // search result (docs #137): the event's name says what the page is about.
+    `description: "${plain(webhook ? `${route} webhook from Mesub: ${operation.description}` : operation.description)}"`,
     ...(webhook ? [] : [`api: "${method.toUpperCase()} ${route}"`]),
     'hideTitle: true',
     'gridGap: 36',
