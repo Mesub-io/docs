@@ -50,6 +50,9 @@ jobs:
       - name: No prompt published
         run: pnpm check:prompts
 
+      - name: Every description is 25 to 160 characters
+        run: pnpm check:descriptions
+
   # A version tag only, once the site builds: docs.mesub.io (#73). Main builds
   # and goes no further. A GitHub-hosted runner, which starts empty every time.
   deploy:
