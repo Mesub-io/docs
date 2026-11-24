@@ -56,7 +56,10 @@ Three accounts are involved, all PDAs of that program:
 Creating a plan in the [dashboard](https://mesub.io/dashboard#plans) sends one transaction, signed by the organization wallet,
 that creates the `Plan` account with its `mint`, `amount`, `period_hours` and
 `end_ts`. `amount` and `period_hours` are immutable.
-`destinations` lists the receiving wallets the plan allows, and `pullers`
+`destinations` lists the receiving wallets the plan allows. A wallet shows
+the creation as raw instructions, without that list, so when a plan may pay
+any wallet but the organization wallet, that wallet first approves where it
+pays by signing a plain-text message, and then signs the creation. `pullers`
 lists who may trigger a charge besides you: Mesub's puller is one of them,
 which is what lets Mesub charge on schedule without your signature. If you take it off
 the plan, charges are blocked until it is back, and your subscribers are not
